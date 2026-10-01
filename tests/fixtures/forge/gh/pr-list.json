@@ -1,0 +1,5 @@
+[
+  {"number":12,"title":"Corrige login","state":"OPEN","isDraft":false,"author":{"login":"ana"},"headRefName":"fix/login","baseRefName":"main","url":"https://github.com/acme/app/pull/12","createdAt":"2026-09-01T10:00:00Z","updatedAt":"2026-09-02T10:00:00Z","labels":[{"name":"bug"}],"reviewDecision":"APPROVED","statusCheckRollup":[{"__typename":"CheckRun","name":"ci","status":"COMPLETED","conclusion":"SUCCESS"},{"__typename":"CheckRun","name":"lint","status":"COMPLETED","conclusion":"FAILURE"},{"__typename":"StatusContext","context":"x","state":"PENDING"}]},
+  {"number":13,"title":"Rascunho","state":"OPEN","isDraft":true,"author":{"login":"bia"},"headRefName":"feat/x","baseRefName":"main","url":"https://github.com/acme/app/pull/13","createdAt":"2026-09-03T10:00:00Z","updatedAt":"2026-09-03T11:00:00Z","labels":[],"reviewDecision":"","statusCheckRollup":null},
+  {"number":14,"title":"Sem campos"}
+]

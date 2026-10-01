@@ -1,0 +1,9 @@
+{
+  "v": 1,
+  "recebido_em": "2026-10-01T11:58:00.000Z",
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 12
+    }
+  }
+}

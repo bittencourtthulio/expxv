@@ -1,0 +1,4 @@
+/* Altura padrão da lista virtualizada: preencher o pai. Fica FORA do style inline de propósito: o inline vencia
+   `.met-lista .virtual-lista { height: 60vh }` & cia., a lista media o conteúdo inteiro (69 000 px) e renderizava as
+   1 015 linhas no DOM (P-09). Quem usa a lista fixa a altura por seletor mais específico (1 classe aqui, 2 lá). */
+.virtual-lista { height: 100%; max-height: 100%; }

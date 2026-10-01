@@ -1,0 +1,1 @@
+[{"name":"test","stage":"test","status":"success","web_url":"https://gitlab.com/j/1","started_at":"2026-09-02T09:00:00Z","finished_at":"2026-09-02T09:05:00Z"},{"name":"lint","stage":"test","status":"failed","web_url":"https://gitlab.com/j/2"}]

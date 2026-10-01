@@ -1,0 +1,19 @@
+#!/bin/sh
+# svn FALSO para testes: responde só a `info --xml`, sem tocar em nada.
+case "$1" in
+  info)
+    cat <<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+<entry kind="dir" path="." revision="42">
+<url>file:///repo-falso/trunk</url>
+<relative-url>^/trunk</relative-url>
+<repository><root>file:///repo-falso</root><uuid>00000000-0000-0000-0000-000000000000</uuid></repository>
+<wc-info><wcroot-abspath>${PWD}</wcroot-abspath><schedule>normal</schedule><depth>infinity</depth></wc-info>
+<commit revision="40"><author>teste</author><date>2026-01-01T00:00:00.000000Z</date></commit>
+</entry>
+</info>
+XML
+    ;;
+  *) echo "svn falso: comando nao suportado: $1" >&2; exit 1 ;;
+esac

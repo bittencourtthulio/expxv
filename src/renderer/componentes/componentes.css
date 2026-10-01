@@ -1,0 +1,42 @@
+/* Componentes compartilhados das telas de workspaces, provedores e missões. Só tokens. */
+.botao { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 14px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: 13px; }
+.botao:hover:not(:disabled) { background: var(--superficie-2); }
+.botao:disabled { opacity: 0.5; cursor: default; }
+.botao-primario { background: var(--destaque); border-color: var(--destaque); color: var(--sobre-destaque); }
+.botao-primario:hover:not(:disabled) { background: color-mix(in srgb, var(--destaque) 88%, black); }
+.botao-perigo { border-color: var(--alerta); color: var(--alerta); }
+.botao[aria-pressed="true"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; font-size: 13px; color: var(--texto-suave); }
+.campo input, .campo select, .campo textarea { min-height: 38px; padding: 6px 10px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: 14px; }
+.campo textarea { min-height: 88px; resize: vertical; }
+.campo [aria-invalid="true"] { border-color: var(--alerta); }
+.campo-erro { color: var(--alerta); font-size: 12px; }
+.aviso-caixa { padding: 10px 12px; border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: 13px; }
+.aviso-caixa strong { color: var(--aviso); }
+.erro-caixa { padding: 10px 12px; border: 1px solid var(--alerta); border-radius: var(--raio-pequeno); color: var(--alerta); font-size: 13px; }
+.barra-acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+
+.badge { display: inline-flex; align-items: center; padding: 1px 9px; border: 1px solid var(--borda); border-radius: 999px; background: var(--superficie); color: var(--texto-suave); font-size: 11px; white-space: nowrap; }
+.badge[data-tom="destaque"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.badge[data-tom="sucesso"] { border-color: var(--sucesso); color: var(--sucesso); }
+.badge[data-tom="aviso"] { border-color: var(--aviso); color: var(--aviso); }
+.badge[data-tom="alerta"] { border-color: var(--alerta); color: var(--alerta); }
+
+.virtualizada { position: relative; height: 100%; min-height: 120px; overflow-y: auto; contain: strict; }
+.virtualizada-corpo { position: relative; }
+.virtualizada-item { position: absolute; left: 0; right: 0; }
+
+.dialogo-fundo { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: color-mix(in srgb, var(--fundo) 70%, transparent); }
+.dialogo { max-height: 88vh; overflow: auto; padding: 20px 22px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); color: var(--texto); box-shadow: 0 24px 60px var(--sombra); }
+.dialogo-titulo { margin: 0 0 12px; font-size: 1.1rem; }
+.dialogo-corpo { color: var(--texto-suave); font-size: 14px; }
+.dialogo-corpo p { margin: 0 0 10px; }
+.dialogo-acoes { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+.seletor-ws { position: relative; }
+.seletor-ws-lista { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; min-width: 280px; max-width: 420px; padding: 6px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); box-shadow: 0 16px 40px var(--sombra); }
+.seletor-ws-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none; color: var(--texto); font-size: 13px; text-align: left; }
+.seletor-ws-item:hover, .seletor-ws-item[aria-checked="true"] { background: var(--superficie-2); }
+.seletor-ws-item small { color: var(--texto-discreto); font: 11px var(--mono); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seletor-ws-rotulo { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rodape-aguardando { color: var(--aviso); }

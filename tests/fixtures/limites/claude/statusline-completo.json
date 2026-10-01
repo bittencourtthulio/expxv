@@ -1,0 +1,22 @@
+{
+  "v": 1,
+  "recebido_em": "2026-10-01T11:58:00.000Z",
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 62,
+      "resets_at": 1790860800
+    },
+    "seven_day": {
+      "used_percentage": 31,
+      "resets_at": 1791331200
+    },
+    "seven_day_opus": {
+      "used_percentage": 74,
+      "resets_at": 1791331200
+    }
+  },
+  "model": {
+    "id": "opus",
+    "display_name": "Opus"
+  }
+}

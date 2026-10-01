@@ -1,0 +1,17 @@
+github.com
+  ✓ Logged in to github.com account octocat (keyring)
+  - Active account: true
+  - Git operations protocol: https
+  - Token: gho_************************************
+  - Token scopes: 'gist', 'read:org', 'repo'
+
+  ✓ Logged in to github.com account outra-conta (keyring)
+  - Active account: false
+  - Git operations protocol: ssh
+  - Token: gho_************************************
+
+ghe.acme.corp
+  ✓ Logged in to ghe.acme.corp account thulio (GH_ENTERPRISE_TOKEN)
+  - Active account: true
+  - Git operations protocol: https
+  - Token: ghp_SEGREDODOTESTEXXXXXXXXXXXXXXXXXXXXXXXX

@@ -1,0 +1,67 @@
+/* Tokens visuais. SÓ variáveis. Único arquivo do renderer autorizado a ter cor literal
+   (junto do tema do xterm). Os dois temas definem o MESMO conjunto de nomes. */
+:root {
+  --fonte: "Chakra Petch", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --raio: 14px;
+  --raio-pequeno: 8px;
+  --texto-base: 13px;
+  --altura-topo: 40px;
+  --altura-rodape: 26px;
+  --menu-recolhido: 56px;
+  --menu-aberto: 232px;
+  --duracao: 0.18s;
+  /* tela Terminais (D-32): área de trabalho máxima, cromado mínimo */
+  --altura-barra: 28px;
+  --altura-aba: 24px;
+  --botao-icone: 22px;
+  --altura-cabecalho-painel: 18px;
+  --fonte-aba: 11px;
+  --fonte-cabecalho-painel: 10.5px;
+  --divisor-painel: 2px;
+  --icone: 15px;
+}
+
+:root[data-theme="escuro"] {
+  color-scheme: dark;
+  --fundo: #16181a;
+  --painel: #1c1f21;
+  --superficie: #232729;
+  --superficie-2: #2b3033;
+  --texto: #f2f5f3;
+  --texto-suave: #a8b0ac;
+  --texto-discreto: #8f9994;
+  --borda: rgba(255, 255, 255, 0.1);
+  --borda-campo: #6f7a75;
+  --destaque: #2a6af0;
+  --destaque-texto: #7fb0ff;
+  --sobre-destaque: #ffffff;
+  --destaque-2: #38bdf8;
+  --alerta: #ff7b9c;
+  --aviso: #f6c177;
+  --sucesso: #7fd6a4;
+  --sombra: rgba(0, 0, 0, 0.5);
+  --degrade: linear-gradient(135deg, var(--destaque), var(--destaque-2));
+}
+
+:root[data-theme="claro"] {
+  color-scheme: light;
+  --fundo: #f5f6f4;
+  --painel: #ffffff;
+  --superficie: #eceeeb;
+  --superficie-2: #e1e4e0;
+  --texto: #1b1f1d;
+  --texto-suave: #48514d;
+  --texto-discreto: #5b6661;
+  --borda: rgba(0, 0, 0, 0.14);
+  --borda-campo: #7a847f;
+  --destaque: #2563eb;
+  --destaque-texto: #1d4ed8;
+  --sobre-destaque: #ffffff;
+  --destaque-2: #0284c7;
+  --alerta: #c2254f;
+  --aviso: #8a5a00;
+  --sucesso: #1d7a48;
+  --sombra: rgba(20, 28, 24, 0.22);
+  --degrade: linear-gradient(135deg, var(--destaque), var(--destaque-2));
+}

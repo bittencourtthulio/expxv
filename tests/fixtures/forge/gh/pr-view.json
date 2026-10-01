@@ -1,0 +1,5 @@
+{"number":12,"title":"Corrige login","body":"Corpo do PR\n\nFecha #7","state":"OPEN","isDraft":false,"author":{"login":"ana"},"headRefName":"fix/login","baseRefName":"main","url":"https://github.com/acme/app/pull/12","createdAt":"2026-09-01T10:00:00Z","updatedAt":"2026-09-02T10:00:00Z","labels":[{"name":"bug"}],"reviewDecision":"CHANGES_REQUESTED","mergeable":"MERGEABLE","headRefOid":"abc123",
+ "files":[{"path":"src/a.ts","additions":10,"deletions":2},{"path":"src/b.ts","additions":1,"deletions":0}],
+ "comments":[{"author":{"login":"caio"},"body":"Olha isso","createdAt":"2026-09-02T09:00:00Z"}],
+ "reviews":[{"author":{"login":"dani"},"state":"CHANGES_REQUESTED","body":"Ajuste","submittedAt":"2026-09-02T09:30:00Z"},{"author":{"login":"eva"},"state":"APPROVED","body":"","submittedAt":"2026-09-02T09:40:00Z"}],
+ "statusCheckRollup":[{"__typename":"CheckRun","name":"ci","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://github.com/acme/app/actions/runs/1"}]}

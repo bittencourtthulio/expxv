@@ -1,0 +1,8 @@
+{
+  "session_id": "s-1",
+  "model": {
+    "id": "claude-opus",
+    "display_name": "Opus"
+  },
+  "cwd": "/work/projeto"
+}

@@ -1,0 +1,23 @@
+{
+  "session_id": "s-1",
+  "transcript_path": "/work/t.jsonl",
+  "cwd": "/work/projeto",
+  "model": {
+    "id": "claude-opus",
+    "display_name": "Opus"
+  },
+  "workspace": {
+    "current_dir": "/work/projeto"
+  },
+  "version": "2.0.0",
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 62,
+      "resets_at": 1790860800
+    },
+    "seven_day": {
+      "used_percentage": 31,
+      "resets_at": 1791331200
+    }
+  }
+}

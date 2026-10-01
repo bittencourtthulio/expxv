@@ -1,0 +1,99 @@
+appId: com.expx.expxv
+productName: ExpxV
+copyright: Copyright © 2026 Expx
+directories:
+  output: dist-app
+files:
+  - dist/**/*
+  - build/icone-32.png
+  - package.json
+  - "!**/*.test.*"
+  - "!**/*.map"
+  # node-pty: só o necessário em runtime (prebuilds + lib); fontes e deps de compilação ficam fora.
+  - "!node_modules/node-pty/{src,deps,third_party,scripts,typings}/**/*"
+  - "!node_modules/**/{README*,CHANGELOG*,*.md,*.ts,*.mts,*.cts,*.map,test,tests,__tests__,spec,docs,example,examples,.github,.nycrc,.eslintrc*,.editorconfig,.npmignore,.travis.yml,*.markdown}"
+  # só em tempo de compilação do node-pty (cabeçalhos N-API); o runtime usa os prebuilds.
+  - "!node_modules/node-addon-api/**/*"
+  # Duplicatas ESM/browser de dependências que o app só carrega como CommonJS (worker MCP, daemon, indexador).
+  # Menos arquivos desempacotados também mantém o build universal abaixo do limite de 65 536 caracteres do glob
+  # que o @electron/universal monta com todos os caminhos de asarUnpack.
+  - "!node_modules/**/*.mjs"
+  - "!node_modules/@modelcontextprotocol/sdk/dist/esm/**/*"
+  - "!node_modules/zod-to-json-schema/dist/esm/**/*"
+  - "!node_modules/zod/**/*.js"
+  - "!node_modules/yaml/browser/**/*"
+  - "!node_modules/ajv/lib/**/*"
+  # hono: o worker MCP só carrega `hono/ws` (um arquivo CJS e o package.json que o marca como commonjs) via @hono/node-server; o resto do pacote sai.
+  - "!node_modules/hono/**/*"
+  - node_modules/hono/package.json
+  - node_modules/hono/dist/cjs/package.json
+  - node_modules/hono/dist/cjs/helper/websocket/index.js
+  # D-24: o auto-update está desligado e nada em src/ importa electron-updater; ele e as dependências
+  # exclusivas dele ficam fora do pacote (tests/scripts/empacotamento.test.ts barra o import sem tirar esta linha).
+  - "!node_modules/{electron-updater,builder-util-runtime,fs-extra,graceful-fs,jsonfile,universalify,js-yaml,argparse,lazy-val,lodash.escaperegexp,lodash.isequal,semver,tiny-typed-emitter,sax}/**/*"
+# node-pty 1.1.0 traz prebuilds; nada de recompilar no empacotamento.
+npmRebuild: false
+afterPack: scripts/depois-empacotar.cjs
+# garante prompts e gancho.mjs em dist/ mesmo que o build não tenha rodado scripts/copiar-ativos.mjs
+beforePack: scripts/antes-empacotar.cjs
+asarUnpack:
+  # node-pty é módulo nativo e precisa existir fora do asar (daemon e PTY no main).
+  - node_modules/node-pty/**/*
+  # scripts que rodam com ELECTRON_RUN_AS_NODE (daemon de PTY) não carregam de dentro do asar.
+  - dist/daemon/**/*
+  # fecho do que o main-daemon.js requer (relativo, então precisa estar ao lado dele, fora do asar).
+  - dist/nucleo/terminais/adaptador-node-pty.js
+  - dist/nucleo/terminais/lancamento.js
+  - dist/compartilhado/terminais.js
+  # worker de indexação do método (worker_threads não lê de dentro do asar) e a única dependência dele.
+  - dist/nucleo/metodo/**/*
+  - node_modules/yaml/**/*
+  # servidor MCP do app: roda numa worker thread (fora do asar), junto com o fecho do que ele carrega
+  # (tools, regras, domínio) e suas dependências de execução.
+  - dist/main/mcp-worker.js
+  - dist/main/mcp-rpc.js
+  - dist/nucleo/mcp/**/*
+  - dist/nucleo/dominio/**/*
+  - dist/nucleo/produto.js
+  # hooks por Pane (gancho.mjs roda com o executável do app como Node) e prompts editáveis.
+  - dist/nucleo/orquestracao/**/*
+  - node_modules/@modelcontextprotocol/sdk/**/*
+  - node_modules/@hono/node-server/**/*
+  - node_modules/hono/package.json
+  - node_modules/hono/dist/cjs/package.json
+  - node_modules/hono/dist/cjs/helper/websocket/index.js
+  - node_modules/{zod,zod-to-json-schema,ajv,ajv-formats,fast-deep-equal,json-schema-traverse,fast-uri,content-type}/**/*
+mac:
+  category: public.app-category.developer-tools
+  artifactName: ExpxV-universal.${ext}
+  # node-pty distribui prebuilds imutáveis das duas arquiteturas; só build/Release/pty.node é
+  # recompilado por arquitetura e unido pelo lipo.
+  x64ArchFiles: "**/node_modules/node-pty/{bin,prebuilds}/**/*"
+  # O @electron/universal, ao fundir os asars, monta UM glob com o caminho completo de cada arquivo de asarUnpack
+  # e estoura o limite de 65 536 caracteres do minimatch ("pattern is too long"). Aqui os dois asars são
+  # idênticos (os prebuilds do node-pty das duas arquiteturas viajam juntos), então não há o que fundir.
+  mergeASARs: false
+  target:
+    - target: dmg
+      arch: [universal]
+    - target: zip
+      arch: [universal]
+  icon: build/icon.icns
+  # só os idiomas do produto (UI em PT-BR); os demais pacotes de idioma do Chromium saem do .app.
+  electronLanguages: [pt_BR, pt, en]
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+nsis:
+  artifactName: ExpxV-Setup.${ext}
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+# D-24: atualização desligada enquanto não houver repositório de releases; nenhuma chamada de rede
+# sem app empacotado e configurado.
+publish:
+  provider: github
+  owner: bittencourtthulio
+  repo: expxv

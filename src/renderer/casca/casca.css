@@ -1,0 +1,98 @@
+/* Casca fina (D-32): menu 56 px recolhido, topo 40 px, rodapé 26 px; interface 11–13 px, ícones 15 px. Topo e rodapé com fundo sólido. */
+* { box-sizing: border-box; }
+html, body, #raiz { height: 100%; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font: var(--texto-base) / 1.45 var(--fonte); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+/* só para leitores de tela */
+/* listas virtualizadas cortam o que passa da borda: o anel de foco entra na linha em vez de sair dela */
+.virtualizada :focus-visible, .virtual-lista :focus-visible { outline-offset: -3px; }
+.sr-somente { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* "pular para o conteúdo": invisível até receber o foco (primeiro Tab) */
+.pular-link { position: absolute; z-index: 90; top: 6px; left: 6px; padding: 6px 12px; border-radius: var(--raio-pequeno); background: var(--painel); color: var(--texto); border: 1px solid var(--borda); font-size: 12px; transform: translateY(-200%); }
+.pular-link:focus-visible { transform: none; }
+.casca-conteudo:focus { outline: none; }
+/* prefers-reduced-motion: nenhuma animação nem transição (pulsos, giros, largura do menu, transform) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+h1, h2, p { margin-top: 0; }
+.icone { width: var(--icone); height: var(--icone); flex: none; }
+
+.casca {
+  min-width: 720px; height: 100%; display: grid;
+  grid-template-columns: var(--menu-recolhido) minmax(0, 1fr);
+  grid-template-rows: var(--altura-topo) minmax(0, 1fr) var(--altura-rodape);
+  grid-template-areas: "menu topo" "menu conteudo" "menu rodape";
+}
+.casca[data-menu-fixado] { grid-template-columns: var(--menu-aberto) minmax(0, 1fr); }
+
+/* Menu: a coluna tem a largura recolhida; o painel cresce por cima do conteúdo. */
+.menu { grid-area: menu; position: relative; z-index: 20; }
+.menu-painel {
+  position: absolute; inset: 0 auto 0 0; width: var(--menu-recolhido); display: flex; flex-direction: column;
+  background: var(--painel); border-right: 1px solid var(--borda); overflow: hidden;
+}
+.menu[data-aberto] .menu-painel { width: var(--menu-aberto); }
+.menu[data-aberto]:not([data-fixado]) .menu-painel { box-shadow: 12px 0 32px var(--sombra); }
+@media (prefers-reduced-motion: no-preference) {
+  .menu-painel { transition: width var(--duracao) ease; }
+}
+.menu-identidade { display: flex; align-items: center; gap: 10px; height: var(--altura-topo); padding: 0 15px; flex: none; }
+.menu-simbolo { width: 26px; height: 26px; flex: none; border-radius: 7px; background: var(--degrade); }
+.menu-nome { font-size: 15px; letter-spacing: -0.025em; white-space: nowrap; }
+.menu-lista { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px 8px; }
+.menu-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 12px; margin: 2px 0;
+  border: 1px solid transparent; border-radius: var(--raio-pequeno); background: none; color: var(--texto-suave);
+  font-size: 12px; text-align: left; white-space: nowrap;
+}
+.menu-item:hover { color: var(--texto); background: var(--superficie); }
+.menu-item[aria-current="page"] { background: var(--superficie-2); color: var(--texto); box-shadow: inset 2px 0 var(--destaque); }
+.menu-item[aria-current="page"] .icone { color: var(--destaque-texto); }
+.menu:not([data-aberto]) .menu-rotulo,
+.menu:not([data-aberto]) .menu-nome { opacity: 0; }
+.menu-fixar { width: auto; margin: 6px 8px 8px; }
+.menu-fixar[aria-pressed="true"] { color: var(--destaque-texto); }
+
+.casca-topo {
+  grid-area: topo; display: flex; align-items: center; gap: 10px; padding: 0 12px;
+  background: var(--painel); border-bottom: 1px solid var(--borda);
+}
+.topo-workspace, .topo-botao-busca, .topo-icone {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 8px;
+  border: 1px solid var(--borda); border-radius: 6px; background: var(--superficie); color: var(--texto-suave); font-size: 12px;
+}
+.topo-workspace:hover, .topo-botao-busca:hover, .topo-icone:hover { color: var(--texto); background: var(--superficie-2); }
+.topo-busca { flex: 1; max-width: 420px; margin: 0 auto; }
+.topo-botao-busca { width: 100%; }
+.topo-botao-busca span { flex: 1; text-align: left; }
+.topo-botao-busca kbd { font: 10px var(--mono); color: var(--texto-discreto); }
+.topo-acoes { display: flex; gap: 4px; margin-left: auto; }
+.topo-icone { padding: 0; width: 26px; justify-content: center; }
+
+.casca-conteudo { grid-area: conteudo; min-height: 0; overflow: hidden; position: relative; }
+.tela { height: 100%; overflow: auto; }
+.tela[hidden] { display: none; }
+.tela-carregando { height: 100%; }
+.pagina { padding: 20px 24px; max-width: 1200px; }
+.pagina-cabecalho h1 { margin: 0 0 4px; font-size: 1.25rem; line-height: 1.25; }
+.pagina-cabecalho p { margin: 0 0 24px; color: var(--texto-suave); }
+.estado-vazio {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 56px 24px;
+  border: 1px dashed var(--borda); border-radius: var(--raio); background: var(--painel);
+}
+.estado-vazio h2 { margin: 8px 0 0; font-size: 1.05rem; }
+.estado-vazio p { margin: 0; max-width: 46ch; color: var(--texto-suave); }
+.estado-vazio-icone { width: 32px; height: 32px; color: var(--destaque-texto); }
+
+.rodape {
+  grid-area: rodape; display: flex; align-items: center; gap: 14px; padding: 0 12px;
+  background: var(--painel); border-top: 1px solid var(--borda); color: var(--texto-discreto); font: 10.5px var(--mono);
+}
+.rodape-sinal { display: inline-flex; align-items: center; gap: 6px; }
+/* região viva sempre no DOM (anuncia ao mudar); vazia, sai do fluxo e não cria vão */
+.rodape-live:empty { position: absolute; }
+.rodape-ponto { width: 6px; height: 6px; border-radius: 50%; background: var(--sucesso); }
+.rodape-versao { margin-left: auto; }

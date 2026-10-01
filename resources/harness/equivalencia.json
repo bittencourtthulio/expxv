@@ -1,0 +1,50 @@
+{
+  "versao": 1,
+  "faixas": ["topo", "alto", "medio", "rapido"],
+  "ordem_de_descida": ["topo", "alto", "medio", "rapido"],
+  "provedores": {
+    "claude": {
+      "topo": [{ "modelo": "opus", "esforco": null, "confirmado": true }],
+      "alto": [{ "modelo": "sonnet", "esforco": null, "confirmado": true }],
+      "medio": [{ "modelo": "sonnet", "esforco": null, "confirmado": true }],
+      "rapido": [{ "modelo": "haiku", "esforco": null, "confirmado": true }]
+    },
+    "codex": {
+      "topo": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "alto": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
+    },
+    "gemini": {
+      "topo": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "alto": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
+    },
+    "opencode": {
+      "topo": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "alto": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
+    },
+    "aider": {
+      "topo": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "alto": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
+    },
+    "qwen": {
+      "topo": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "alto": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
+    },
+    "kilo": {
+      "topo": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "alto": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
+    },
+    "openrouter": { "topo": [], "alto": [], "medio": [], "rapido": [] }
+  }
+}

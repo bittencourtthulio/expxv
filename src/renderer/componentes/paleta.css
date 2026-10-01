@@ -1,0 +1,12 @@
+.paleta-fundo { position: fixed; inset: 0; z-index: 70; display: flex; justify-content: center; align-items: flex-start; padding-top: 12vh; background: color-mix(in srgb, var(--fundo) 60%, transparent); }
+.paleta { display: flex; flex-direction: column; width: min(620px, 92vw); max-height: 70vh; overflow: hidden; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); color: var(--texto); box-shadow: 0 24px 60px var(--sombra); }
+.paleta-campo { width: 100%; padding: 14px 16px; border: 0; border-bottom: 1px solid var(--borda); background: transparent; color: var(--texto); font: inherit; font-size: 15px; }
+.paleta-campo:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.paleta-lista { margin: 0; padding: 6px; overflow-y: auto; list-style: none; }
+.paleta-item { display: flex; align-items: baseline; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.paleta-item[aria-selected="true"] { background: var(--superficie-2); box-shadow: inset 2px 0 var(--destaque); }
+.paleta-grupo { flex: none; min-width: 72px; color: var(--texto-discreto); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.paleta-titulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.paleta-detalhe { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto-suave); font-size: 12px; }
+.paleta-item kbd { flex: none; color: var(--texto-discreto); font: 11px var(--mono); }
+.paleta-vazio { padding: 16px 10px; color: var(--texto-suave); font-size: 13px; }

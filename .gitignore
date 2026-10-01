@@ -1,0 +1,24 @@
+node_modules/
+dist/
+dist-app/
+coverage/
+*.log
+.DS_Store
+.pytest_cache/
+docs/eventos/
+docs/ade/perf/*.json
+!docs/ade/perf/.gitkeep
+.expx/estado.json
+.expx/memoria/
+.expxv/
+# segredos e credenciais nunca entram no repositório
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+mcp-segredo
+mcp-revogados.json
+mcp-porta

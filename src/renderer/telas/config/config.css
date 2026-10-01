@@ -1,0 +1,17 @@
+.cfg-secoes { display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
+.cfg-secao { padding: 16px 18px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
+.cfg-secao h2 { margin: 0 0 4px; font-size: 14px; }
+.cfg-ajuda { margin: 0 0 10px; color: var(--texto-suave); font-size: 13px; }
+.cfg-linha { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cfg-linha input[type="text"], .cfg-linha input[type="number"] { min-height: 36px; padding: 4px 10px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: 13px var(--mono); }
+.cfg-linha input[type="color"] { width: 40px; height: 36px; padding: 2px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.cfg-erro { margin: 8px 0 0; color: var(--alerta); font-size: 13px; }
+.cfg-aviso { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); color: var(--aviso); font-size: 13px; }
+.cfg-amostra { width: 120px; height: 8px; border-radius: 4px; background: var(--degrade); }
+.cfg-diag { width: 100%; margin-top: 8px; padding: 10px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: 12px var(--mono); }
+.cfg-tabela { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cfg-tabela th, .cfg-tabela td { padding: 6px 8px; border-bottom: 1px solid var(--borda); text-align: left; }
+.cfg-tabela kbd { font: 12px var(--mono); }
+.cfg-sobre { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 13px; }
+.cfg-sobre dt { color: var(--texto-discreto); }
+.cfg-sobre dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere; }

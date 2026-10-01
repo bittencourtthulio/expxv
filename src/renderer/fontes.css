@@ -1,0 +1,5 @@
+/* Fontes locais (OFL), sem rede. */
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fontes/chakra-400.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fontes/chakra-600.ttf") format("truetype"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fontes/chakra-700.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "JetBrains Mono"; src: url("./assets/fontes/mono-400.ttf") format("truetype"); font-weight: 400; font-display: swap; }

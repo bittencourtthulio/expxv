@@ -1,0 +1,2 @@
+#!/bin/sh
+FORGE_FAKE_NOME=glab exec node "$(dirname "$0")/../fake-cli.mjs" "$@"

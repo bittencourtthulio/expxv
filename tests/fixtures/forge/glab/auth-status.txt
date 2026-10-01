@@ -1,0 +1,4 @@
+gitlab.com
+  ✓ Logged in to gitlab.com as thulio (/home/u/.config/glab-cli/config.yml)
+  ✓ Git operations for gitlab.com configured to use ssh protocol.
+  ✓ Token found: **************************

@@ -1,0 +1,143 @@
+/* Tela de Terminais (D-32): área de trabalho máxima, cromado mínimo. Só tokens (sem cor literal nem desfoque).
+   Medidas em tokens.css: --altura-barra, --altura-aba, --botao-icone, --altura-cabecalho-painel, --fonte-aba, --divisor-painel. */
+.terminais-tela { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--fundo); }
+.terminais-corpo { flex: 1; min-height: 0; padding: 0; display: flex; flex-direction: column; }
+.terminais-corpo > .estado-vazio { margin: 12px; padding: 20px 16px; }
+.terminais-corpo > .estado-vazio h2 { font-size: 13px; }
+.terminais-corpo > .estado-vazio p { font-size: 12px; }
+.terminais-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* A ÚNICA linha de controles: abas + ações, sem quebra */
+.terminais-barra { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; flex: none; height: var(--altura-barra); padding: 0 4px; background: var(--painel); border-bottom: 1px solid var(--borda); }
+.terminais-nova { position: relative; flex: none; }
+.terminais-acoes { display: flex; flex: none; align-items: center; gap: 2px; margin-left: auto; padding-left: 6px; }
+.terminais-icone { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--botao-icone); height: var(--botao-icone); padding: 0; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--texto-suave); cursor: pointer; }
+.terminais-icone .icone { width: 14px; height: 14px; }
+/* alvos de clique de 24+ px sem aumentar o cromado (D-32): a área extra é um ::after invisível */
+.terminais-icone, .terminais-aba-fechar, .terminais-painel-acoes button, .terminais-aguardando { position: relative; }
+.terminais-icone::after, .terminais-aguardando::after { content: ""; position: absolute; inset: -2px; }
+.terminais-aba-fechar::after { content: ""; position: absolute; inset: -1px -3px; }
+.terminais-painel-acoes button::after { content: ""; position: absolute; inset: -4px -3px; }
+.terminais-icone:hover:not(:disabled) { background: var(--superficie-2); color: var(--texto); }
+.terminais-icone:disabled { opacity: 0.4; cursor: default; }
+.terminais-icone[aria-pressed="true"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.terminais-icone-destaque { color: var(--destaque-texto); }
+
+/* botões de texto só nos estados vazios/diálogos */
+.terminais-botao { min-height: 24px; padding: 0 10px; border: 1px solid var(--borda); border-radius: 5px; background: var(--superficie); color: var(--texto); font: inherit; font-size: 12px; cursor: pointer; }
+.terminais-botao:hover:not(:disabled) { background: var(--superficie-2); }
+.terminais-botao:disabled { opacity: 0.55; cursor: default; }
+.terminais-botao-primario { border-color: var(--destaque); background: var(--destaque); color: var(--sobre-destaque); }
+.terminais-botao-primario:hover:not(:disabled) { background: color-mix(in srgb, var(--destaque) 88%, black); }
+.terminais-escolha { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+
+.terminais-icone:focus-visible, .terminais-botao:focus-visible, .terminais-aba button:focus-visible, .terminais-menu-item:focus-visible, .terminais-painel-acoes button:focus-visible, .terminais-divisor:focus-visible,
+.terminais-aguardando:focus-visible, .terminais-erro button:focus-visible, .terminais-painel-fim button:focus-visible { outline: 2px solid var(--destaque); outline-offset: -1px; }
+
+.terminais-menu { position: absolute; z-index: 40; top: calc(100% + 3px); left: 0; width: min(300px, 90vw); max-height: 60vh; overflow-y: auto; padding: 4px; border: 1px solid var(--borda); border-radius: 6px; background: var(--superficie); box-shadow: 0 12px 30px var(--sombra); }
+.terminais-menu-info { margin: 4px 6px; color: var(--texto-suave); font-size: 11px; }
+.terminais-menu-item { display: flex; flex-direction: column; align-items: flex-start; gap: 0; width: 100%; padding: 4px 8px; border: 0; border-radius: 4px; background: transparent; color: var(--texto); text-align: left; font: inherit; cursor: pointer; }
+.terminais-menu-item b { font-size: 12px; font-weight: 600; }
+.terminais-menu-item small { color: var(--texto-discreto); font-size: 10.5px; }
+.terminais-menu-item:hover:not(:disabled) { background: var(--superficie-2); }
+.terminais-menu-item:disabled { opacity: 0.55; cursor: default; }
+.terminais-menu-rodape { margin-top: 3px; border-top: 1px solid var(--borda); border-radius: 0 0 4px 4px; }
+
+.terminais-aguardando { display: inline-flex; align-items: center; gap: 4px; flex: none; height: var(--botao-icone); padding: 0 8px 0 3px; border: 1px solid var(--aviso); border-radius: 11px; background: color-mix(in srgb, var(--aviso) 16%, transparent); color: var(--aviso); font: 600 10.5px var(--fonte); white-space: nowrap; cursor: pointer; }
+.terminais-aguardando i { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--aviso); color: var(--fundo); font: 700 10px/1 var(--mono); font-style: normal; }
+
+.terminais-erro { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none; padding: 3px 10px; border-bottom: 1px solid var(--alerta); background: color-mix(in srgb, var(--alerta) 12%, transparent); color: var(--alerta); font-size: 11px; }
+.terminais-erro button { min-height: 24px; border: 1px solid var(--alerta); border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 11px; cursor: pointer; }
+
+/* abas: pequenas, uma linha, rolagem horizontal sem barra */
+.terminais-abas { display: flex; flex: 0 1 auto; flex-wrap: nowrap; gap: 1px; min-width: 0; overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: none; }
+.terminais-abas::-webkit-scrollbar { display: none; }
+.terminais-aba { display: flex; align-items: stretch; flex: none; height: var(--altura-aba); max-width: 170px; border: 1px solid transparent; border-radius: 5px; }
+.terminais-aba[data-ativa] { border-color: var(--borda); background: var(--fundo); box-shadow: inset 0 -2px 0 var(--destaque); }
+.terminais-aba button { border: 0; background: none; color: var(--texto-suave); font: inherit; cursor: pointer; }
+.terminais-aba[data-ativa] button { color: var(--texto); }
+.terminais-aba-titulo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; padding: 0 2px 0 6px; font-size: var(--fonte-aba); }
+.terminais-aba-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.terminais-aba-extra { flex: none; padding: 0 4px; border-radius: 6px; background: var(--superficie-2); color: var(--texto-suave); font-size: 9.5px; }
+.terminais-aba-fechar { padding: 0 5px; font-size: 13px; line-height: 1; }
+.terminais-aba-fechar:hover { color: var(--alerta); }
+.terminais-aba[data-atividade="aguardando"] { box-shadow: inset 0 0 0 1px var(--aviso); }
+.terminais-aba[data-atividade="aguardando"][data-ativa] { box-shadow: inset 0 0 0 1px var(--aviso), inset 0 -2px 0 var(--destaque); }
+.terminais-cli { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 13px; height: 13px; border-radius: 3px; background: var(--superficie-2); color: var(--destaque-texto); font: 700 8px/1 var(--mono); }
+
+/* sinaleira: forma + glifo; a cor acompanha, nunca é o único sinal */
+.terminais-sinal { display: inline-flex; align-items: center; justify-content: center; width: 11px; height: 11px; flex: none; border-radius: 50%; font: 700 8px/1 var(--mono); }
+.terminais-sinal i { font-style: normal; }
+.terminais-sinal[data-forma="anel"] { border: 2px solid var(--destaque-texto); border-top-color: transparent; }
+.terminais-sinal[data-forma="alerta"] { background: var(--aviso); color: var(--fundo); }
+.terminais-sinal[data-forma="check"] { border: 1px solid var(--sucesso); color: var(--sucesso); }
+@keyframes terminais-gira { to { transform: rotate(360deg); } }
+@keyframes terminais-pulso { 50% { box-shadow: inset 0 0 0 2px transparent; } }
+@keyframes terminais-entra { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .terminais-sinal[data-forma="anel"] { animation: terminais-gira 1s linear infinite; }
+  .terminais-painel[data-atividade="aguardando"] { animation: terminais-pulso 1.6s ease-in-out infinite; }
+  .terminais-missao-workers .terminais-painel { animation: terminais-entra 0.14s ease-out; }
+}
+
+/* modo foco: a linha sai do fluxo e volta pela borda superior (só transform/opacity/visibility) */
+.terminais-borda { position: absolute; z-index: 31; top: 0; left: 0; right: 0; height: 4px; }
+.terminais-tela[data-foco] .terminais-barra { position: absolute; z-index: 30; top: 0; left: 0; right: 0; transform: translateY(-100%); opacity: 0; visibility: hidden; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .terminais-tela[data-foco] .terminais-barra { transition: transform 0.12s ease, opacity 0.12s ease, visibility 0s linear 0.12s; }
+}
+.terminais-tela[data-foco] .terminais-barra:not([data-oculta]) { transform: none; opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; box-shadow: 0 6px 16px var(--sombra); }
+
+/* grade e painéis */
+.terminais-grade { flex: 1; min-height: 0; min-width: 0; }
+.terminais-divisao { display: grid; width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.terminais-divisao[data-orientacao="vertical"] { grid-template-rows: minmax(0, 1fr); }
+.terminais-divisao[data-orientacao="horizontal"] { grid-template-columns: minmax(0, 1fr); }
+.terminais-divisor { position: relative; background: var(--borda); touch-action: none; }
+.terminais-divisor::before { content: ""; position: absolute; inset: 0; }
+.terminais-divisor[data-orientacao="vertical"] { cursor: col-resize; }
+.terminais-divisor[data-orientacao="vertical"]::before { inset: 0 -3px; }
+.terminais-divisor[data-orientacao="horizontal"] { cursor: row-resize; }
+.terminais-divisor[data-orientacao="horizontal"]::before { inset: -3px 0; }
+.terminais-divisor:hover { background: var(--destaque); }
+
+.terminais-painel { position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; min-width: 0; min-height: 0; background: var(--painel); overflow: hidden; }
+/* painel em foco: fio de 1 px em azul, sem moldura grossa; aguardando: anel de 2 px + ícone no cabeçalho */
+.terminais-painel[data-foco] { box-shadow: inset 0 0 0 1px var(--destaque); }
+.terminais-painel[data-atividade="aguardando"] { box-shadow: inset 0 0 0 2px var(--aviso); }
+.terminais-painel-cabecalho { display: flex; align-items: center; gap: 5px; flex: none; height: var(--altura-cabecalho-painel); padding: 0 2px 0 6px; border-bottom: 1px solid var(--borda); color: var(--texto-suave); font: var(--fonte-cabecalho-painel) var(--mono); }
+.terminais-painel-rotulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.terminais-painel-estado { color: var(--texto-discreto); }
+.terminais-painel-custo { flex: none; color: var(--texto-discreto); white-space: nowrap; }
+.terminais-painel-reinicio { display: inline-flex; align-items: center; gap: 3px; flex: none; padding: 0 5px; border-radius: 8px; background: color-mix(in srgb, var(--aviso) 14%, transparent); color: var(--aviso); white-space: nowrap; }
+.terminais-painel-reinicio .icone { width: 11px; height: 11px; }
+.terminais-painel-acoes { display: flex; flex: none; gap: 0; }
+.terminais-painel-acoes button { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 16px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--texto-suave); cursor: pointer; }
+.terminais-painel-acoes .icone { width: 12px; height: 12px; }
+.terminais-painel-acoes button:hover:not(:disabled) { background: var(--superficie-2); color: var(--texto); }
+.terminais-painel-acoes button[aria-pressed="true"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.terminais-painel-acoes button:disabled { opacity: 0.4; cursor: default; }
+/* painel único: o cabeçalho só aparece no hover (ou com o foco de teclado nos botões dele), sobre o terminal (sem ocupar altura) */
+.terminais-painel[data-unico] .terminais-painel-cabecalho { position: absolute; z-index: 4; top: 0; right: 0; max-width: 70%; border: 1px solid var(--borda); border-top: 0; border-right: 0; border-radius: 0 0 0 5px; background: var(--superficie); opacity: 0; transform: translateY(-100%); pointer-events: none; }
+.terminais-painel[data-unico]:hover .terminais-painel-cabecalho, .terminais-painel[data-unico] .terminais-painel-cabecalho:focus-within { opacity: 1; transform: none; pointer-events: auto; }
+@media (prefers-reduced-motion: no-preference) {
+  .terminais-painel[data-unico] .terminais-painel-cabecalho { transition: opacity 0.1s, transform 0.1s; }
+}
+.terminais-painel-corpo { position: relative; flex: 1; min-height: 0; }
+.terminais-painel-carregando { display: grid; place-items: center; height: 100%; color: var(--texto-discreto); font-size: 11px; }
+.terminais-painel-aviso { position: absolute; z-index: 5; left: 6px; right: 6px; bottom: 4px; margin: 0; padding: 3px 8px; border: 1px solid var(--alerta); border-radius: 5px; background: var(--superficie); color: var(--alerta); font-size: 11px; }
+.terminais-painel-fim { position: absolute; z-index: 5; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid var(--borda); border-radius: 6px; background: var(--superficie); color: var(--texto); font-size: 11px; box-shadow: 0 6px 18px var(--sombra); }
+.terminais-painel-fim button { min-height: 24px; padding: 2px 8px; border: 1px solid var(--borda); border-radius: 4px; background: transparent; color: var(--texto); font: inherit; cursor: pointer; }
+
+/* Missão: piloto fixo à esquerda, workers (árvore binária) à direita; o espaço dos workers é reservado */
+.terminais-missao { display: grid; grid-template-columns: minmax(0, 5fr) var(--divisor-painel) minmax(0, 6fr); width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.terminais-missao-divisor { background: var(--borda); }
+.terminais-missao-workers { min-width: 0; min-height: 0; overflow: hidden; }
+.terminais-missao-vazio { display: grid; place-items: center; height: 100%; margin: 0; padding: 0 16px; color: var(--texto-discreto); font-size: 11px; text-align: center; }
+.terminais-painel[data-piloto] .terminais-painel-cabecalho { border-bottom-color: var(--destaque); }
+
+/* ajuda de atalhos (dentro do Dialogo compartilhado) */
+.terminais-ajuda-tabela { width: 100%; border-collapse: collapse; font-size: 12px; }
+.terminais-ajuda-tabela th { padding: 3px 0; font-weight: 400; text-align: left; color: var(--texto-suave); }
+.terminais-ajuda-tabela td { text-align: right; }
+.terminais-ajuda-tabela kbd { padding: 1px 6px; border: 1px solid var(--borda); border-radius: 4px; background: var(--superficie-2); font: 11px var(--mono); }

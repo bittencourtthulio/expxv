@@ -1,0 +1,51 @@
+{
+  "linguagem": "javascript",
+  "arquivos": {
+    "src/lib.js": {
+      "metricas": { "complexidade_max": 3, "erros_parse": 0 },
+      "imports": [
+        { "especificador": "fs", "tipo": "require", "nomes": ["*=fs"] },
+        { "especificador": "path", "tipo": "require", "nomes": ["join", "resolve=resolver"] },
+        { "especificador": "./util", "tipo": "require", "nomes": ["*=utilidades"] },
+        { "especificador": "./efeito", "tipo": "require", "nomes": [] }
+      ],
+      "simbolos": [
+        { "qualificado": "somar", "tipo": "funcao", "exportado": true, "doc": "Soma dois valores." },
+        { "qualificado": "multiplicar", "tipo": "funcao", "exportado": true, "complexidade": 3 },
+        { "qualificado": "Calculadora", "tipo": "classe", "exportado": true },
+        { "qualificado": "Calculadora.dividir", "tipo": "metodo", "complexidade": 2 },
+        { "qualificado": "dobrar", "tipo": "funcao", "exportado": true }
+      ],
+      "chamadas": [{ "de": "Calculadora.dividir", "alvo": "somar", "tipo": "chamada" }],
+      "herancas": [{ "classe": "Calculadora", "base": "Base", "tipo": "herda" }],
+      "padroes": [{ "tipo": "throw" }],
+      "ausentes": { "simbolos": [{ "qualificado": "fs" }, { "qualificado": "utilidades" }] }
+    },
+    "src/servidor.js": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /saude", "framework": "express", "confianca": "exata" },
+        { "tipo": "rota", "chave": "GET /pedidos/:id", "framework": "koa", "handler": "obterPedido", "confianca": "exata" }
+      ],
+      "ausentes": { "entradas": [{ "chave": "USE /api" }] }
+    },
+    "src/bin/cli.js": {
+      "entradas": [
+        { "tipo": "cli", "chave": "cli:migrar", "framework": "commander", "confianca": "exata" },
+        { "tipo": "cli", "chave": "cli:limpar", "framework": "commander" },
+        { "tipo": "main", "chave": "main", "framework": "node" },
+        { "tipo": "cli", "chave": "cli:cli", "framework": "node", "linha": 1 }
+      ]
+    },
+    "src/esm.mjs": {
+      "imports": [
+        { "especificador": "./mod.mjs", "tipo": "estatico", "nomes": ["default=defaultExport", "a", "b=c"] },
+        { "especificador": "./outro.mjs", "tipo": "reexport", "nomes": ["x"] }
+      ],
+      "simbolos": [{ "qualificado": "principal", "tipo": "funcao", "exportado": true }]
+    },
+    "src/app.jsx": {
+      "imports": [{ "especificador": "react", "tipo": "estatico", "nomes": ["default=React"] }],
+      "chamadas": [{ "de": "App", "alvo": "Cabecalho", "tipo": "referencia" }]
+    }
+  }
+}

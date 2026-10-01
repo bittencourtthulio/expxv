@@ -1,0 +1,160 @@
+{
+  "linguagem": "typescript",
+  "arquivos": {
+    "src/servico.ts": {
+      "metricas": { "complexidade_max": 6, "erros_parse": 0, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "Servico", "tipo": "classe", "exportado": true, "linha": 8, "linha_fim": 39, "doc": "Serviço principal de pedidos." },
+        { "qualificado": "Servico.constructor", "tipo": "metodo", "complexidade": 1 },
+        { "qualificado": "Servico.listar", "tipo": "metodo", "exportado": true, "visibilidade": "publica", "complexidade": 6, "doc": "Lista os pedidos ativos do cliente.", "assinatura": "async listar(id: string, modo = \"…\"): Promise<string[]>" },
+        { "qualificado": "Servico.auditar", "tipo": "metodo", "visibilidade": "protegida", "complexidade": 2 },
+        { "qualificado": "Servico.#oculto", "tipo": "metodo", "exportado": false, "visibilidade": "privada" },
+        { "qualificado": "Servico.criar", "tipo": "metodo", "exportado": true },
+        { "qualificado": "calcular", "tipo": "funcao", "exportado": true, "complexidade": 2 },
+        { "qualificado": "dobro", "tipo": "funcao", "exportado": true, "complexidade": 1 },
+        { "qualificado": "LIMITE", "tipo": "constante", "exportado": true },
+        { "qualificado": "interna", "tipo": "funcao", "exportado": true, "complexidade": 1 },
+        { "qualificado": "interna.aninhada", "tipo": "funcao", "exportado": false, "complexidade": 2 },
+        { "qualificado": "Auditavel", "tipo": "interface", "exportado": true },
+        { "qualificado": "Id", "tipo": "tipo", "exportado": true },
+        { "qualificado": "Estado", "tipo": "enum", "exportado": true },
+        { "qualificado": "Base3", "tipo": "classe", "exportado": true }
+      ],
+      "imports": [
+        { "especificador": "./config", "tipo": "estatico", "so_tipo": true, "nomes": ["Config"] },
+        { "especificador": "./util", "tipo": "estatico", "so_tipo": false, "nomes": ["formatar=fmt", "validar"] },
+        { "especificador": "./logger", "tipo": "estatico", "nomes": ["default=Logger", "*=ferramentas"] },
+        { "especificador": "./efeitos", "tipo": "estatico", "nomes": [] }
+      ],
+      "chamadas": [
+        { "de": "Servico.listar", "alvo": "validar", "tipo": "chamada", "receptor": null },
+        { "de": "Servico.listar", "alvo": "fmt", "tipo": "chamada" },
+        { "de": "Servico.listar", "alvo": "auditar", "receptor": "this", "tipo": "chamada" },
+        { "de": "Servico.listar", "alvo": "formatar", "receptor": "Logger", "tipo": "chamada" },
+        { "de": "Servico.listar", "alvo": "Error", "tipo": "instancia" },
+        { "de": "Servico.auditar", "alvo": "Registro", "tipo": "instancia" },
+        { "de": "Servico.criar", "alvo": "Servico", "tipo": "instancia" },
+        { "de": "interna", "alvo": "aninhada", "tipo": "chamada" },
+        { "de": "interna", "alvo": "soma", "receptor": "ferramentas", "tipo": "chamada" }
+      ],
+      "herancas": [
+        { "classe": "Servico", "base": "Base", "tipo": "herda" },
+        { "classe": "Servico", "base": "Auditavel", "tipo": "implementa" },
+        { "classe": "Servico", "base": "Cobravel", "tipo": "implementa" },
+        { "classe": "Auditavel", "base": "Base2", "tipo": "herda" }
+      ],
+      "padroes": [{ "tipo": "throw" }, { "tipo": "catch_vazio" }],
+      "ausentes": {
+        "simbolos": [{ "nome": "segredo" }, { "nome": "interno" }],
+        "entradas": [{ "tipo": "rota" }]
+      }
+    },
+    "src/barrel.ts": {
+      "imports": [
+        { "especificador": "./servico", "tipo": "reexport", "nomes": ["*"] },
+        { "especificador": "./util", "tipo": "reexport", "nomes": ["*=util"] },
+        { "especificador": "./util", "tipo": "reexport", "nomes": ["formatar=format", "validar"] },
+        { "especificador": "./config", "tipo": "reexport", "so_tipo": true, "nomes": ["Config"] },
+        { "especificador": "./padrao", "tipo": "estatico", "nomes": ["default=padrao"] }
+      ]
+    },
+    "src/rotas.ts": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /users/:id", "framework": "express", "handler": "listar", "confianca": "exata", "linha": 9 },
+        { "tipo": "rota", "chave": "POST /users", "handler": "criar", "confianca": "exata" },
+        { "tipo": "rota", "chave": "DELETE /users/:id", "handler": null, "confianca": "exata" },
+        { "tipo": "rota", "chave": "PUT /itens/:n", "handler": "atualizar", "confianca": "heuristica" }
+      ],
+      "ausentes": {
+        "entradas": [{ "chave": "GET port" }, { "chave": "GET /users/42" }, { "chave": "GET /nao/e/rota" }, { "chave": "GET /isto-e-so-uma-string" }]
+      }
+    },
+    "src/nest.controller.ts": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /clientes/:id", "framework": "nestjs", "handler": "ClientesController.buscar", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /clientes", "handler": "ClientesController.criar", "confianca": "exata" },
+        { "tipo": "job", "chave": "cron:0 * * * *", "handler": "ClientesController.limpar" }
+      ],
+      "simbolos": [{ "qualificado": "ClientesController", "tipo": "classe", "decoradores": ["@Controller(\"…\")"] }]
+    },
+    "src/entidade.ts": {
+      "dados": [
+        { "tabela": "pedidos_itens", "operacao": "define", "fonte": "typeorm", "confianca": "exata" },
+        { "tabela": "cliente", "operacao": "define", "fonte": "typeorm", "confianca": "heuristica" }
+      ]
+    },
+    "src/dados.ts": {
+      "dados": [
+        { "tabela": "clientes", "operacao": "le", "fonte": "sql", "confianca": "exata", "de": "consultar" },
+        { "tabela": "pedidos", "operacao": "le", "fonte": "sql", "confianca": "exata" },
+        { "tabela": "auditoria", "operacao": "escreve", "fonte": "sql" },
+        { "tabela": "estoque", "operacao": "escreve", "fonte": "sql" },
+        { "tabela": "sessoes", "operacao": "escreve", "fonte": "sql", "confianca": "heuristica" },
+        { "tabela": "fatura", "operacao": "le", "fonte": "prisma", "confianca": "exata" },
+        { "tabela": "fatura", "operacao": "escreve", "fonte": "prisma", "confianca": "exata" },
+        { "tabela": "produtos", "operacao": "escreve", "fonte": "knex", "confianca": "exata" },
+        { "tabela": "categorias", "operacao": "le", "fonte": "knex", "confianca": "exata" }
+      ],
+      "ausentes": {
+        "dados": [{ "tabela": "item" }, { "tabela": "profile" }, { "tabela": "list" }, { "tabela": "?" }]
+      }
+    },
+    "src/dinamico.ts": {
+      "dinamicos": [{ "tipo": "eval" }, { "tipo": "new_function" }, { "tipo": "require_dinamico" }, { "tipo": "import_dinamico" }, { "tipo": "chamada_computada" }],
+      "imports": [
+        { "especificador": "fs", "tipo": "require", "nomes": ["*=ok"] },
+        { "especificador": "./lazy", "tipo": "dinamico" }
+      ]
+    },
+    "src/efeitos.ts": {
+      "entradas": [
+        { "tipo": "handler", "chave": "ipc:app:versao", "framework": "electron", "handler": "versao", "confianca": "exata" },
+        { "tipo": "handler", "chave": "ipc:app:fechar", "handler": null },
+        { "tipo": "job", "chave": "cron:*/5 * * * *", "framework": "cron", "handler": "limpar" }
+      ],
+      "padroes": [
+        { "tipo": "env", "nome": "PORTA" },
+        { "tipo": "env", "nome": "HOST" }
+      ]
+    },
+    "src/componente.tsx": {
+      "simbolos": [{ "qualificado": "Painel", "tipo": "funcao", "exportado": true }],
+      "chamadas": [
+        { "de": "Painel", "alvo": "Botao", "tipo": "referencia" },
+        { "de": "Painel", "alvo": "Cartao", "receptor": "UI", "tipo": "referencia" }
+      ],
+      "ausentes": {
+        "chamadas": [{ "alvo": "section" }, { "alvo": "div" }]
+      }
+    },
+    "src/classes.ts": {
+      "simbolos": [
+        { "qualificado": "default", "tipo": "classe", "exportado": true },
+        { "qualificado": "default.rodar", "tipo": "metodo" },
+        { "qualificado": "Derivada", "tipo": "classe", "exportado": true }
+      ],
+      "herancas": [{ "classe": "Derivada", "base": "Mixin", "tipo": "herda" }]
+    },
+    "src/duplicados.ts": {
+      "simbolos": [
+        { "qualificado": "dup", "tipo": "funcao", "linha": 2 },
+        { "qualificado": "dup~2", "tipo": "funcao", "linha": 3 },
+        { "qualificado": "dup2", "tipo": "funcao", "exportado": true },
+        { "qualificado": "dup~3", "tipo": "funcao", "linha": 5 }
+      ]
+    },
+    "src/segredo.ts": {
+      "simbolos": [{ "qualificado": "conectar", "tipo": "funcao", "assinatura": "function conectar(token = \"…\"): void", "doc": "Conecta usando [REDIGIDO] com password: [REDIGIDO] e [REDIGIDO]." }]
+    },
+    "src/pages/index.tsx": { "entradas": [{ "tipo": "rota", "chave": "GET /", "framework": "nextjs", "confianca": "heuristica" }] },
+    "src/pages/users/[id].tsx": { "entradas": [{ "tipo": "rota", "chave": "GET /users/:id", "framework": "nextjs" }] },
+    "src/app/dashboard/page.tsx": { "entradas": [{ "tipo": "rota", "chave": "GET /dashboard", "framework": "nextjs", "confianca": "exata" }] },
+    "src/app/api/items/route.ts": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /api/items", "handler": "GET" },
+        { "tipo": "rota", "chave": "POST /api/items", "handler": "POST" }
+      ],
+      "ausentes": { "entradas": [{ "chave": "ajuda /api/items" }] }
+    }
+  }
+}

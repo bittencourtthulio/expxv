@@ -1,0 +1,36 @@
+.mis-visao { display: inline-flex; gap: 4px; }
+.mis-lista { height: min(70vh, 640px); border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
+.mis-linha { display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 100%; height: 100%; padding: 6px 14px; border: 0; border-bottom: 1px solid var(--borda); background: none; color: var(--texto); text-align: left; }
+.mis-linha:hover { background: var(--superficie); }
+.mis-linha-titulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.mis-linha-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0; font-size: 12px; color: var(--texto-suave); }
+.mis-linha-meta code { font: 11px var(--mono); color: var(--texto-discreto); }
+.mis-quadro { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.mis-coluna { flex: 0 0 240px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
+.mis-coluna h3 { display: flex; gap: 8px; align-items: center; margin: 0; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--borda); }
+.mis-coluna-corpo { height: min(60vh, 520px); }
+.mis-coluna .mis-linha { border-bottom: 1px solid var(--borda); }
+.mis-detalhe h2 { margin: 0 0 8px; font-size: 1.15rem; }
+.mis-detalhe h3 { margin: 18px 0 8px; font-size: 13px; color: var(--texto-suave); }
+.mis-itens { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.mis-itens li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
+.mis-itens code { font: 12px var(--mono); color: var(--texto-discreto); }
+.mis-vazio { margin: 0; color: var(--texto-discreto); font-size: 13px; }
+.custo-desconhecido { color: var(--texto-discreto); font-style: italic; }
+.mis-grupo { margin: 0 0 14px; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px; }
+.mis-grupo legend { margin-bottom: 6px; font-size: 13px; color: var(--texto-suave); }
+.mis-opcao { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.mis-opcao span { display: flex; flex-direction: column; }
+.mis-opcao small { color: var(--texto-discreto); font-size: 12px; }
+.mis-papeis-cab { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 10px; font-size: 13px; }
+.mis-portoes h3 { margin: 18px 0 8px; font-size: 13px; color: var(--texto-suave); }
+.mis-portoes-aviso { margin: 0 0 6px; padding: 6px 10px; border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); font-size: 12px; color: var(--texto); }
+.mis-portoes-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.mis-portoes-lista li { display: flex; align-items: center; gap: 8px; min-height: 24px; padding: 2px 8px; border-radius: var(--raio-pequeno); background: var(--painel); }
+.mis-portoes-lista li[data-estado="liberado"] { color: var(--texto-suave); }
+.mis-portao-icone { flex: none; }
+.mis-portao-nome { min-width: 76px; }
+.mis-portao-estado { min-width: 52px; color: var(--texto-suave); }
+.mis-portao-papel { flex: 1; color: var(--texto-discreto); }
+.mis-portao-botao { margin-left: auto; min-height: 24px; padding: 0 8px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: 12px; }
+.mis-portao-botao:hover { background: var(--superficie-2); }

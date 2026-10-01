@@ -1,0 +1,2 @@
+[{"databaseId":9001,"displayTitle":"Corrige login","name":"CI","workflowName":"CI","status":"completed","conclusion":"failure","headBranch":"fix/login","event":"pull_request","url":"https://github.com/acme/app/actions/runs/9001","createdAt":"2026-09-02T09:00:00Z","updatedAt":"2026-09-02T09:10:00Z"},
+ {"databaseId":9002,"displayTitle":"main","workflowName":"CI","status":"in_progress","conclusion":"","headBranch":"main","event":"push","url":"https://github.com/acme/app/actions/runs/9002","createdAt":"2026-09-02T09:00:00Z","updatedAt":"2026-09-02T09:10:00Z"}]
