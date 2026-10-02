@@ -15,6 +15,7 @@ Os instaladores notarizados para macOS ficam na [última release privada do GitH
 
 - [Baixar DMG universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-universal.dmg)
 - [Baixar ZIP universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-universal.zip)
+- [Baixar instalador Windows x64](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-Setup.exe)
 
 O repositório é privado; é necessário ter acesso ao GitHub para baixar os arquivos.
 
