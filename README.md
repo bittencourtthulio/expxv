@@ -13,9 +13,9 @@ método Expx andando na tela — num app leve para macOS e Windows.
 
 Os instaladores notarizados para macOS ficam na [última release privada do GitHub](https://github.com/bittencourtthulio/expxv/releases/latest):
 
-- [Baixar DMG universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-universal.dmg)
-- [Baixar ZIP universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-universal.zip)
-- [Baixar instalador Windows x64](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-Setup.exe)
+- [Baixar DMG universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/download/v0.1.3/ExpxV-universal.dmg)
+- [Baixar ZIP universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/download/v0.1.3/ExpxV-universal.zip)
+- [Baixar instalador Windows x64](https://github.com/bittencourtthulio/expxv/releases/download/v0.1.3/ExpxV-Setup.exe)
 
 O repositório é privado; é necessário ter acesso ao GitHub para baixar os arquivos.
 
