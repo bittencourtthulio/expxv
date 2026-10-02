@@ -16,7 +16,7 @@ describe("preload (formato travado)", () => {
   });
 
   it("todo canal citado no preload existe no contrato e todo canal do contrato é usado", () => {
-    const citados = new Set([...FONTE.matchAll(/"((?:app|terminais|workspaces|provedores|missoes|metodo|limites|harness|cofre|squads|agentes):[a-z_]+)"/g)].map((m) => m[1]));
+    const citados = new Set([...FONTE.matchAll(/"((?:app|executar|bench|jarvis|remoto|terminais|workspaces|provedores|missoes|metodo|limites|harness|cofre|squads|agentes|painel_livre|vcs|loja_mcp|catalogo|gateway|memoria|agil|relatorios|mapa|custo|board|maestro|pipelines|rigidez|conhecimento|chat|rag|alertas|canais|telegram|captura|voz|relay|bichinho|sistema|progresso|suite):[a-z_]+)"/g)].map((m) => m[1]));
     const contrato = new Set<string>([...CANAIS_INVOKE, ...CANAIS_ENVIO, ...CANAIS_EVENTO]);
     expect([...citados].sort()).toEqual([...contrato].sort());
   });

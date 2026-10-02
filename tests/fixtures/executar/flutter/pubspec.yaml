@@ -1,0 +1,3 @@
+name: x
+flutter:
+  uses-material-design: true

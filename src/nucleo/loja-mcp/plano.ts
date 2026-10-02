@@ -150,6 +150,8 @@ export function hashDoComando(e: EntradaMcp): string {
     v: 1, metodo: i.metodo, pacote: i.pacote, versao: i.versao, integridade: i.integridade, lock: i.lock_sha256 ?? null,
     scripts: i.scripts_permitidos === true, artefatos: i.artefatos ?? null, transporte: e.transporte, comando: e.comando, bin: e.bin,
     args: e.args, url: e.url, variaveis: e.variaveis.map((v) => [v.nome, v.obrigatoria, v.secreta]),
+    // o consentimento mostra os riscos e o tipo de autenticação: mudar qualquer um exige novo consentimento
+    riscos: [...e.riscos].sort(), autenticacao: e.autenticacao,
     hosts: hostsParaHash(e),
   });
   return createHash("sha256").update(estavel).digest("hex");

@@ -220,6 +220,9 @@ export interface CamadasProjeto {
   memoria: boolean;
 }
 
+/** Camadas de contexto que o método GERA e que têm arquivo próprio (data de modificação, ISO). */
+export type CamadaComData = "convencoes" | "perfil_legado" | "design_system" | "produto" | "memoria";
+
 export interface IndiceProjeto {
   raiz: string;
   gerado_em: string;
@@ -229,5 +232,7 @@ export interface IndiceProjeto {
   rejeicoes: Rejeicao[];
   avisos: string[];
   camadas: CamadasProjeto;
+  /** data de modificação (ISO) do arquivo de cada camada gerada; aditivo e opcional (D-496): ausente = não medida. */
+  camadas_mtime?: Partial<Record<CamadaComData, string>>;
   artefatos_lidos: number;
 }

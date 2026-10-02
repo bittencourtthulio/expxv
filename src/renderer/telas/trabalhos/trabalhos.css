@@ -1,0 +1,109 @@
+/* Tela Trabalhos: portfólio (resumo, filtros, colunas por estágio ou linha do tempo) e detalhe em painel lateral. Só tokens (sem cor literal). */
+.trab { display: flex; flex-direction: column; gap: var(--espaco-3); height: 100%; min-height: 0; min-width: 0; }
+
+/* resumo: medidas separadas por fios, lidas da esquerda para a direita; cada uma filtra */
+.trab-resumo { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
+.trab-total { display: flex; flex-direction: column; justify-content: center; gap: 0; margin: 0; padding: var(--espaco-2) var(--espaco-5) var(--espaco-2) var(--espaco-4); }
+.trab-total b, .trab-medida b { font-size: var(--fs-titulo-g); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.trab-total span, .trab-medida span { font-size: var(--fs-base); color: var(--texto-suave); }
+.trab-medida { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0; min-width: 120px; padding: var(--espaco-2) var(--espaco-5) var(--espaco-2) var(--espaco-4); border: 0; border-left: 1px solid var(--borda); border-radius: 0; background: transparent; color: var(--texto); text-align: left; cursor: pointer; }
+.trab-medida::before { content: ""; position: absolute; left: -1px; top: 0; bottom: 0; width: 3px; background: transparent; }
+.trab-medida:hover { background: var(--superficie); }
+.trab-medida[aria-pressed="true"] { background: var(--superficie); }
+.trab-medida[aria-pressed="true"]::before { background: var(--destaque); }
+.trab-medida[data-estado="andamento"] b { color: var(--destaque-texto); }
+.trab-medida[data-estado="aguardando"] b { color: var(--aviso); }
+.trab-medida[data-estado="entregue"] b { color: var(--sucesso); }
+.trab-medida[data-estado="bloqueado"] b { color: var(--alerta); }
+.trab-medida:focus-visible, .trab-visoes button:focus-visible, .trab-cartao:focus-visible, .trab-linha:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.trab-novo { margin: auto var(--espaco-3) auto auto; min-height: var(--botao-principal-altura); padding-inline: var(--espaco-4); font-weight: 600; }
+
+/* filtros */
+.trab-barra-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2) var(--espaco-3); }
+.trab-busca, .trab-filtro select { min-height: var(--campo-altura); padding: 0 var(--espaco-3); font: inherit; font-size: var(--fs-base); color: var(--texto); background: var(--superficie); border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); }
+.trab-busca { flex: 0 1 260px; min-width: 160px; }
+.trab-busca:focus-visible, .trab-filtro select:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; border-color: var(--destaque); }
+.trab-filtro { display: inline-flex; align-items: center; gap: var(--espaco-2); font-size: var(--fs-base); color: var(--texto-suave); }
+.trab-contador { margin-left: var(--espaco-2); }
+.trab-visoes { margin-left: auto; display: inline-flex; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); overflow: hidden; }
+.trab-visoes button { min-height: var(--botao-altura); padding: 0 var(--espaco-3); border: 0; background: transparent; color: var(--texto-suave); font: inherit; font-size: var(--fs-base); cursor: pointer; }
+.trab-visoes button + button { border-left: 1px solid var(--borda-campo); }
+.trab-visoes button[aria-pressed="true"] { background: var(--destaque); color: var(--sobre-destaque); font-weight: 600; }
+
+/* área da visão + painel de detalhe */
+.trab-area { position: relative; flex: 1 1 0; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.trab-area > .estado-vazio { margin: auto; }
+
+/* colunas */
+.trab-colunas { flex: 1; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(208px, 1fr); gap: var(--espaco-3); overflow-x: auto; }
+.trab-coluna { display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--borda); border-top: 3px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--painel); }
+.trab-coluna[data-estagio="execucao"] { border-top-color: var(--destaque); }
+.trab-coluna[data-estagio="validando"] { border-top-color: var(--aviso); }
+.trab-coluna[data-estagio="entregue"] { border-top-color: var(--sucesso); }
+.trab-coluna header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--espaco-2); padding: var(--espaco-2) var(--espaco-3); }
+.trab-coluna h3 { margin: 0; font-size: var(--fs-campo); font-weight: 600; }
+.trab-contagem { font-size: var(--fs-base); color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+.trab-coluna-corpo { flex: 1; min-height: 0; padding: 0 var(--espaco-2) var(--espaco-2); }
+.trab-coluna-vazia { margin: var(--espaco-2) var(--espaco-1); }
+.trab-coluna-corpo .virtual-lista { height: 100%; }
+
+/* cartão */
+.trab-cartao { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--espaco-2); width: 100%; height: calc(100% - var(--espaco-2)); padding: var(--espaco-2) var(--espaco-3); text-align: left; font: inherit; color: var(--texto); background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); cursor: pointer; overflow: hidden; }
+.trab-cartao:hover { border-color: var(--destaque); }
+.trab-cartao[aria-current="true"] { border-color: var(--destaque); box-shadow: inset 3px 0 0 var(--destaque); }
+.trab-cartao-topo { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-2); }
+.trab-cartao-titulo { font-size: var(--fs-campo); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; flex: 1 1 auto; min-height: 2.6em; }
+.trab-cartao-pe { display: flex; align-items: center; flex-wrap: nowrap; gap: var(--espaco-2); font-size: var(--fs-pequeno); color: var(--texto-suave); overflow: hidden; white-space: nowrap; }
+.trab-cartao-pe .met-sin { margin-left: auto; flex: none; }
+.trab-cartao-pe .trab-raio { flex: none; }
+.trab-cartao-pe time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* progresso e mini-rastro */
+.trab-progresso { display: flex; align-items: center; gap: var(--espaco-2); font-size: var(--fs-pequeno); color: var(--texto-suave); }
+.trab-barra { flex: 1; min-width: 40px; height: 4px; border-radius: 2px; background: var(--superficie-2); overflow: hidden; }
+.trab-barra i { display: block; height: 100%; background: var(--destaque); }
+.trab-progresso-texto { flex: none; font-variant-numeric: tabular-nums; }
+.trab-rastro { display: flex; gap: 2px; height: 8px; min-width: 40px; }
+.trab-rastro i { flex: 1 1 0; min-width: 2px; max-width: 14px; border-radius: 1px; background: var(--borda-campo); }
+.trab-rastro i[data-seg="concluida"] { background: var(--sucesso); }
+.trab-rastro i[data-seg="em_andamento"] { background: var(--destaque); }
+.trab-rastro i[data-seg="bloqueada"] { background: var(--alerta); }
+.trab-rastro-vazio { border-bottom: 1px dashed var(--borda-campo); height: 6px; }
+
+/* linha do tempo */
+.trab-linha-tabela { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
+.trab-linha-corpo { flex: 1; min-height: 0; }
+.trab-linha-corpo .virtual-lista { height: 100%; }
+.trab-linha { box-sizing: border-box; display: grid; grid-template-columns: minmax(200px, 3fr) minmax(150px, 1.4fr) minmax(190px, 2fr) minmax(90px, 0.9fr) 96px; align-items: center; gap: var(--espaco-3); width: 100%; height: 100%; padding: 0 var(--espaco-4); text-align: left; font: inherit; font-size: var(--fs-base); color: var(--texto); background: transparent; border: 0; border-bottom: 1px solid var(--borda); border-radius: 0; }
+button.trab-linha { cursor: pointer; }
+button.trab-linha:hover { background: var(--superficie); }
+button.trab-linha[aria-current="true"] { background: var(--superficie); box-shadow: inset 3px 0 0 var(--destaque); }
+.trab-linha-cab { height: auto; min-height: var(--linha-altura); color: var(--texto-discreto); font-size: var(--fs-pequeno); font-weight: 600; border-bottom: 1px solid var(--borda); }
+.trab-linha-titulo { display: flex; align-items: center; gap: var(--espaco-2); min-width: 0; }
+.trab-linha-titulo b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-campo); }
+.trab-linha-estagio { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.trab-linha-estagio small, .trab-linha time small { color: var(--texto-suave); font-size: var(--fs-pequeno); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.trab-linha-prog { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.trab-linha time { display: flex; flex-direction: column; align-items: flex-start; }
+.trab-linha time b { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* detalhe: painel deslizante à direita */
+.trab-veu { position: absolute; inset: 0; z-index: 4; background: var(--fundo); opacity: 0.6; }
+.trab-detalhe { position: absolute; z-index: 5; top: 0; right: 0; bottom: 0; width: min(820px, 64%); display: flex; flex-direction: column; min-height: 0; background: var(--fundo); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); box-shadow: -8px 0 24px var(--sombra); }
+.trab-detalhe-barra { display: flex; align-items: center; gap: var(--espaco-3); padding: var(--espaco-2) var(--espaco-3); border-bottom: 1px solid var(--borda); }
+.trab-voltar { display: inline-flex; align-items: center; gap: var(--espaco-2); }
+.trab-voltar .icone { width: 14px; height: 14px; }
+.trab-detalhe-corpo { flex: 1; min-height: 0; overflow: auto; padding: var(--espaco-3) var(--espaco-4); }
+
+@media (max-width: 1000px) {
+  .trab-linha { grid-template-columns: minmax(180px, 3fr) minmax(130px, 1.4fr) minmax(150px, 2fr) 90px; }
+  .trab-linha > :nth-child(4) { display: none; }
+}
+@media (max-width: 860px) { .trab-detalhe { width: 100%; } }
+@media (prefers-reduced-motion: no-preference) {
+  .trab-detalhe { animation: trab-entra 0.18s ease-out; }
+  .trab-veu { animation: trab-esmaece 0.18s ease-out; }
+  .trab-barra i { transition: width 0.2s ease; }
+}
+@keyframes trab-entra { from { transform: translateX(28px); opacity: 0; } }
+@keyframes trab-esmaece { from { opacity: 0; } }

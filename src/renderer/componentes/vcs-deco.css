@@ -1,0 +1,9 @@
+/* decorações (T-06.33) */
+.vc-deco { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 220px; color: var(--texto-suave); font: 11.5px var(--mono); white-space: nowrap; }
+.vc-deco[data-sujo] { color: var(--aviso); }
+.vc-deco-icone { width: 12px; height: 12px; flex: none; }
+.vc-deco-texto { overflow: hidden; text-overflow: ellipsis; }
+.vc-deco-aba, .vc-deco-painel, .vc-deco-seletor, .vc-deco-card { max-width: 140px; }
+.vc-deco-seletor { margin-left: 8px; }
+.seletor-ws { display: inline-flex; align-items: center; }
+

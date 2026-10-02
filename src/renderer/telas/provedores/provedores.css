@@ -1,13 +1,14 @@
-.prov-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-.prov-cartao { padding: 16px 18px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
-.prov-cabecalho { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.prov-versao { color: var(--texto-discreto); font: 12px var(--mono); }
-.prov-desc { margin: 6px 0 10px; color: var(--texto-suave); font-size: 13px; }
-.prov-contas h3 { margin: 10px 0 6px; font-size: 13px; }
-.prov-contas ul { margin: 0 0 8px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
-.prov-contas li label { display: inline-flex; gap: 6px; align-items: center; min-height: 24px; }
-.prov-contas li { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
-.prov-nova { display: flex; gap: 8px; }
-.prov-nova input { flex: 1; min-width: 0; min-height: 36px; padding: 4px 10px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); }
-.prov-diagnostico { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin-bottom: 16px; }
-.prov-diagnostico textarea { width: 100%; padding: 10px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: 12px var(--mono); }
+.prov-lista { list-style: none; margin: 0; padding: 0; }
+/* D-694: cada CLI é uma linha do padrão do app (ItemLista/lst-*); o corpo (aviso e contas) fica logo abaixo da linha */
+.prov-item { border-bottom: 1px solid var(--borda); }
+.prov-item:last-child { border-bottom: 0; }
+.prov-corpo { padding: 0 var(--espaco-2) var(--espaco-3); }
+.prov-desc { margin: var(--espaco-2) 0 var(--espaco-3); color: var(--texto-suave); font-size: var(--fs-base); }
+.prov-contas h3 { margin: var(--espaco-3) 0 var(--espaco-2); font-size: var(--fs-base); }
+.prov-contas ul { margin: 0 0 var(--espaco-2); padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--espaco-1); font-size: var(--fs-base); }
+.prov-contas li label { display: inline-flex; gap: var(--espaco-2); align-items: center; min-height: 24px; }
+.prov-contas li { display: flex; gap: var(--espaco-2); align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.prov-nova { display: flex; gap: var(--espaco-2); }
+.prov-nova input { flex: 1; min-width: 0; min-height: 36px; padding: var(--espaco-1) var(--espaco-3); border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.prov-diagnostico { display: flex; flex-direction: column; gap: var(--espaco-2); align-items: flex-start; margin-bottom: var(--espaco-4); }
+.prov-diagnostico textarea { width: 100%; padding: var(--espaco-3); border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: var(--fs-rotulo) var(--mono); }

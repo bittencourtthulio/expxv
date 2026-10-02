@@ -1,0 +1,6 @@
+#!/bin/sh
+# Dublê de `lipo -archs <arquivo>`: lê a linha `ARCHS: arm64 x86_64` plantada no arquivo falso.
+[ "$1" = "-archs" ] || exit 1
+linha=$(grep -a -o 'ARCHS:.*' "$2" 2>/dev/null | head -n 1)
+[ -n "$linha" ] || exit 1
+echo "${linha#ARCHS: }"

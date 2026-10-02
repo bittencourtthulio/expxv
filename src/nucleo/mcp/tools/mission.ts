@@ -31,5 +31,10 @@ export const missionComplete: ImplTool = async (args, { claims, deps }) => {
   } catch {
     throw indisponivel("Não foi possível concluir a Missão.");
   }
+  // Fase 8 (T-08.16): o piloto que fecha a Missão sem ter gravado um `aprendizado` recebe um aviso (não bloqueia; D-50 grava o de sistema)
+  if (deps.memoria !== undefined) {
+    const temAprendizado = await deps.memoria.temAprendizado((missao as { mission_id: string }).mission_id).catch(() => true);
+    if (!temAprendizado) return { ok: true, aviso: "no_learning_recorded" };
+  }
   return { ok: true };
 };

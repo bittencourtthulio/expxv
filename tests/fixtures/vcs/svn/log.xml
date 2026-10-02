@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log>
+<logentry
+   revision="6">
+<author>dev</author>
+<date>2026-10-01T03:28:16.377004Z</date>
+<paths>
+<path
+   text-mods="false"
+   kind="dir"
+   action="M"
+   prop-mods="true">/trunk</path>
+<path
+   text-mods="false"
+   kind="file"
+   action="D"
+   prop-mods="false">/trunk/b.txt</path>
+<path
+   kind="file"
+   action="A"
+   prop-mods="true"
+   text-mods="true">/trunk/bin.dat</path>
+<path
+   action="A"
+   prop-mods="false"
+   text-mods="true"
+   kind="file">/trunk/novo.txt</path>
+<path
+   action="M"
+   prop-mods="true"
+   text-mods="true"
+   kind="file">/trunk/src/f.ts</path>
+</paths>
+<msg>segundo ✓ com acento</msg>
+</logentry>
+<logentry
+   revision="5">
+<author>dev</author>
+<date>2026-10-01T03:28:11.079354Z</date>
+<paths>
+<path
+   prop-mods="false"
+   text-mods="true"
+   kind="file"
+   action="M">/trunk/a.txt</path>
+</paths>
+<msg>wc2 muda a</msg>
+</logentry>
+<logentry
+   revision="3">
+<author>dev</author>
+<date>2026-10-01T03:28:09.068728Z</date>
+<paths>
+<path
+   action="M"
+   prop-mods="false"
+   text-mods="true"
+   kind="file">/trunk/a.txt</path>
+</paths>
+<msg>ajusta a</msg>
+</logentry>
+<logentry
+   revision="2">
+<author>dev</author>
+<date>2026-10-01T03:28:08.098076Z</date>
+<paths>
+<path
+   kind="file"
+   action="A"
+   prop-mods="false"
+   text-mods="true">/trunk/a.txt</path>
+<path
+   action="A"
+   prop-mods="false"
+   text-mods="true"
+   kind="file">/trunk/b.txt</path>
+<path
+   action="A"
+   prop-mods="false"
+   text-mods="false"
+   kind="dir">/trunk/src</path>
+<path
+   action="A"
+   prop-mods="false"
+   text-mods="true"
+   kind="file">/trunk/src/f.ts</path>
+</paths>
+<msg>primeiro commit</msg>
+</logentry>
+<logentry
+   revision="1">
+<author>dev</author>
+<date>2026-10-01T03:28:06.742813Z</date>
+<paths>
+<path
+   prop-mods="false"
+   text-mods="false"
+   kind="dir"
+   action="A">/branches</path>
+<path
+   text-mods="false"
+   kind="dir"
+   action="A"
+   prop-mods="false">/tags</path>
+<path
+   text-mods="false"
+   kind="dir"
+   action="A"
+   prop-mods="false">/trunk</path>
+</paths>
+<msg>estrutura</msg>
+</logentry>
+</log>

@@ -78,7 +78,7 @@ describe("settings por Pane", () => {
   });
 });
 
-function montarGanchos(opc: { handoff?: HandoffRegistrado | null; legivel?: boolean; ctx?: Partial<ContextoPane> | null; raiz?: string } = {}) {
+function montarGanchos(opc: { handoff?: HandoffRegistrado | null; legivel?: boolean; ctx?: Partial<ContextoPane> | null; raiz?: string; pacote?: (paneId: string) => Promise<string | null> } = {}) {
   const chamadas = { falha: [] as unknown[], sondar: 0 };
   const estado = { handoff: opc.handoff ?? null, legivel: opc.legivel ?? true };
   const raiz = opc.raiz ?? mkdtempSync(join(tmpdir(), "ganchos-"));
@@ -91,6 +91,7 @@ function montarGanchos(opc: { handoff?: HandoffRegistrado | null; legivel?: bool
     fila: { sondar: async () => { chamadas.sondar += 1; } },
     contexto: async () => (opc.ctx === null ? null : { workspace_id: "ws_1", mission_id: "mis_1", papel: "executor", task_id: "tsk_1", task_ref: "T-01.01", briefing_path: null, ...opc.ctx }),
     raiz: async () => raiz,
+    ...(opc.pacote === undefined ? {} : { pacote: opc.pacote }),
   });
   const c = { workspace_id: "ws_1", mission_id: "mis_1", pane_id: "w1" };
   return { ganchos, chamadas, estado, c, raiz };
@@ -171,6 +172,22 @@ describe("PostToolUse, SessionStart e PreToolUse", () => {
     expect(ctx.additionalContext).toContain("handoff_submit");
     expect(ctx.additionalContext).toContain("FAÇA A COISA");
     expect(ctx.additionalContext).toContain(`${PRODUTO.pastaNoProjeto}/missoes/mis_1/briefing-T-01.01.md`);
+  });
+
+  it("Fase 8: SessionStart do worker anexa o pacote da Missão; falha ou vazio não muda nada; o piloto nunca recebe pelo hook", async () => {
+    const pacote = '<contexto_projeto tipo="dados">\nAVISO: dado histórico\n- [decisao · agente · 2026-10-01] usar SQLite\n</contexto_projeto>';
+    const chamado: string[] = [];
+    const com = montarGanchos({ pacote: async (id) => { chamado.push(id); return pacote; } });
+    const ctx = ((await com.ganchos.tratar("session-start", com.c, {})).saida as { hookSpecificOutput: { additionalContext: string } }).hookSpecificOutput.additionalContext;
+    expect(ctx).toContain(pacote);
+    expect(ctx.indexOf("handoff_submit")).toBeLessThan(ctx.indexOf("<contexto_projeto tipo="));
+    expect(chamado).toEqual(["w1"]);
+    const vazio = montarGanchos({ pacote: async () => null });
+    expect(JSON.stringify((await vazio.ganchos.tratar("session-start", vazio.c, {})).saida)).not.toContain("<contexto_projeto tipo=");
+    const quebrado = montarGanchos({ pacote: async () => { throw new Error("boom"); } });
+    expect(JSON.stringify((await quebrado.ganchos.tratar("session-start", quebrado.c, {})).saida)).toContain("handoff_submit");
+    const piloto = montarGanchos({ ctx: { papel: "piloto" }, pacote: async () => pacote });
+    expect(JSON.stringify((await piloto.ganchos.tratar("session-start", piloto.c, {})).saida)).not.toContain("<contexto_projeto tipo=");
   });
 
   it("SessionStart do revisor usa o prompt do revisor", async () => {

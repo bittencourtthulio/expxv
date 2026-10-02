@@ -123,6 +123,8 @@ export interface OpcoesVarredura {
   sinal?: AbortSignal;
   fs?: FsVarredura;
   executor?: ExecutorVcs;
+  /** Só estes caminhos relativos (incremental por lista do observador): não lista o repositório. Caminho absoluto, `..` e NUL são descartados. */
+  apenas?: readonly string[];
   /** `false` força a caminhada própria. */
   usarGit?: boolean;
   concorrencia?: number;
@@ -188,7 +190,17 @@ export async function* varrer(raiz: string, op: OpcoesVarredura = {}): AsyncGene
 
   // --- candidatos
   let candidatos: string[] | null = null;
-  if (op.usarGit !== false) {
+  if (op.apenas !== undefined) {
+    // incremental com lista (observador): sem listar o repositório; só caminhos RELATIVOS seguros, passando pelas mesmas checagens de `processar`
+    const vistos = new Set<string>();
+    candidatos = [];
+    for (const bruto of op.apenas) {
+      const c = bruto.replace(/\\/g, "/").replace(/^\.\//, "");
+      if (c === "" || c.startsWith("/") || /^[A-Za-z]:\//.test(c) || c.includes("\0") || c.split("/").includes("..") || vistos.has(c)) continue;
+      vistos.add(c);
+      candidatos.push(c);
+    }
+  } else if (op.usarGit !== false) {
     candidatos = await listarComGit(raiz, op, resumo);
   }
   let walker: AsyncGenerator<{ caminho: string; ignorado?: MotivoIgnorado }> | null = null;

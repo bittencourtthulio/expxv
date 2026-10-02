@@ -8,6 +8,7 @@ export const INSTALACAO: Record<string, string> = {
   aider: "python -m pip install aider-chat",
   qwen: "npm install -g @qwen-code/qwen-code",
   kilo: "npm install -g @kilocode/cli",
+  grok: "curl -fsSL https://x.ai/cli/install.sh | bash",
 };
 
 export function estadoDaFerramenta(f: FerramentaDetectada): { texto: string; tom: "sucesso" | "aviso" | "alerta" | "neutro" } {

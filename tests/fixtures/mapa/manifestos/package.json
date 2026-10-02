@@ -1,0 +1,13 @@
+{
+  "name": "demo",
+  "main": "dist/index.js",
+  "bin": { "demo": "bin/demo.js" },
+  "exports": { ".": { "import": "./dist/index.mjs", "require": "./dist/index.cjs" } },
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": { "express": "^4.0.0", "left-pad": "1.0.0" },
+  "devDependencies": { "vitest": "^4.0.0" }
+}

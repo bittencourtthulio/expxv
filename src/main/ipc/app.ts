@@ -17,6 +17,24 @@ export const FAIXAS_CONFIG: Readonly<Record<string, Validador<unknown>>> = {
   permissao_padrao: vEnum(["seguro", "automatico"] as const),
   cor_destaque: vCorDestaque,
   notificacoes: vBooleano,
+  // executar projeto (D-430…): focar o painel Execução, manter a execução ao fechar o app, notificar ao fim de build/teste longo
+  executar_focar: vBooleano,
+  // D-611: ir para a tela Terminais ao disparar um gesto do Método (padrão ligado)
+  metodo_ir_ao_terminal: vBooleano,
+  executar_manter_ao_fechar: vBooleano,
+  executar_notificar: vBooleano,
+  // medidor de CPU e memória (D-530…): mostrar o chip (padrão ligado) e emitir o evento `sistema.carga_alta` (padrão desligado)
+  medidor_sistema_mostrar: vBooleano,
+  medidor_sistema_alerta: vBooleano,
+  // painel de progresso da pipeline (D-660…): mostrar na área de terminais (padrão ligado)
+  progresso_painel_mostrar: vBooleano,
+  // passeio dos bichinhos (D-650…): passear quando ociosos (padrão ligado), travessuras (padrão ligado) e minutos de ociosidade (1–30, padrão 3)
+  bichinho_passear: vBooleano,
+  bichinho_travessuras: vBooleano,
+  bichinho_ociosidade_min: vInteiro({ min: 1, max: 30 }),
+  // espécies dos bichinhos (D-672): "Sem repetir espécie" (padrão ligado) e a meta de tarefas do ovo (D-671: 2 a 6, padrão 4)
+  bichinho_sem_repetir: vBooleano,
+  bichinho_meta_ovo: vInteiro({ min: 2, max: 6 }),
 };
 
 /** Lança se a chave é conhecida e o valor está fora da faixa; chaves desconhecidas passam. */

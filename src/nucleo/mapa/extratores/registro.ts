@@ -59,6 +59,11 @@ export interface OpcoesExtracao {
  * linguagem sem gramática/extrator.
  */
 export async function extrairArquivo(texto: string, linguagem: Linguagem, caminho: string, opcoes: OpcoesExtracao = {}): Promise<Extracao> {
+  if (linguagem === "outra") {
+    // Modo degradado (T-17.15): sem gramática; LOC próprio, imports por regex e DDL de .sql, tudo heurístico.
+    const g = (await import("./generico")).extrairGenerico(texto, caminho);
+    return opcoes.hash === undefined ? g : { ...g, hash: opcoes.hash };
+  }
   const extrator = await obterExtrator(linguagem);
   const parser = await obterParser(linguagem, opcoes.runtime);
   if (parser === null) throw new ErroExtracao("sem_gramatica", linguagem);

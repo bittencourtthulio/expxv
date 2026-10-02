@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "slug": "performance",
+  "nome": "Performance",
+  "descricao": "Mede antes de otimizar: uma otimização por card, validada pelos números, não por impressão.",
+  "escopo": "qualidade",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 3,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "performance",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "perfilador",
+      "papel": "scout",
+      "rotulo": "Perfilador",
+      "descricao": "Define cenário e métrica, mede a baseline e aponta os maiores custos.",
+      "prompt": "membros/perfilador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "otimizador",
+      "papel": "executor",
+      "rotulo": "Otimizador",
+      "descricao": "Aplica uma otimização por card sem mudar o comportamento.",
+      "prompt": "membros/otimizador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7"
+      ],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "medidor",
+      "papel": "reviewer",
+      "rotulo": "Medidor",
+      "descricao": "Repete o benchmark e reprova ganho que os números não confirmam.",
+      "prompt": "membros/medidor.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { ArvoreSujaErro, GitCanceladoErro, GitErro, GitTimeoutErro } from "../../git/erros";
+import { ArvoreSujaErro, GitCanceladoErro, GitErro, GitOperacaoProibidaErro, GitTimeoutErro } from "../../git/erros";
 import { executorPadrao, type ExecutorVcs, type ResultadoExec } from "../executor";
 import { ramoAtual, rodarGit, validarNomeRef, resolverRev, type OpcoesBase } from "./comum";
 import { guardaAutomacao, OperacaoRecusadaErro, type OrigemOperacao } from "./guardas";
@@ -77,8 +77,36 @@ export interface OpcoesRede extends OpcoesBase {
   env?: Record<string, string>;
 }
 
+const SUBCOMANDOS_REDE = new Set(["fetch", "pull", "push", "submodule"]);
+const FLAGS_REDE_PROIBIDAS = /^(--force|-f|--force-if-includes|--force-with-lease|--mirror|--delete|-d|--(upload-pack|receive-pack|exec)(=.*)?)$/;
+const LEASE_COM_REF = /^--force-with-lease=refs\/heads\/[^:\s]+:[0-9a-f]{7,64}$/;
+
+/** A porta de rede só fala `fetch`/`pull`/`push`/`submodule`; opção global só `-c protocol.(file|ext).allow=…`; sem força nem programa externo (T-06.40, A-01). */
+function validarArgsRemoto(args: readonly string[]): void {
+  const recusa = (): never => {
+    throw new GitOperacaoProibidaErro(args);
+  };
+  let i = 0;
+  while (args[i] === "-c") {
+    if (!/^protocol\.(file|ext)\.allow=(always|user|never)$/.test(args[i + 1] ?? "")) recusa();
+    i += 2;
+  }
+  const sub = args[i];
+  if (sub === undefined || !SUBCOMANDOS_REDE.has(sub)) recusa();
+  for (const a of args.slice(i + 1)) {
+    if (a === "--") break;
+    if (a.startsWith("--force-with-lease=")) {
+      if (sub !== "push" || !LEASE_COM_REF.test(a)) recusa();
+      continue;
+    }
+    if (FLAGS_REDE_PROIBIDAS.test(a)) recusa();
+    if (sub !== "submodule" && (a.startsWith("+") || a.startsWith(":"))) recusa();
+  }
+}
+
 export async function rodarRemoto(raiz: string, args: readonly string[], op: OpcoesRede, tipo: "rede" | "escrita" = "rede"): Promise<ResultadoExec> {
-  if (args.some((a) => a.includes("\0"))) throw new GitErro("Argumento inválido.");
+  if (args.some((a) => typeof a !== "string" || a.includes("\0"))) throw new GitErro("Argumento inválido.");
+  validarArgsRemoto(args);
   const ex: ExecutorVcs = op.executor ?? executorPadrao;
   try {
     return await ex.executar(args, {

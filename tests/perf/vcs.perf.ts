@@ -2,12 +2,16 @@
 // Node puro (sem Electron); repositórios sintéticos em os.tmpdir (tests/fixtures/vcs/gerar.ts); sem rede.
 //  - P-16: status incremental em repo de 20 000 arquivos: o COMANDO (statusGitParcial: git status só do caminho
 //    que mudou, mesclado ao anterior) p95 de 30 amostras ≤ 250 ms (o status completo é medido só como referência); e de ponta a ponta (fs.watch real -> debounce 200 ms -> status -> cache) mediana ≤ 600 ms.
+//  - P-16 (SVN): idem em cópia de trabalho SVN de 20 000 arquivos (`svn status --xml` só do caminho mudado, mesclado ao anterior);
+//    pulado com aviso se `svnadmin` não existir.
 //  - P-17: primeiro status de repo de 50 000 arquivos (+ 500 não rastreados): ≤ 1 s; passou de 2 s degrada para -uno.
 //  - P-18: parser do diff de 10 000 linhas (texto real do git) ≤ 50 ms (mediana de 15 execuções, em stream de 64 KiB).
 //  - P-19: histórico: 200 commits ≤ 150 ms (mediana de 15) num repo de 100 000 commits; paginação de TODOS os 100 000 por cursor sem travar
 //    (atraso máximo do event loop ≤ 50 ms; cada hash exatamente uma vez; grafo consistente).
 //  - P-20: stage/unstage de hunk (diff + git apply --cached) em repo de 5 000 arquivos, mediana de 30 ≤ 100 ms.
 //  - P-21: memória retida pelo estado VCS com 50 000 entradas (pior caso: tudo listado) ≤ 50 MB.
+//  - P-22: fetch em segundo plano (git fetch real contra remoto file:// local): no máximo 1 por vez (5 disparos simultâneos = 1 execução),
+//    prioridade baixa, nunca com a janela sem foco, abortável por `pausar`, e atraso máximo do event loop durante o fetch ≤ 50 ms.
 import { setFlagsFromString } from "node:v8";
 import { runInNewContext } from "node:vm";
 import { appendFileSync, writeFileSync } from "node:fs";
@@ -22,6 +26,10 @@ import { desestagiarHunk, estagiarHunk, estagiarLinhas } from "../../src/nucleo/
 import { criarNaoRastreados, gerarRepo } from "../fixtures/vcs/gerar";
 import { git, isolarConfigGit, pastaTmp, removerPasta } from "../fixtures/vcs/repos";
 import { gravarMedicoes, percentil, registrar } from "./registro";
+import { statusSvn, statusSvnParcial } from "../../src/nucleo/vcs/svn/status";
+import { gerarCopiaSvn, temSvnReal } from "../fixtures/vcs/svn-util";
+import { criarFetchSegundoPlano } from "../../src/nucleo/vcs/git/remotos";
+import { executorPadrao, type ExecutorVcs, type OpcoesExec } from "../../src/nucleo/vcs/executor";
 
 const pastas: string[] = [];
 afterAll(() => {
@@ -252,4 +260,111 @@ describe("P-19 · histórico (100 000 commits)", () => {
     expect(total).toBeGreaterThanOrEqual(100_000);
     registrar({ id: "P-19-paginacao", descricao: "paginação de 100 000 commits por cursor: atraso máximo do event loop durante todas as páginas", valor: maxAtraso, limite: 50, unidade: "ms", pior: maiorPagina });
   }, 900_000);
+});
+
+describe.skipIf(!temSvnReal())("P-16 · status incremental SVN (20 000 arquivos)", () => {
+  it("comando de status incremental p95 ≤ 250 ms (status completo só como referência)", async () => {
+    const t0 = ms();
+    const g = gerarCopiaSvn(20_000);
+    pastas.push(g.base);
+    console.log(`P-16 SVN: cópia de 20000 arquivos gerada em ${Math.round(ms() - t0)} ms`);
+    let base = await statusSvn(g.wc); // aquece o cache do SO e do wc.db
+    const cheio: number[] = [];
+    const amostras: number[] = [];
+    for (let i = 0; i < 30; i++) {
+      const alvo = g.caminhos[i * 97] as string;
+      appendFileSync(join(g.wc, alvo), "toque\n");
+      const t = ms();
+      const s = await statusSvnParcial(g.wc, base, [alvo], {});
+      amostras.push(ms() - t);
+      expect(s).not.toBeNull();
+      base = s as StatusRepo;
+      expect(base.arquivos.length).toBe(i + 1);
+      if (i % 5 === 0) {
+        const tc = ms();
+        await statusSvn(g.wc);
+        cheio.push(ms() - tc);
+      }
+    }
+    const p95 = percentil(amostras, 95);
+    console.log(`P-16 SVN: incremental mediana ${mediana(amostras).toFixed(0)} ms, p95 ${p95.toFixed(0)} ms, pior ${Math.max(...amostras).toFixed(0)} ms | status completo (referência) mediana ${mediana(cheio).toFixed(0)} ms, pior ${Math.max(...cheio).toFixed(0)} ms`);
+    registrar({ id: "P-16-svn", descricao: "status incremental SVN (comando, 1 arquivo mudado) em cópia de 20 000 arquivos, p95 de 30 amostras", valor: p95, limite: 250, unidade: "ms", pior: Math.max(...amostras) });
+    expect(p95).toBeGreaterThan(0);
+  }, 900_000);
+});
+
+describe("P-22 · fetch em segundo plano", () => {
+  it("1 por vez, prioridade baixa, sem foco não busca, pausar aborta e o event loop nunca para mais de 50 ms", async () => {
+    const base = pasta("vcs-perf22-");
+    const origem = join(base, "origem");
+    await gerarRepo(origem, { arquivos: 3_000, commits: 200 });
+    const bare = join(base, "origem.git");
+    git(base, "clone", "-q", "--bare", origem, bare);
+    const clone = join(base, "clone");
+    git(base, "clone", "-q", `file://${bare}`, clone);
+    git(clone, "config", "user.name", "Teste");
+    git(clone, "config", "user.email", "t@example.invalid");
+    // o remoto recebe trabalho novo (objetos para o fetch trazer)
+    for (let i = 0; i < 300; i++) writeFileSync(join(origem, `novo-${i}.txt`), `novo ${i}\n${"y".repeat(200)}\n`);
+    git(origem, "add", "-A");
+    git(origem, "-c", "user.name=T", "-c", "user.email=t@example.invalid", "commit", "-q", "-m", "mais trabalho");
+    git(origem, "push", "-q", bare, "main");
+
+    const opcoesVistas: Array<OpcoesExec> = [];
+    let simultaneos = 0;
+    let maxSimultaneos = 0;
+    const espiao = {
+      executar: async (args: readonly string[], op: OpcoesExec) => {
+        if (args.includes("fetch")) opcoesVistas.push(op);
+        if (args.includes("fetch")) maxSimultaneos = Math.max(maxSimultaneos, ++simultaneos);
+        try {
+          return await executorPadrao.executar(args, op);
+        } finally {
+          if (args.includes("fetch")) simultaneos--;
+        }
+      },
+    } as unknown as ExecutorVcs;
+
+    let foco = false;
+    const fundo = criarFetchSegundoPlano({ janelaEmFoco: () => foco, executor: espiao });
+    // sem foco: nenhuma execução
+    const semFoco = await Promise.all([fundo.tentar(clone), fundo.tentar(clone)]);
+    const buscasSemFoco = semFoco.filter((r) => r.executado).length;
+    expect(buscasSemFoco).toBe(0);
+    registrar({ id: "P-22-sem-foco", descricao: "buscas executadas com a janela sem foco (2 tentativas)", valor: buscasSemFoco, limite: 0, unidade: "buscas" });
+
+    // com foco: 5 disparos simultâneos = 1 execução (os outros "ocupado"); mede o atraso do event loop durante o fetch
+    foco = true;
+    let maxAtraso = 0;
+    let ultimo = performance.now();
+    const t = setInterval(() => {
+      const agora = performance.now();
+      maxAtraso = Math.max(maxAtraso, agora - ultimo - 10);
+      ultimo = agora;
+    }, 10);
+    const rs = await Promise.all([fundo.tentar(clone), fundo.tentar(clone), fundo.tentar(clone), fundo.tentar(clone), fundo.tentar(clone)]);
+    clearInterval(t);
+    const executadas = rs.filter((r) => r.executado);
+    const ocupadas = rs.filter((r) => !r.executado && r.motivo === "ocupado");
+    expect(executadas).toHaveLength(1);
+    expect(ocupadas).toHaveLength(4);
+    expect(executadas[0]).toMatchObject({ resultado: { atualizacoes: expect.any(Number) } });
+    expect(opcoesVistas.every((o) => o.prioridadeBaixa === true)).toBe(true);
+    expect(git(clone, "rev-parse", "origin/main").trim()).toBe(git(bare, "rev-parse", "main").trim());
+    registrar({ id: "P-22-concorrencia", descricao: "fetches simultâneos com 5 disparos ao mesmo tempo", valor: maxSimultaneos, limite: 1, unidade: "fetches" });
+    registrar({ id: "P-22", descricao: "atraso máximo do event loop durante o fetch em segundo plano (remoto file:// com 300 arquivos novos)", valor: Math.max(0, maxAtraso), limite: 50, unidade: "ms" });
+
+    // pausar aborta o fetch em curso e recusa novos até retomar
+    const lento = criarFetchSegundoPlano({
+      janelaEmFoco: () => true,
+      executor: { executar: (_a: readonly string[], op: OpcoesExec) => new Promise((_r, rej) => op.signal?.addEventListener("abort", () => rej(Object.assign(new Error("abortado"), { name: "GitCanceladoErro" })))) } as unknown as ExecutorVcs,
+    });
+    const emCurso = lento.tentar(clone).catch((e: unknown) => e);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(lento.ativo()).toBe(true); // em curso, preso no executor falso até o abort
+    lento.pausar();
+    await emCurso;
+    expect(lento.ativo()).toBe(false);
+    expect(await lento.tentar(clone)).toEqual({ executado: false, motivo: "pausado" });
+  }, 600_000);
 });

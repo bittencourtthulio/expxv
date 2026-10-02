@@ -3,6 +3,13 @@ import type { ApiAde } from "../../compartilhado/ipc";
 import type { DetalheMissao, EstadoPortoes, Mission, Workspace } from "../../compartilhado/dominio";
 import type { FerramentaDetectada } from "../../compartilhado/terminais";
 import { indice, tk, trabalho } from "../telas/metodo/fabrica";
+import { lojaMcpFalsa } from "../telas/loja-mcp/fabrica-teste";
+import { cofreFalso, harnessFalso, limitesFalso, openrouterFalso } from "./ade-falso-harness";
+import { memoriaFalso } from "./ade-falso-memoria";
+import { maestroFalso } from "./ade-falso-maestro";
+import { chatFalso, conhecimentoFalso, ragFalso } from "./ade-falso-conhecimento";
+import { custoFalso } from "./ade-falso-custo";
+import { workspacesFalsoComPainel } from "./ade-falso-painel";
 
 export const ws = (id: string, extra: Partial<Workspace> = {}): Workspace => ({ id, nome: id, raiz: `/p/${id}`, e_git: true, acesso_externo: "leitura", permissao: "seguro", ultimo_uso_em: null, criado_em: "x", atualizado_em: "x", ...extra });
 export const claude: FerramentaDetectada = { id: "claude", nome: "Claude Code", descricao: "CLI da Anthropic", instalado: true, executavel_id: "e1", modo_lancamento: "direto", erro_codigo: null, versao: "2.0", recursos: { prompt_inicial: true, retomar: true, mcp: true, hook: true } };
@@ -34,12 +41,12 @@ export function criarAdeFalso(): ApiAde {
     menu: { assinar: () => () => undefined },
     config: { ler: async () => undefined, gravar: async () => ({ ok: true as const }) },
     perf: { ler: async () => ({}), marcar: () => undefined },
-    workspaces: {
+    workspaces: workspacesFalsoComPainel({
       estado: async () => ({ atual, recentes: [atual, ws("w2", { e_git: false, acesso_externo: "nenhum" })] }),
       abrir: async () => null, definirAtual: async () => null, remover: async () => true, definirPermissao: async () => null,
       worktrees: async () => [{ caminho: ".", branch: "main", principal: true, sujo: false }, { caminho: "../x--feat", branch: null, principal: false, sujo: true }],
       assinar: () => () => undefined,
-    },
+    }),
     provedores: {
       listar: async () => [
         { ferramenta: claude, contas: [{ id: "c1", provedor: "claude", rotulo: "pessoal", config_dir_ref: null, habilitada: true, criado_em: "x", atualizado_em: "x" }] },
@@ -60,6 +67,17 @@ export function criarAdeFalso(): ApiAde {
       disparar: async () => ({ ok: true, comando: "/expx:sprintx", pane_id: "p1" }),
       assinar: () => () => undefined,
     },
+    limites: limitesFalso(),
+    harness: harnessFalso(),
+    openrouter: openrouterFalso(),
+    cofre: cofreFalso(),
+    lojaMcp: lojaMcpFalsa(),
+    memoria: memoriaFalso(),
+    conhecimento: conhecimentoFalso(),
+    chat: chatFalso(),
+    rag: ragFalso(),
+    ...maestroFalso(),
+    ...custoFalso(),
   };
   return api as unknown as ApiAde;
 }

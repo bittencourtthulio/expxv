@@ -1,0 +1,11 @@
+{
+  "name": "x",
+  "main": "main.js",
+  "scripts": {
+    "electron:dev": "electron .",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "electron": "30.0.0"
+  }
+}

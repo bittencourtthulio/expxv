@@ -53,13 +53,22 @@ export interface DepsTray {
   sair: () => void;
   notificacoes: Pick<PreferenciaNotificacoes, "ativo" | "definir">;
   nomeApp?: string;
+  /** Fase 20: item "parar tudo" do Telegram (pânico). Só aparece com `visivel()` verdadeiro (canal ligado). */
+  telegramPanico?: { visivel(): boolean; acionar(): void };
+  /** kill-switch do controle remoto (Fase 13): só aparece com o servidor ligado. */
+  remotoDesligar?: { visivel(): boolean; acionar(): void };
+  /** pânico do relay (Fase 22): só aparece com o relay ligado; fecha todos os sockets, revoga todos os dispositivos e deixa tudo desligado. */
+  relayPanico?: { visivel(): boolean; acionar(): void };
 }
 
-export function montarItensTray(deps: Pick<DepsTray, "abrir" | "sair" | "notificacoes" | "nomeApp">): ItemTray[] {
+export function montarItensTray(deps: Pick<DepsTray, "abrir" | "sair" | "notificacoes" | "nomeApp" | "telegramPanico" | "remotoDesligar" | "relayPanico">): ItemTray[] {
   const nome = deps.nomeApp ?? PRODUTO.nome;
   return [
     { label: `Abrir ${nome}`, click: deps.abrir },
     { label: "Pausar notificações", type: "checkbox", checked: !deps.notificacoes.ativo(), click: () => void deps.notificacoes.definir(!deps.notificacoes.ativo()) },
+    ...(deps.telegramPanico?.visivel() === true ? [{ label: "Parar tudo no Telegram (pânico)", click: deps.telegramPanico.acionar }] : []),
+    ...(deps.remotoDesligar?.visivel() === true ? [{ label: "Desligar controle remoto", click: deps.remotoDesligar.acionar }] : []),
+    ...(deps.relayPanico?.visivel() === true ? [{ label: "Pânico do relay (fechar tudo)", click: deps.relayPanico.acionar }] : []),
     { type: "separator" },
     { label: "Sair", click: deps.sair },
   ];

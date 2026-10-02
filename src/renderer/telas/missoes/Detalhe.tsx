@@ -4,6 +4,9 @@ import { Badge } from "../../componentes/Badge";
 import { DialogoConfirmacao } from "../../componentes/Dialogo";
 import { missaoTerminal, type StoreMissoes } from "../../estado/missoes";
 import { Custo } from "./Custo";
+import { useResumoCusto } from "../../estado/custo";
+import { MemoriaMissao } from "./MemoriaMissao";
+import { SecaoVcsMissao } from "./SecaoVcs";
 import { PainelPortoes } from "./Portoes";
 import { ROTULO_ESTADO, ROTULO_MODO, ROTULO_ORIGEM, rotuloPane, tomDoEstado } from "./rotulos";
 
@@ -50,8 +53,11 @@ export function DetalheMissao({ id, store, detalhe, portoes, aoVoltar }: PropsDe
         <Badge>{ROTULO_MODO[m.modo]}</Badge>
         <Badge>{ROTULO_ORIGEM[m.origem]}</Badge>
         {m.branch !== null ? <code>{m.branch}</code> : null}
-        <span>Custo: <Custo valor={null} /></span>
+        <span>Custo: <CustoDaMissao id={id} /></span>
       </p>
+
+      <SecaoVcsMissao missao={m} />
+      <MemoriaMissao detalhe={detalhe} />
 
       {portoes != null && m.modo !== "livre" ? (
         <PainelPortoes estado={portoes} ativa={ativa} temPiloto={m.piloto_pane_id !== null} liberar={(p) => store.liberarPortao(id, p)} />
@@ -86,4 +92,10 @@ export function DetalheMissao({ id, store, detalhe, portoes, aoVoltar }: PropsDe
       ) : null}
     </div>
   );
+}
+
+/** Custo real da Missão (Fase 10); sem a API de custo (ou sem dado) cai em "custo desconhecido", nunca "0". */
+function CustoDaMissao({ id }: { id: string }) {
+  const { resumo } = useResumoCusto("missao", id);
+  return resumo === null ? <Custo valor={null} /> : <Custo resumo={resumo} />;
 }

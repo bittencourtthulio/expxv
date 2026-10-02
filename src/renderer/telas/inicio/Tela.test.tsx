@@ -21,20 +21,22 @@ function fontes(o: { ws?: unknown; indice?: IndiceProjeto | null; missoes?: unkn
     workspaces: f({ atual: o.ws === undefined ? ws : o.ws, carregado: true }) as never,
   };
 }
+const aoAdicionar = vi.fn();
 function montar(o: Parameters<typeof fontes>[0] = {}) {
   const aoNavegar = vi.fn();
-  render(<TelaInicio store={criarStoreInicio(fontes(o))} iniciar={() => () => undefined} aoNavegar={aoNavegar} />);
+  render(<TelaInicio store={criarStoreInicio(fontes(o))} iniciar={() => () => undefined} aoNavegar={aoNavegar} aoAdicionarWorkspace={aoAdicionar} />);
   return aoNavegar;
 }
 const miss = { id: "m1", titulo: "Migrar login", estado: "executando" };
 const aguardando = { sessao_id: "s1", ferramenta_id: "claude", numero: 2, estado: "executando", atividade: "aguardando", mensagem: null, codigo_saida: null };
 
 describe("Tela Início", () => {
-  it("vazio sem projeto: guia o primeiro uso e leva aos Workspaces", () => {
+  it("vazio sem projeto: guia o primeiro uso e abre o modal Adicionar workspace", () => {
     const nav = montar({ ws: null, indice: null, metodoCarregado: false });
     expect(screen.getByText("Abrir um projeto").closest("li")?.getAttribute("aria-current")).toBe("step");
     fireEvent.click(screen.getByRole("button", { name: "Abrir projeto" }));
-    expect(nav).toHaveBeenCalledWith("workspaces");
+    expect(aoAdicionar).toHaveBeenCalledTimes(1);
+    expect(nav).not.toHaveBeenCalled();
   });
   it("projeto sem método instalado aponta para o Método; instalado e sem missão aponta para criar", () => {
     const nav = montar({ indice: indice([], false) });

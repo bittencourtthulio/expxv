@@ -30,6 +30,10 @@ export const RETOMA_ABAIXO_BYTES = 128 * 1_024;
 
 const ESPERA_ENCERRAR_MS = 3_000;
 
+/** Encerramento limpo pedido pelo app (D-520): SIGINT, espera; SIGTERM, espera; SIGKILL. Nenhuma CLI fica órfã no daemon. */
+export interface PrazosDeEncerramento { sigint_ms: number; sigterm_ms: number; sigkill_ms: number }
+export const PRAZOS_ENCERRAMENTO: PrazosDeEncerramento = { sigint_ms: 800, sigterm_ms: 2_000, sigkill_ms: 1_000 };
+
 export interface RegistroDeExecutaveis { obter(id: string): ExecutavelPty | undefined }
 
 /** O que a sessão precisa saber de cada ferramenta (o catálogo real é injetado pelo main). */
@@ -41,6 +45,7 @@ export interface CatalogoSessoes {
   teclaDeInterrupcao(ferramenta_id: string): string;
 }
 
+// grok fica de fora de propósito: o Esc dele não cancela o turno (só Ctrl+C).
 const INTERROMPEM_COM_ESC = ["claude", "codex", "gemini", "opencode", "qwen", "kilo"];
 
 /** Padrão neutro: nada automático, sem retomada nem prompt inicial; ESC nas CLIs de IA, Ctrl+C no resto. */
@@ -158,6 +163,10 @@ export class GerenciadorSessoes {
   readonly #limite: () => number;
   readonly #ajustarArgv: ((ferramenta_id: string, argv: string[]) => string[]) | undefined;
   readonly #ouvintesTamanho = new Set<(id: string, colunas: number, linhas: number) => void>();
+  /** quem espera o fim do processo de uma sessão (encerramento limpo com prazos) */
+  readonly #esperandoSaida = new Map<string, Set<() => void>>();
+  /** sessões que o app está fechando agora (idempotência de `fecharPelaApp`) */
+  readonly #fechando = new Set<string>();
   #contador = 0;
   #admissao = true;
   #recuperacao: Promise<unknown> = Promise.resolve();
@@ -193,7 +202,7 @@ export class GerenciadorSessoes {
    * `opcoes` é só do main (nunca vem do renderer): `cwd` substitui o cwd do workspace (worktree da Missão) e
    * `ambiente` soma variáveis da conta (ex.: CLAUDE_CONFIG_DIR). Sem `opcoes` o comportamento é o de sempre.
    */
-  abrir(pedidoBruto: unknown, opcoes?: { cwd?: string; ambiente?: Record<string, string> }): RespostaAbrirSessao {
+  abrir(pedidoBruto: unknown, opcoes?: { cwd?: string; ambiente?: Record<string, string>; permissao?: "seguro" | "equilibrado" | "automatico" }): RespostaAbrirSessao {
     if (!this.#admissao) throw new Error("As sessões estão sendo encerradas. Tente novamente depois.");
     const validacao = validarPedidoAbrirSessao(pedidoBruto);
     if (!validacao.ok) throw new Error(validacao.erro);
@@ -213,7 +222,8 @@ export class GerenciadorSessoes {
       const observacao = this.#observador?.observar(pedido.ferramenta_id, id, pedido.workspace_id) ?? { argumentos: [], ambiente: {} };
       // o prompt inicial sempre por último
       const bruto = [
-        ...this.#catalogo.argumentosAutomaticos(pedido.ferramenta_id, pedido.workspace_id),
+        // permissão efetiva do Pane (agente de squad, D-232): só `automatico` herda a flag do workspace; mais restrita nunca a recebe
+        ...(opcoes?.permissao !== undefined && opcoes.permissao !== "automatico" ? [] : this.#catalogo.argumentosAutomaticos(pedido.ferramenta_id, pedido.workspace_id)),
         ...observacao.argumentos, ...pedido.argumentos, ...retomada, ...inicial,
       ];
       const argv = this.#ajustarArgv === undefined ? bruto : this.#ajustarArgv(pedido.ferramenta_id, [...bruto]);
@@ -256,7 +266,7 @@ export class GerenciadorSessoes {
       processo.onData((dados, fim) => this.#aoReceber(sessao, dados, fim)),
       processo.onExit(({ exitCode, signal }) => {
         sessao.estado = exitCode === 0 || sessao.encerramento_solicitado ? "encerrada" : "erro";
-        this.#emitir(sessao, { tipo: "encerramento", codigo: Number.isInteger(exitCode) ? exitCode : null, sinal: Number.isInteger(signal) ? signal! : null });
+        this.#emitir(sessao, { tipo: "encerramento", codigo: Number.isInteger(exitCode) ? exitCode : null, sinal: Number.isInteger(signal) ? signal! : null, ...(sessao.encerramento_solicitado ? { solicitado: true as const } : {}) });
         this.#emitir(sessao, {
           tipo: "estado", estado: sessao.estado,
           erro_codigo: sessao.estado === "erro" ? "processo_falhou" : null,
@@ -264,6 +274,9 @@ export class GerenciadorSessoes {
         });
         sessao.descartaveis.splice(0).forEach((d) => d.dispose());
         this.#observador?.encerrada(id);
+        const esperando = this.#esperandoSaida.get(id);
+        this.#esperandoSaida.delete(id);
+        esperando?.forEach((f) => f());
       }),
     );
   }
@@ -425,6 +438,54 @@ export class GerenciadorSessoes {
     if (sessao.estado === "encerrada" || sessao.estado === "erro" || sessao.encerramento_solicitado) return true;
     sessao.encerramento_solicitado = true;
     sessao.processo.kill();
+    return true;
+  }
+
+  /**
+   * D-520: o app fecha a sessão de propósito (orquestrador, dono ou fim do trabalho do worker). O renderer é avisado ANTES (`fechada`: o painel sai da grade na hora, sem
+   * "Sessão encerrada" pendurada) e o processo termina com SIGINT → SIGTERM → SIGKILL em prazos curtos; só então a sessão é descartada (histórico do daemon incluído).
+   * O fim do processo sai marcado como `solicitado`: o 143 não é falha. Idempotente. `false` = sessão desconhecida.
+   */
+  fecharPelaApp(id: string, prazos: Partial<PrazosDeEncerramento> = {}): boolean {
+    const sessao = this.#sessoes.get(id);
+    if (sessao === undefined) return false;
+    if (this.#fechando.has(id)) return true;
+    this.#fechando.add(id);
+    this.#emitir(sessao, { tipo: "fechada" });
+    void this.#encerrarComPrazos(sessao, { ...PRAZOS_ENCERRAMENTO, ...prazos }).then(() => {
+      this.#fechando.delete(id);
+      this.descartar(id);
+    });
+    return true;
+  }
+
+  async #encerrarComPrazos(sessao: SessaoInterna, p: PrazosDeEncerramento): Promise<void> {
+    if (sessao.estado === "encerrada" || sessao.estado === "erro") return;
+    sessao.encerramento_solicitado = true;
+    const terminou = (): boolean => (sessao.estado as EstadoSessao) === "encerrada" || (sessao.estado as EstadoSessao) === "erro";
+    const esperar = (ms: number): Promise<void> => new Promise<void>((resolver) => {
+      if (terminou()) { resolver(); return; }
+      const esperando = this.#esperandoSaida.get(sessao.id) ?? new Set<() => void>();
+      this.#esperandoSaida.set(sessao.id, esperando);
+      const t = setTimeout(() => { esperando.delete(feito); resolver(); }, ms);
+      t.unref();
+      const feito = (): void => { clearTimeout(t); resolver(); };
+      esperando.add(feito);
+    });
+    for (const [sinal, prazo] of [["SIGINT", p.sigint_ms], ["SIGTERM", p.sigterm_ms], ["SIGKILL", p.sigkill_ms]] as const) {
+      try { sessao.processo.kill(sinal); } catch { /* o processo já saiu */ }
+      await esperar(prazo);
+      if (terminou()) return;
+    }
+  }
+
+  /** Última etapa de "parar" da execução do projeto: SIGKILL na árvore (SIGINT e SIGTERM já foram tentados por quem chama). */
+  forcarEncerramento(id: string): boolean {
+    const sessao = this.#sessoes.get(id);
+    if (sessao === undefined) return false;
+    if (sessao.estado === "encerrada" || sessao.estado === "erro") return true;
+    sessao.encerramento_solicitado = true;
+    sessao.processo.kill("SIGKILL");
     return true;
   }
 

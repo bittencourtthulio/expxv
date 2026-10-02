@@ -18,6 +18,7 @@ import { ajustarArgumentosDasSessoes } from "../nucleo/terminais/settings-claude
 import { PRODUTO } from "../nucleo/produto";
 import type { ServicosSecundarios } from "./boot";
 import { criarServicoDaemon, type ServicoDaemon } from "./daemon";
+import type { PulsoPty } from "./bichinho";
 import { criarLoteSaida, type LoteSaida } from "./ipc/lote-saida";
 import type { RegistroIpc } from "./ipc/registro";
 import { criarCatalogoDeSessoes, criarTransicoesTerminais, registrarIpcTerminais, type DetectorUsado, type TransicoesTerminais } from "./ipc/terminais";
@@ -49,6 +50,8 @@ export interface DependenciasContexto {
   /** Limite de sessões da janela (config `limite_paineis`, 1–64); lido a cada abertura. Ausente = padrão do contrato. */
   limiteSessoes?: () => number;
   notificar: Notificador;
+  /** Pulso de atividade do bichinho (D-500): só tamanhos de saída e o aviso de entrada; `null` enquanto o serviço do bichinho não nasceu. */
+  pulsoPty?: () => PulsoPty | null;
   /** Pergunta antes de encerrar sessões ativas (só é chamado sem daemon). Padrão: não encerra. */
   confirmarEncerramento?: (acao: string) => Promise<boolean>;
   /** troca do PATH do processo depois de resolvido o do shell de login. Padrão: `process.env.PATH`. */
@@ -164,14 +167,20 @@ export function criarContextoTerminais(d: DependenciasContexto): ContextoTermina
       ajustar_argumentos: ajustarArgumentosDasSessoes,
       observador: {
         observar: (ferramenta, sessao, workspace_id) => atividade?.observacaoPara(ferramenta, sessao, permissaoSegura(workspace_id)) ?? VAZIA,
-        encerrada: (sessao) => { atividade?.encerrarSessao(sessao); heuristica.remover(sessao); lote.liberar(sessao); },
+        encerrada: (sessao) => {
+          atividade?.encerrarSessao(sessao); heuristica.remover(sessao); lote.liberar(sessao);
+          d.pulsoPty?.()?.aoSessaoEncerrada({ sessao_id: sessao, workspace_id: gerenciador?.obter(sessao)?.workspace_id ?? null });
+        },
       },
       ao_descartar: (id) => { try { armazemDeConversas(null).apagar(id); } catch { /* acessório */ } },
     });
     g.assinar((evento) => {
       if (evento.tipo === "saida") {
-        const ferramenta = g.obter(evento.sessao_id)?.ferramenta_id;
+        const sessaoDaSaida = g.obter(evento.sessao_id);
+        const ferramenta = sessaoDaSaida?.ferramenta_id;
         if (ferramenta !== undefined && !SEM_HEURISTICA.includes(ferramenta)) heuristica.registrarSaida(evento.sessao_id);
+        // vazão do PTY para o bichinho: só o tamanho entra (sem adaptador de CLI nenhum), custo ≈ um contador por sessão
+        if (sessaoDaSaida !== undefined) d.pulsoPty?.()?.aoSaida({ sessao_id: evento.sessao_id, workspace_id: sessaoDaSaida.workspace_id, ferramenta_id: sessaoDaSaida.ferramenta_id, dados: evento.dados });
       }
       lote.push(evento);
     });
@@ -222,6 +231,7 @@ export function criarContextoTerminais(d: DependenciasContexto): ContextoTermina
         conversas,
         infoApp: op.infoApp,
         ...(op.aoDescartar === undefined ? {} : { aoDescartar: op.aoDescartar }),
+        aoEscrever: (sessaoId) => d.pulsoPty?.()?.aoEntrada({ workspace_id: gerenciador?.obter(sessaoId)?.workspace_id ?? null }),
         enviarFalha: (f) => d.enviar("terminais:falha", f),
       });
     },

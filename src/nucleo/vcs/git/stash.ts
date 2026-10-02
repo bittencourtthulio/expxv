@@ -112,7 +112,7 @@ export async function restaurarStashApagado(raiz: string, hash: string, mensagem
 /** Diff do stash (inclui os não rastreados, se houver). */
 export async function diffStash(raiz: string, indice: number, op: OpcoesBase = {}): Promise<Diff> {
   const alvo = await existe(raiz, indice, op);
-  const r = await rodarGit(raiz, ["stash", "show", "-p", "--include-untracked", "--no-color", "--no-ext-diff", alvo.ref], { ...op, maxBytes: 8 * 1024 * 1024 });
+  const r = await rodarGit(raiz, ["stash", "show", "-p", "--include-untracked", "--no-color", "--no-ext-diff", "--no-textconv", alvo.ref], { ...op, maxBytes: 8 * 1024 * 1024 });
   const d = parseDiff(r.stdout, { truncado: r.truncado });
   d.grande = r.truncado;
   return d;

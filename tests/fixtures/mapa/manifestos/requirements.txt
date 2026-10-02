@@ -1,0 +1,4 @@
+requests==2.31.0
+# comentario
+-r outro.txt
+flask[async]>=2.0 ; python_version > "3"

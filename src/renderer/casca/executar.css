@@ -1,0 +1,51 @@
+/* Executar projeto: ▶/■ do cabeçalho (grupo esquerdo). Segue a medida compacta do topo (26 px; o cabeçalho de 40 px não cresce). Só tokens. */
+.topo-exec { position: relative; display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; min-width: 0; }
+.topo-exec-botao { gap: 5px; }
+.topo-exec-botao .icone { width: 13px; height: 13px; }
+.topo-exec-botao[data-acao="executar"] .icone { color: var(--sucesso); }
+.topo-exec-botao[data-acao="parar"] .icone { color: var(--alerta); }
+.topo-exec-botao[disabled] { opacity: 0.7; cursor: default; }
+.topo-exec-chevron { width: 20px; padding: 0; justify-content: center; }
+.topo-exec-chevron .icone { width: 12px; height: 12px; }
+.topo-exec-link { width: 26px; padding: 0; justify-content: center; }
+.topo-exec-link .icone { width: 13px; height: 13px; }
+
+.topo-exec-chip { font-size: 11.5px; line-height: 1; color: var(--texto-suave); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; padding: 3px 6px; border-radius: 999px; background: var(--superficie); border: 1px solid var(--borda); }
+.topo-exec-chip[data-tom="ativo"] { color: var(--destaque-texto); }
+.topo-exec-chip[data-tom="ok"] { color: var(--sucesso); }
+.topo-exec-chip[data-tom="erro"] { color: var(--alerta); border-color: var(--alerta); }
+.topo-exec-erro { font-size: 11.5px; color: var(--alerta); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* a UI estreita cede o texto, nunca o botão (o tooltip e o anúncio de leitor de tela seguem completos) */
+@media (max-width: 1180px) { .topo-exec-rotulo, .topo-exec-chip { display: none; } }
+@media (max-width: 900px) { .topo-exec-erro { display: none; } }
+
+.exec-anuncio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.topo-exec-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 320px; max-width: 460px; max-height: min(70vh, 520px); overflow: auto; padding: 4px;
+  background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); box-shadow: 8px 8px 24px var(--sombra); font-size: 13px;
+}
+.topo-exec-linha { display: flex; align-items: stretch; gap: 2px; }
+.topo-exec-item, .topo-exec-estrela {
+  display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--texto); text-align: left; cursor: pointer;
+}
+.topo-exec-item { flex: 1; min-width: 0; width: 100%; }
+.topo-exec-item:hover, .topo-exec-estrela:hover, .topo-exec-item:focus-visible, .topo-exec-estrela:focus-visible { background: var(--superficie-2); }
+.topo-exec-item .icone { width: 14px; height: 14px; color: var(--texto-suave); }
+.topo-exec-nome { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topo-exec-aviso { display: inline-flex; color: var(--aviso); }
+.topo-exec-aviso .icone { width: 13px; height: 13px; }
+.topo-exec-nome small { color: var(--destaque-texto); font-size: 11.5px; }
+.topo-exec-comando { margin-left: auto; padding-left: 12px; font: 11.5px var(--mono); color: var(--texto-discreto); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topo-exec-estrela { width: 30px; padding: 0; justify-content: center; color: var(--texto-discreto); }
+.topo-exec-estrela .icone { width: 14px; height: 14px; }
+.topo-exec-estrela[data-ligada] { color: var(--aviso); }
+.topo-exec-estrela[data-ligada] .icone { fill: currentColor; }
+.topo-exec-separador { height: 1px; margin: 4px 2px; background: var(--borda); }
+.topo-exec-vazio { margin: 6px 10px; color: var(--texto-suave); font-size: 12px; }
+.topo-exec-historico { margin-top: 4px; padding: 6px 8px 2px; border-top: 1px solid var(--borda); }
+.topo-exec-historico p { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 4px; font-size: 11.5px; color: var(--texto-suave); }
+.topo-exec-historico p[data-resultado="falha"] small { color: var(--alerta); }
+.topo-exec-historico p[data-resultado="sucesso"] small { color: var(--sucesso); }
+.topo-exec-historico small { font-size: 11.5px; color: var(--texto-discreto); }

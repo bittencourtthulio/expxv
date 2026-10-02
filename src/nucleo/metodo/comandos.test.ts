@@ -72,6 +72,8 @@ describe("mapa gesto → comando (sempre com argumento)", () => {
   it("o argumento vira uma linha só, sem controle, e com tamanho limitado", () => {
     expect(normalizarArgumento("  linha 1\nlinha 2\t\tfim  ")).toBe("linha 1 linha 2 fim");
     expect(normalizarArgumento("a\u001b[31mb\u0000c")).toBe("a[31mbc");
+    // C1 (CSI 0x9b), separadores de linha/parágrafo e bidi/invisíveis também saem (nenhum terminal os interpreta)
+    expect(normalizarArgumento("a\u009b31mb\u0085c\u2028d\u2029e\u202ef\u2066g\u200bh\ufeffi")).toBe("a31mbcdefghi");
     expect(normalizarArgumento("x".repeat(5000))?.length).toBe(1_500);
     expect(normalizarArgumento("   ")).toBeNull();
     expect(normalizarArgumento(undefined)).toBeNull();

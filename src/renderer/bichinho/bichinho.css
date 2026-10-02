@@ -1,0 +1,239 @@
+/* Bichinho do workspace (D-467). SÓ tokens (`--bichinho-*` e os do tema): nenhuma cor literal. Animação só por CSS (transform e opacity), só em reação,
+   com contagem de iterações finita nos estados longos (dormir, esperar, preocupar): o bichinho assenta numa pose estática e a CPU ociosa fica em zero.
+   prefers-reduced-motion e "silenciar animações" (data-quieto) = poses estáticas com os mesmos símbolos. Janela oculta = animações pausadas (data-pausado). */
+.bi { display: block; width: 100%; height: 100%; overflow: visible; --bi-base: var(--bichinho-urso); --bi-pelo: var(--bi-base); }
+.bi[data-especie="caranguejo"] { --bi-base: var(--bichinho-caranguejo); }
+.bi[data-especie="piton"] { --bi-base: var(--bichinho-piton); }
+.bi[data-especie="esquilo"] { --bi-base: var(--bichinho-esquilo); }
+.bi[data-especie="raposa"] { --bi-base: var(--bichinho-raposa); }
+.bi[data-especie="camaleao"] { --bi-base: var(--bichinho-camaleao); }
+.bi[data-especie="lontra"] { --bi-base: var(--bichinho-lontra); }
+.bi[data-especie="tucano"] { --bi-base: var(--bichinho-tucano); }
+.bi[data-especie="elefante"] { --bi-base: var(--bichinho-elefante); }
+.bi[data-especie="ourico"] { --bi-base: var(--bichinho-ourico); }
+.bi[data-especie="coruja"] { --bi-base: var(--bichinho-coruja); }
+.bi[data-especie="polvo"] { --bi-base: var(--bichinho-polvo); }
+.bi[data-especie="gato"] { --bi-base: var(--bichinho-gato); }
+.bi[data-especie="sapo"] { --bi-base: var(--bichinho-sapo); }
+.bi[data-especie="urso"] { --bi-base: var(--bichinho-urso); }
+.bi { --bi-sec0: color-mix(in srgb, var(--bi-pelo) 40%, var(--bichinho-tinta)); --bi-sec: var(--bi-sec0); --bi-claro: color-mix(in srgb, var(--bi-pelo) 34%, var(--bichinho-papel)); --bi-escuro: color-mix(in srgb, var(--bi-pelo) 58%, var(--bichinho-tinta)); }
+
+/* Paletas do sistema de partes (D-674): `--bi-base` (pelo) e `--bi-sec` (secundária), SEMPRE derivadas dos tokens do tema. Nunca alerta com papel (rosa). */
+.bi[data-pal="0"] { --bi-base: color-mix(in srgb, var(--aviso) 80%, var(--grafico-4)); --bi-sec0: color-mix(in srgb, var(--aviso) 35%, var(--bichinho-tinta)); }
+.bi[data-pal="1"] { --bi-base: color-mix(in srgb, var(--grafico-4) 58%, var(--bichinho-tinta)); --bi-sec0: color-mix(in srgb, var(--aviso) 32%, var(--bichinho-papel)); }
+.bi[data-pal="2"] { --bi-base: color-mix(in srgb, var(--texto-suave) 62%, var(--bichinho-papel)); --bi-sec0: color-mix(in srgb, var(--bichinho-tinta) 78%, var(--texto-suave)); }
+.bi[data-pal="3"] { --bi-base: color-mix(in srgb, var(--bichinho-papel) 76%, var(--texto-suave)); --bi-sec0: color-mix(in srgb, var(--bichinho-tinta) 88%, var(--texto-suave)); }
+.bi[data-pal="4"] { --bi-base: color-mix(in srgb, var(--sucesso) 85%, var(--grafico-6)); --bi-sec0: color-mix(in srgb, var(--sucesso) 50%, var(--bichinho-tinta)); }
+.bi[data-pal="5"] { --bi-base: color-mix(in srgb, var(--destaque-2) 65%, var(--grafico-1)); --bi-sec0: color-mix(in srgb, var(--aviso) 85%, var(--bichinho-papel)); }
+.bi[data-pal="6"] { --bi-base: var(--grafico-5); --bi-sec0: color-mix(in srgb, var(--aviso) 60%, var(--grafico-5)); }
+.bi[data-pal="7"] { --bi-base: var(--grafico-6); --bi-sec0: color-mix(in srgb, var(--destaque) 55%, var(--bichinho-papel)); }
+.bi[data-pal="8"] { --bi-base: color-mix(in srgb, var(--alerta) 55%, var(--aviso)); --bi-sec0: color-mix(in srgb, var(--aviso) 70%, var(--bichinho-papel)); }
+.bi[data-pal="9"] { --bi-base: color-mix(in srgb, var(--aviso) 42%, var(--bichinho-papel)); --bi-sec0: color-mix(in srgb, var(--grafico-4) 50%, var(--bichinho-tinta)); }
+.bi[data-pal="10"] { --bi-base: color-mix(in srgb, var(--sucesso) 55%, var(--aviso)); --bi-sec0: color-mix(in srgb, var(--sucesso) 38%, var(--bichinho-tinta)); }
+.bi[data-pal="11"] { --bi-base: color-mix(in srgb, var(--destaque) 55%, var(--bichinho-tinta)); --bi-sec0: color-mix(in srgb, var(--bichinho-papel) 85%, var(--destaque)); }
+.bi[data-pal="12"] { --bi-base: color-mix(in srgb, var(--aviso) 76%, var(--alerta)); --bi-sec0: color-mix(in srgb, var(--grafico-4) 30%, var(--bichinho-tinta)); }
+.bi[data-pal="13"] { --bi-base: color-mix(in srgb, var(--grafico-5) 50%, var(--destaque)); --bi-sec0: color-mix(in srgb, var(--bichinho-papel) 85%, var(--grafico-5)); }
+.bi[data-pal="14"] { --bi-base: color-mix(in srgb, var(--sucesso) 50%, var(--grafico-6)); --bi-sec0: color-mix(in srgb, var(--aviso) 70%, var(--sucesso)); }
+.bi[data-pal="15"] { --bi-base: color-mix(in srgb, var(--aviso) 85%, var(--sucesso)); --bi-sec0: color-mix(in srgb, var(--bichinho-tinta) 85%, var(--aviso)); }
+.bi[data-pal="16"] { --bi-base: color-mix(in srgb, var(--texto-suave) 30%, var(--bichinho-tinta)); --bi-sec0: color-mix(in srgb, var(--aviso) 85%, var(--bichinho-tinta)); }
+.bi[data-pal="18"] { --bi-base: color-mix(in srgb, var(--destaque-2) 45%, var(--texto-suave)); --bi-sec0: color-mix(in srgb, var(--texto-suave) 50%, var(--bichinho-tinta)); }
+.bi[data-pal="17"] { --bi-base: color-mix(in srgb, var(--alerta) 88%, var(--bichinho-tinta)); --bi-sec0: color-mix(in srgb, var(--bichinho-tinta) 90%, var(--alerta)); }
+/* variante (D-675): paleta rotacionada para parecer outro indivíduo quando as 100 espécies já estão em uso */
+.bi[data-var="1"] { --bi-pelo: color-mix(in srgb, var(--bi-base) 50%, var(--sucesso)); --bi-sec: color-mix(in srgb, var(--bi-sec0) 60%, var(--grafico-6)); }
+.bi[data-var="2"] { --bi-pelo: color-mix(in srgb, var(--bi-base) 50%, var(--destaque-2)); --bi-sec: color-mix(in srgb, var(--bi-sec0) 60%, var(--aviso)); }
+.bi[data-var="3"] { --bi-pelo: color-mix(in srgb, var(--bi-base) 62%, var(--bichinho-tinta)); --bi-sec: color-mix(in srgb, var(--bi-sec0) 60%, var(--aviso)); }
+
+.bi-p { fill: var(--bi-pelo); }
+.bi-s { fill: var(--bi-sec); }
+.bi-pe { stroke: var(--bi-escuro); stroke-width: 0.5; }
+.bi-ct { stroke: var(--bi-escuro); stroke-width: 0.8; stroke-linejoin: round; }
+.bi-asa { fill: var(--bichinho-papel); fill-opacity: 0.5; stroke: var(--bi-escuro); stroke-width: 0.7; }
+.bi-c { fill: var(--bi-claro); }
+.bi-e, .bi-escura-f { fill: var(--bi-escuro); }
+.bi-d { fill: var(--destaque); }
+.bi-a { fill: var(--aviso); }
+.bi-r { fill: var(--alerta); }
+.bi-tinta-f { fill: var(--bichinho-tinta); }
+.bi-papel-f { fill: var(--bichinho-papel); }
+.bi-fraco { opacity: 0.55; }
+.bi-linha { fill: none; stroke: var(--bichinho-tinta); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.bi-linha.bi-escura { stroke: var(--bi-escuro); }
+.bi-linha.bi-pc { stroke: var(--bi-pelo); }
+.bi-linha.bi-grosso { stroke-width: 3.6; }
+.bi-linha.bi-med { stroke-width: 2.4; }
+.bi-linha.bi-sc { stroke: var(--bi-sec); }
+.bi-linha.bi-r { fill: none; stroke: var(--alerta); }
+.bi-linha.bi-d { fill: none; stroke: var(--destaque); }
+.bi-linha.bi-papel { stroke: var(--bichinho-papel); stroke-width: 1.6; }
+.bi-linha.bi-tinta { stroke: var(--bichinho-tinta); }
+.bi-aro { fill: none; stroke: var(--bichinho-tinta); stroke-width: 1; }
+.bi-sombra { fill: var(--sombra); opacity: 0.35; }
+.bi-coroa { fill: var(--aviso); stroke: var(--bi-escuro); stroke-width: 0.8; stroke-linejoin: round; }
+.bi-contorno { stroke: var(--destaque); stroke-width: 1; }
+.bi-aura-1 { stop-color: var(--destaque); }
+.bi-teclado { fill: var(--bi-escuro); }
+.bi-tela { fill: color-mix(in srgb, var(--destaque) 72%, var(--bichinho-tinta)); stroke: var(--bi-escuro); stroke-width: 0.8; }
+.bi-tela-linhas { stroke: var(--bichinho-papel); stroke-width: 1; opacity: 0.85; }
+.bi-pata { fill: var(--bi-pelo); stroke: var(--bi-escuro); stroke-width: 0.6; }
+.bi-pensando circle { fill: var(--texto-suave); }
+.bi-zzz path { fill: none; stroke: var(--destaque-texto); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+.bi-interrogacao { fill: none; stroke: var(--destaque-texto); stroke-width: 2.2; stroke-linecap: round; }
+.bi-gota { fill: var(--destaque-2); opacity: 0.9; }
+.bi-suor circle { fill: var(--destaque-2); opacity: 0.75; }
+.bi-confete > * { transform: translate(var(--dx), var(--dy)); opacity: 0.85; }
+/* esforço (D-502): indicadores ESTÁTICOS que carregam a informação sem movimento (anel, barras, chama, faíscas); a cor sobe de destaque para aviso e alerta, nunca é o único sinal */
+.bi-anel { fill: none; stroke: var(--destaque); stroke-width: 1.2; opacity: 0.35; }
+.bi[data-nivel="3"] .bi-anel { stroke: var(--aviso); opacity: 0.55; stroke-width: 1.6; }
+.bi[data-nivel="4"] .bi-anel { stroke: var(--alerta); opacity: 0.75; stroke-width: 2.2; }
+.bi-acesa { fill: var(--destaque); }
+.bi-apagada { fill: var(--superficie-2); stroke: var(--borda); stroke-width: 0.3; }
+.bi[data-nivel="3"] .bi-acesa { fill: var(--aviso); }
+.bi[data-nivel="4"] .bi-acesa { fill: var(--alerta); }
+.bi-chama { fill: var(--aviso); stroke: var(--alerta); stroke-width: 0.8; stroke-linejoin: round; }
+.bi[data-nivel="4"] .bi-chama { fill: var(--alerta); stroke: var(--aviso); }
+.bi-linha.bi-faisca { stroke: var(--aviso); stroke-width: 1.6; }
+.bi[data-nivel="4"] .bi-linha.bi-faisca { stroke: var(--alerta); stroke-width: 2; }
+.bi-folego circle { fill: none; stroke: var(--texto-suave); stroke-width: 0.9; opacity: 0.8; transform-box: fill-box; transform-origin: center; }
+.bi-ofegar { transform-box: fill-box; transform-origin: center; }
+.bi-confete > * { transform-box: fill-box; transform-origin: center; }
+.bi-anel, .bi-chama, .bi-faisca, .bi-estagio, .bi-corpo, .bi-cabeca, .bi-giro, .bi-braco, .bi-balao, .bi-pata, .bi-gota, .bi-zzz path, .bi-pensando circle, .bi-suor circle { transform-box: fill-box; }
+.bi-corpo { transform-origin: 50% 100%; }
+.bi-giro { transform-origin: 50% 85%; }
+.bi-braco { transform-origin: 0% 100%; }
+.bi-balao { transform-origin: 50% 100%; }
+.bi-anel { transform-origin: center; }
+.bi-chama { transform-origin: 50% 100%; }
+.bi-faisca { transform-origin: center; }
+.bi-pensando circle, .bi-zzz path, .bi-suor circle, .bi-gota, .bi-pata { transform-origin: center; }
+.bi[data-humor="pensando"] .bi-giro { transform: rotate(-4deg); }
+.bi[data-humor="curioso"] .bi-giro { transform: rotate(-7deg); }
+.bi[data-humor="dormindo"] .bi-giro { transform: rotate(5deg); }
+.bi[data-humor="preocupado"] .bi-olhos { opacity: 0.95; }
+.bi[data-humor="dormindo"] .bi-aura { opacity: 0.5; }
+
+
+/* ovo (D-671): 4 níveis por `data-ovo-nivel` (liso, rachadura, olho espiando, quase abrindo); o esforço só escala o balanço, o ovo nunca comemora */
+.bi-ovo, .bi-aparece { transform-box: fill-box; transform-origin: 50% 100%; }
+.bi-tampa { transform-box: fill-box; transform-origin: 100% 100%; transform: translate(0.8px, -2.4px) rotate(5deg); }
+.bi[data-ovo-nivel="3"] .bi-ovo { transform: rotate(-2deg); }
+.bi[data-ovo-nivel="1"] { --bi-ovo-k: 1; }
+.bi[data-ovo-nivel="2"] { --bi-ovo-k: 1.6; }
+.bi[data-ovo-nivel="3"] { --bi-ovo-k: 2.6; }
+.bi-casca { display: none; }
+
+/* animações: só com movimento permitido e fora do modo quieto */
+@media (prefers-reduced-motion: no-preference) {
+  /* esforço: --bi-ciclo (s) e --bi-amp vêm do perfil por nível (util.ts); níveis maiores = mais rápido, mais amplo e mais partículas */
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-corpo { animation: bi-bater var(--bi-ciclo, 0.56s) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"][data-nivel="4"] .bi-corpo { animation: bi-frenesi var(--bi-ciclo) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-pata-a { animation: bi-tecla calc(var(--bi-ciclo, 0.56s) / 2) ease-in-out infinite alternate; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-pata-b { animation: bi-tecla calc(var(--bi-ciclo, 0.56s) / 2) ease-in-out calc(var(--bi-ciclo, 0.56s) / 4) infinite alternate; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"][data-nivel="3"] .bi-giro, .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"][data-nivel="4"] .bi-giro { animation: bi-balancar calc(var(--bi-ciclo) * 2) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-suor circle { animation: bi-suar calc(var(--bi-ciclo, 0.56s) * 3 + 0.3s) ease-in infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-suor circle:nth-child(2) { animation-delay: calc(var(--bi-ciclo, 0.56s) * 1.2); }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-suor circle:nth-child(3) { animation-delay: calc(var(--bi-ciclo, 0.56s) * 2.1); }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-suor circle:nth-child(4) { animation-delay: calc(var(--bi-ciclo, 0.56s) * 0.6); }
+  .bi-wrap:not([data-quieto]) .bi .bi-faisca { animation: bi-faisca calc(var(--bi-ciclo, 0.56s) * 2.2) ease-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi .bi-faisca:nth-child(2n) { animation-delay: calc(var(--bi-ciclo, 0.56s) * 0.5); }
+  .bi-wrap:not([data-quieto]) .bi .bi-faisca:nth-child(3n) { animation-delay: calc(var(--bi-ciclo, 0.56s) * 0.9); }
+  .bi-wrap:not([data-quieto]) .bi[data-nivel="3"] .bi-chama, .bi-wrap:not([data-quieto]) .bi[data-nivel="4"] .bi-chama { animation: bi-chama calc(var(--bi-ciclo) * 2.4) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-nivel="2"] .bi-anel, .bi-wrap:not([data-quieto]) .bi[data-nivel="3"] .bi-anel, .bi-wrap:not([data-quieto]) .bi[data-nivel="4"] .bi-anel { animation: bi-anel calc(var(--bi-ciclo) * 3) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi .bi-folego circle { animation: bi-folego calc(var(--bi-ciclo) * 3) ease-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi .bi-folego circle:nth-child(2) { animation-delay: calc(var(--bi-ciclo) * 1); }
+  .bi-wrap:not([data-quieto]) .bi .bi-folego circle:nth-child(3) { animation-delay: calc(var(--bi-ciclo) * 2); }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="trabalhando"] .bi-ofegar { animation: bi-ofegar calc(var(--bi-ciclo) * 1.5) ease-in-out infinite; }
+  /* atento (nível 1 parado): respira devagar enquanto há atividade recente; some sozinho quando o nível volta a 0 */
+  .bi-wrap:not([data-quieto]) .bi[data-nivel="1"]:not([data-humor="trabalhando"]):not([data-humor="dormindo"]) .bi-corpo { animation: bi-atento var(--bi-ciclo) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="pensando"] .bi-pensando circle { animation: bi-pontinho 1.3s ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="pensando"] .bi-pensando circle:nth-child(2) { animation-delay: 0.22s; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="pensando"] .bi-pensando circle:nth-child(3) { animation-delay: 0.44s; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="aguardando"] .bi-balao { animation: bi-pulsar 0.9s ease-in-out 8; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="aguardando"] .bi-braco { animation: bi-acenar 0.55s ease-in-out 12 alternate; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="comemorando"] .bi-corpo, .bi-wrap:not([data-quieto]) .bi[data-subiu] .bi-corpo { animation: bi-pular 0.6s ease-out 5; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="comemorando"] .bi-confete > *, .bi-wrap:not([data-quieto]) .bi[data-subiu] .bi-confete > * { animation: bi-confete 1.3s ease-out 4; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="comemorando"] .bi-confete > *:nth-child(2n), .bi-wrap:not([data-quieto]) .bi[data-subiu] .bi-confete > *:nth-child(2n) { animation-delay: 0.2s; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="preocupado"] .bi-giro { animation: bi-tremer 0.2s linear 10; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="preocupado"] .bi-gota { animation: bi-pingar 1.4s ease-in 4; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="dormindo"] .bi-corpo { animation: bi-respirar 4s ease-in-out 3; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="dormindo"] .bi-zzz path { animation: bi-zzz 3s ease-in-out 3; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="dormindo"] .bi-zzz path:nth-child(2) { animation-delay: 1s; }
+  .bi-wrap:not([data-quieto]) .bi[data-humor="curioso"] .bi-giro { animation: bi-inclinar 0.45s ease-out 1; }
+  .bi-wrap[data-espiar]:not([data-quieto]) .bi[data-humor="ocioso"] .bi-giro { animation: bi-espiar 1.8s ease-in-out 1; }
+  .bi-wrap:not([data-quieto]) .bi[data-estagio="lendario"][data-humor="comemorando"] .bi-aura { animation: bi-pulsar 1.2s ease-in-out 3; }
+  /* ovo: balança só enquanto há esforço (o atributo some quando o nível volta a 0); nascimento: iteração ÚNICA, nada infinito */
+  .bi-wrap:not([data-quieto]) .bi[data-estagio="ovo"]:not([data-nivel="0"]) .bi-ovo { animation: bi-ovo-balanca calc(var(--bi-ciclo, 1s) * 2) ease-in-out infinite; }
+  .bi-wrap:not([data-quieto]) .bi[data-nasceu] .bi-aparece { animation: bi-nascer 0.9s ease-out 1 both; }
+  .bi-wrap:not([data-quieto]) .bi[data-nasceu] .bi-casca { display: block; }
+  .bi-wrap:not([data-quieto]) .bi[data-nasceu] .bi-casca-e { animation: bi-casca-e 1.2s ease-in 1 both; transform-box: fill-box; transform-origin: 0% 100%; }
+  .bi-wrap:not([data-quieto]) .bi[data-nasceu] .bi-casca-d { animation: bi-casca-d 1.2s ease-in 1 both; transform-box: fill-box; transform-origin: 100% 100%; }
+  .bi-wrap[data-pausado] .bi, .bi-wrap[data-pausado] .bi * { animation-play-state: paused !important; }
+}
+@keyframes bi-bater { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--bi-amp, 1) * -1.4px)); } }
+@keyframes bi-frenesi { 0%, 100% { transform: translateY(0) rotate(0) scale(1, 1); } 25% { transform: translateY(calc(var(--bi-amp) * -1.6px)) rotate(-2.4deg) scale(0.97, 1.04); } 50% { transform: translateY(0) rotate(0) scale(1.04, 0.96); } 75% { transform: translateY(calc(var(--bi-amp) * -1.6px)) rotate(2.4deg) scale(0.97, 1.04); } }
+@keyframes bi-balancar { 0%, 100% { transform: rotate(calc(var(--bi-amp) * -1.2deg)); } 50% { transform: rotate(calc(var(--bi-amp) * 1.2deg)); } }
+@keyframes bi-faisca { 0% { opacity: 0; transform: scale(0.4); } 25% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes bi-chama { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(0.88, 1.18); } }
+@keyframes bi-anel { 0%, 100% { transform: scale(1); } 50% { transform: scale(calc(1 + var(--bi-amp) * 0.018)); } }
+@keyframes bi-folego { 0% { opacity: 0; transform: translate(-3px, 3px) scale(0.5); } 30% { opacity: 0.85; } 100% { opacity: 0; transform: translate(3px, -4px) scale(1.5); } }
+@keyframes bi-ofegar { 0%, 100% { transform: scaleY(0.7); } 50% { transform: scaleY(1.25); } }
+@keyframes bi-atento { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--bi-amp) * -1px)); } }
+@keyframes bi-tecla { from { transform: translateY(0); } to { transform: translateY(calc(var(--bi-amp, 1) * -2px)); } }
+@keyframes bi-suar { 0% { opacity: 0.9; transform: translateY(0); } 100% { opacity: 0; transform: translateY(calc(6px + var(--bi-amp, 1) * 2px)); } }
+@keyframes bi-pontinho { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes bi-pulsar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+@keyframes bi-acenar { from { transform: rotate(-10deg); } to { transform: rotate(14deg); } }
+@keyframes bi-pular { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-7px) scale(0.96, 1.05); } 70% { transform: translateY(0) scale(1.04, 0.95); } }
+@keyframes bi-confete { 0% { opacity: 0; transform: translate(0, 0) scale(0.4); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); } }
+@keyframes bi-tremer { 0%, 100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-0.8px) rotate(-1.2deg); } 75% { transform: translateX(0.8px) rotate(1.2deg); } }
+@keyframes bi-pingar { 0% { opacity: 0; transform: translateY(-3px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(9px); } }
+@keyframes bi-respirar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025, 1.04); } }
+@keyframes bi-zzz { 0% { opacity: 0.2; transform: translateY(3px); } 50% { opacity: 0.9; } 100% { opacity: 0.85; transform: translateY(0); } }
+@keyframes bi-inclinar { from { transform: rotate(0); } to { transform: rotate(-7deg); } }
+@keyframes bi-espiar { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg) translateX(-1px); } 60% { transform: rotate(8deg) translateX(1px); } }
+
+@keyframes bi-ovo-balanca { 0%, 100% { transform: rotate(calc(var(--bi-amp, 1) * var(--bi-ovo-k, 1) * -1.1deg)); } 50% { transform: rotate(calc(var(--bi-amp, 1) * var(--bi-ovo-k, 1) * 1.1deg)); } }
+@keyframes bi-nascer { 0% { opacity: 0; transform: scale(0.45); } 55% { opacity: 1; transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes bi-casca-e { 0% { opacity: 1; transform: none; } 35% { opacity: 1; transform: translate(-3px, -1px) rotate(-12deg); } 100% { opacity: 0; transform: translate(-15px, 9px) rotate(-58deg); } }
+@keyframes bi-casca-d { 0% { opacity: 1; transform: none; } 35% { opacity: 1; transform: translate(3px, -1px) rotate(12deg); } 100% { opacity: 0; transform: translate(15px, 9px) rotate(58deg); } }
+
+/* ---- encaixes: slot do menu, mini do card, popover ---- */
+.bi-wrap { display: block; width: 100%; height: 100%; }
+.bi-slot { position: relative; flex: none; padding: 6px 8px 4px; border-top: 1px solid var(--borda); }
+.bi-slot-botao { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; padding: 3px; border: 0; border-radius: var(--raio-pequeno); background: transparent; color: var(--texto); text-align: left; cursor: pointer; }
+.bi-slot-botao:hover, .bi-slot-botao[aria-expanded="true"] { background: var(--superficie); }
+.bi-slot-figura { flex: none; width: 46px; height: 46px; }
+.menu[data-icones]:not([data-fixado]) .bi-slot-figura, .menu:not([data-aberto]) .bi-slot-figura { width: 40px; height: 40px; }
+.bi-slot-texto { display: grid; min-width: 0; gap: 1px; line-height: 1.2; }
+.bi-slot-texto strong { overflow: hidden; font-size: var(--fs-rotulo); text-overflow: ellipsis; white-space: nowrap; }
+.bi-slot-texto small { overflow: hidden; color: var(--texto-discreto); font-size: var(--fs-pequeno); text-overflow: ellipsis; white-space: nowrap; }
+.menu:not([data-aberto]) .bi-slot-texto { opacity: 0; }
+.bi-barra { height: 3px; margin-top: 3px; overflow: hidden; border-radius: 2px; background: var(--superficie-2); }
+.bi-barra > i { display: block; height: 100%; background: var(--degrade); }
+.bi-mini { width: 36px; height: 36px; flex: none; }
+.bi-mini-botao { display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: default; }
+
+.bi-popover { position: fixed; z-index: 70; width: 268px; max-width: calc(100vw - 16px); display: grid; gap: 10px; padding: 12px; border: 1px solid var(--destaque); border-radius: 12px; background: var(--painel); color: var(--texto); box-shadow: 0 14px 40px var(--sombra); font-size: var(--fs-rotulo); }
+.bi-pop-topo { display: flex; align-items: center; gap: 10px; }
+.bi-pop-figura { flex: none; width: 56px; height: 56px; }
+.bi-pop-nome { display: grid; min-width: 0; gap: 1px; }
+.bi-pop-nome strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.bi-pop-nome span { color: var(--texto-suave); }
+.bi-pop-medidor { display: grid; gap: 3px; }
+.bi-pop-medidor > div { display: flex; justify-content: space-between; gap: 8px; }
+.bi-pop-medidor small, .bi-pop-lista small { color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.bi-pop-lista { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.bi-pop-lista li { display: flex; justify-content: space-between; gap: 8px; }
+.bi-pop-motivo { margin: 0; color: var(--texto-suave); font-size: var(--fs-pequeno); line-height: 1.4; }
+.bi-pop-acoes { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--borda); }
+.bi-pop-acoes label { display: grid; gap: 3px; color: var(--texto-suave); }
+.bi-pop-acoes select, .bi-pop-acoes input[type="text"] { min-height: var(--campo-altura); padding: 0 6px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: inherit; }
+.bi-pop-linha { display: flex; gap: 6px; }
+.bi-pop-linha input { flex: 1; min-width: 0; }
+.bi-pop-esforco[data-nivel="3"] { color: var(--aviso); }
+.bi-pop-esforco[data-nivel="4"] { color: var(--alerta); }
+.bi-pop-aviso { margin: 0; color: var(--alerta); font-size: var(--fs-pequeno); }
+
+.bi-botao { display: inline-flex; align-items: center; justify-content: center; min-height: var(--botao-altura, 32px); padding: 0 12px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: inherit; cursor: pointer; }
+.bi-botao:hover { background: var(--superficie-2); }
+.bi-botao[aria-checked="true"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.bi-slot-botao:focus-visible, .bi-botao:focus-visible, .bi-pop-acoes select:focus-visible, .bi-pop-acoes input:focus-visible, .bi-popover:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }

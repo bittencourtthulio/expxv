@@ -1,0 +1,81 @@
+{
+  "linguagem": "rust",
+  "arquivos": {
+    "src/main.rs": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "inline.z", "tipo": "funcao", "exportado": true },
+        { "qualificado": "main", "tipo": "funcao", "exportado": false, "visibilidade": "privada", "doc": "Ponto de entrada do servidor.", "decoradores": ["#[tokio::main]"] },
+        { "qualificado": "listar", "tipo": "funcao" }
+      ],
+      "imports": [
+        { "especificador": "std::collections", "tipo": "estatico", "nomes": ["HashMap"] },
+        { "especificador": "std::collections::hash_map", "nomes": ["Entry=E"] },
+        { "especificador": "std", "nomes": ["env"] },
+        { "especificador": "axum::routing", "nomes": ["get"] },
+        { "especificador": "axum", "nomes": ["Router"] },
+        { "especificador": "crate::modelo", "nomes": ["self"] },
+        { "especificador": "crate::modelo", "nomes": ["Pedido"] },
+        { "especificador": "crate::util", "nomes": ["*"] },
+        { "especificador": "crate::api", "tipo": "reexport", "nomes": ["Cliente"] },
+        { "especificador": "mod:modelo", "tipo": "estatico", "nomes": [] }
+      ],
+      "chamadas": [
+        { "de": "main", "alvo": "var", "receptor": "env", "tipo": "chamada" },
+        { "de": "main", "alvo": "new", "receptor": "Router", "tipo": "chamada" },
+        { "de": "main", "alvo": "novo", "receptor": "Pedido", "tipo": "chamada" },
+        { "de": "main", "alvo": "z", "receptor": "inline", "tipo": "chamada" },
+        { "de": "main", "alvo": "get", "receptor": null, "tipo": "chamada" }
+      ],
+      "entradas": [
+        { "tipo": "main", "chave": "main", "framework": "tokio", "handler": "main", "confianca": "exata" },
+        { "tipo": "rota", "chave": "GET /pedidos/:id", "framework": "axum", "handler": "listar", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /pedidos", "framework": "axum", "handler": "criar" },
+        { "tipo": "rota", "chave": "GET /pedidos", "framework": "axum", "handler": "listar" }
+      ],
+      "padroes": [{ "tipo": "env", "nome": "PORTA" }, { "tipo": "throw" }],
+      "ausentes": { "chamadas": [{ "alvo": "println" }] }
+    },
+    "src/modelo.rs": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "Pedido", "tipo": "struct", "exportado": true, "visibilidade": "publica", "doc": "Um pedido da loja." },
+        { "qualificado": "Estado", "tipo": "enum", "exportado": true },
+        { "qualificado": "Repositorio", "tipo": "trait", "exportado": true },
+        { "qualificado": "Repositorio.buscar", "tipo": "metodo" },
+        { "qualificado": "LIMITE", "tipo": "constante", "exportado": true },
+        { "qualificado": "Id", "tipo": "tipo", "exportado": true },
+        { "qualificado": "Pedido.novo", "tipo": "metodo", "exportado": true, "doc": "Cria um pedido.", "complexidade": 1 },
+        { "qualificado": "Pedido.total", "tipo": "metodo", "exportado": false, "visibilidade": "pacote", "complexidade": 5 },
+        { "qualificado": "Pedido.interna", "tipo": "metodo", "exportado": false, "visibilidade": "privada", "complexidade": 2 },
+        { "qualificado": "Pedido.buscar", "tipo": "metodo", "exportado": true, "complexidade": 3 },
+        { "qualificado": "mm", "tipo": "funcao" }
+      ],
+      "herancas": [
+        { "classe": "Repositorio", "base": "Base", "tipo": "herda" },
+        { "classe": "Repositorio", "base": "Send", "tipo": "herda" },
+        { "classe": "Pedido", "base": "Repositorio", "tipo": "implementa" }
+      ],
+      "chamadas": [
+        { "de": "Pedido.novo", "alvo": "Pedido", "tipo": "instancia" },
+        { "de": "Pedido.interna", "alvo": "outra", "receptor": null, "tipo": "chamada" }
+      ],
+      "entradas": [{ "tipo": "cli", "chave": "clap:Pedido", "framework": "clap" }],
+      "dados": [
+        { "tabela": "pedidos", "operacao": "le", "de": "Pedido.buscar", "confianca": "exata", "fonte": "sqlx" }
+      ],
+      "dinamicos": [{ "tipo": "reflexao" }, { "tipo": "chamada_computada" }],
+      "padroes": [{ "tipo": "throw" }, { "tipo": "catch_vazio" }],
+      "ausentes": { "dados": [{ "tabela": "items" }, { "tabela": "the" }] }
+    },
+    "src/web.rs": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [{ "qualificado": "item", "tipo": "funcao" }, { "qualificado": "get", "tipo": "funcao" }],
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /itens/:id", "framework": "actix", "handler": "item", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /itens", "framework": "actix", "handler": "novo" },
+        { "tipo": "rota", "chave": "GET /saude", "framework": "actix", "handler": "saude" }
+      ]
+    }
+  }
+}

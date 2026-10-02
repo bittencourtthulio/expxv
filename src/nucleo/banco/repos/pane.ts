@@ -49,7 +49,14 @@ export interface AtualizacaoPane {
   cwd?: string | null;
 }
 
+/**
+ * Gancho de fechamento (Fase 8, T-08.09): roda DENTRO da transação de `encerrar`, depois do `UPDATE pane` e da atualização da Missão.
+ * Se lançar, a transação inteira é desfeita (o Pane continua não encerrado). Só roda no fechamento real (nunca na chamada idempotente).
+ */
+export type AoEncerrarPane = (tx: Banco, pane: Pane, motivo: string | null) => void;
+
 export function criarRepoPane(banco: Banco) {
+  let aoEncerrarPadrao: AoEncerrarPane | null = null;
   const obter = (id: string): Pane | undefined => {
     const l = banco.consultarUm<LinhaPane>("SELECT * FROM pane WHERE id = ?", [id]);
     return l ? mapear(l) : undefined;
@@ -106,7 +113,7 @@ export function criarRepoPane(banco: Banco) {
      * Fecha o Pane e atualiza a Missão (limpa `piloto_pane_id` se era o piloto) na mesma transação.
      * Idempotente: já encerrado devolve o Pane como está (mantém o primeiro motivo).
      */
-    encerrar(id: string, motivo: string | null): Pane {
+    encerrar(id: string, motivo: string | null, aoEncerrar?: AoEncerrarPane): Pane {
       return banco.transacao((tx) => {
         const l = tx.consultarUm<LinhaPane>("SELECT * FROM pane WHERE id = ?", [id]);
         if (!l) throw new NaoEncontradoErro("Pane", id);
@@ -119,8 +126,15 @@ export function criarRepoPane(banco: Banco) {
             [id, ts, l.mission_id],
           );
         }
-        return mapear(tx.consultarUm<LinhaPane>("SELECT * FROM pane WHERE id = ?", [id]) as LinhaPane);
+        const fechado = mapear(tx.consultarUm<LinhaPane>("SELECT * FROM pane WHERE id = ?", [id]) as LinhaPane);
+        const gancho = aoEncerrar ?? aoEncerrarPadrao;
+        if (gancho !== null) gancho(tx, fechado, motivo);
+        return fechado;
       });
+    },
+    /** Gancho usado por TODO `encerrar` sem o terceiro argumento (o main liga a memória aqui). `null` remove. */
+    definirAoEncerrar(gancho: AoEncerrarPane | null): void {
+      aoEncerrarPadrao = gancho;
     },
     atualizar(id: string, patch: AtualizacaoPane): Pane {
       if (patch.estado !== undefined) {

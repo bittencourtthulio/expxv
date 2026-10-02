@@ -20,18 +20,30 @@
     "inicio": "npm run build && electron .",
     "perf": "node scripts/perf.mjs",
     "dist:dir": "npm run build && node scripts/dist-dir.mjs",
-    "dist:mac": "npm run build && electron-builder --mac --universal --publish never --config electron-builder.yml",
-    "dist:win": "npm run build && electron-builder --win --x64 --publish never --config electron-builder.yml",
+    "dist:mac": "npm run preparar:voz -- mac && npm run build && electron-builder --mac --universal --publish never --config electron-builder.yml",
+    "dist:win": "npm run preparar:voz -- win && npm run build && electron-builder --win --x64 --publish never --config electron-builder.yml",
     "icones": "node scripts/gerar-icones.mjs",
     "test:pacote": "node scripts/verificar-pacote.mjs",
     "postinstall": "node scripts/preparar-node-pty.mjs",
-    "dist:mac:arm64": "npm run build && electron-builder --mac --arm64 --publish never --config electron-builder.yml"
+    "dist:mac:arm64": "npm run build && electron-builder --mac --arm64 --publish never --config electron-builder.yml",
+    "renomear": "node scripts/renomear.mjs",
+    "verificar:instaladores": "node scripts/verificar-instaladores.mjs",
+    "verificar:fuses": "node scripts/verificar-fuses.mjs",
+    "assinatura:preparar": "node scripts/assinatura/preparar.mjs",
+    "verificar:assinatura": "node scripts/assinatura/verificar-assinatura.mjs",
+    "verificar:nativos": "node scripts/assinatura/verificar-nativos.mjs",
+    "auditar": "node scripts/auditar-dependencias.mjs",
+    "notas-versao": "node scripts/notas-versao.mjs",
+    "gerar:manifesto": "node scripts/gerar-manifesto.mjs",
+    "assinar:manifesto": "node scripts/assinar-manifesto.mjs",
+    "preparar:voz": "node scripts/preparar-voz-nativos.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.31.0",
     "@xterm/headless": "6.0.0",
     "chokidar": "^5.0.0",
     "node-pty": "1.1.0",
+    "sherpa-onnx-node": "1.13.8",
     "web-tree-sitter": "0.27.0",
     "yaml": "^2.9.1"
   },
@@ -59,5 +71,10 @@
     "typescript": "^5.6.0",
     "vite": "8.3.1",
     "vitest": "4.1.11"
+  },
+  "optionalDependencies": {
+    "sherpa-onnx-darwin-arm64": "1.13.8",
+    "sherpa-onnx-darwin-x64": "1.13.8",
+    "sherpa-onnx-win-x64": "1.13.8"
   }
 }

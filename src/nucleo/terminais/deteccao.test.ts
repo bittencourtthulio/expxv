@@ -131,6 +131,8 @@ describe("versão (--version, timeout, sem shell)", () => {
     expect(await lerVersao(a, "direto")).toBe("2.1.286");
     const b = executavel(dir, "v2", "#!/bin/sh\necho codex-cli 0.157.1\n");
     expect(await lerVersao(b, "direto")).toBe("0.157.1");
+    const g = executavel(dir, "v-grok", "#!/bin/sh\necho 'grok 1.0.46 (stable)'\n");
+    expect(await lerVersao(g, "direto")).toBe("1.0.46");
     const c = executavel(dir, "v3", `#!/bin/sh\nprintf '%s' "${"x".repeat(5000)}"\n`);
     const v = await lerVersao(c, "direto");
     expect(v === null || v.length <= 80).toBe(true);

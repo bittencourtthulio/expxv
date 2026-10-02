@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ComandoSugerido, GestoMetodo, ResultadoDisparo } from "../../../compartilhado/dominio";
 import type { Trabalho } from "../../../nucleo/metodo/tipos";
+import { moduloDoGesto } from "../../../nucleo/suite/modulos";
 import { ade } from "../../ade";
+import { entregue, storeExecucaoMetodo, type StoreExecucaoMetodo } from "../../estado/execucao-metodo";
+import { useModulosDesligados } from "../../estado/suite";
 
 interface Gesto { gesto: GestoMetodo; rotulo: string }
 
@@ -13,12 +16,6 @@ const DO_TRABALHO: readonly Gesto[] = [
   { gesto: "entrega_atencao", rotulo: "Atenção do diff" },
   { gesto: "entrega_qa", rotulo: "Pacote de QA" },
   { gesto: "entrega_pr", rotulo: "Abrir PR" },
-];
-const NOVOS: readonly Gesto[] = [
-  { gesto: "nova_feature", rotulo: "Nova feature" },
-  { gesto: "nova_ocorrencia", rotulo: "Nova ocorrência" },
-  { gesto: "pedido_cru", rotulo: "Triar pedido" },
-  { gesto: "projeto", rotulo: "Novo projeto" },
 ];
 
 interface AcaoHumana { rotulo: string; motivo: string; caminho: string }
@@ -50,24 +47,24 @@ interface Painel {
 
 const MENSAGEM_AGUARDANDO = "O Pane está aguardando você: o comando não é reenviado. Responda no Pane e tente de novo.";
 
-export function AcoesMetodo({ workspaceId, trabalho }: { workspaceId: string; trabalho: Trabalho | null }) {
-  const [argumento, setArgumento] = useState("");
+export function AcoesMetodo({ workspaceId, trabalho, execucao = storeExecucaoMetodo }: { workspaceId: string; trabalho: Trabalho; execucao?: StoreExecucaoMetodo }) {
+  useEffect(() => { void execucao.carregarPreferencia(); }, [execucao]);
   const [painel, setPainel] = useState<Painel | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const gestos = trabalho ? DO_TRABALHO : NOVOS;
-  const arg = trabalho ? null : argumento.trim() || null;
+  // módulo desligado no projeto (D-480): o gesto que o usa some daqui (o main também recusa o comando)
+  const desligados = useModulosDesligados(workspaceId);
+  const gestos = DO_TRABALHO.filter((g) => {
+    const m = moduloDoGesto(g.gesto, trabalho.tipo);
+    return m === null || !desligados.has(m);
+  });
 
   const sugerir = async (g: Gesto) => {
     const api = ade();
     if (!api) return;
-    if (!trabalho && !arg) {
-      setPainel({ rotulo: g.rotulo, gesto: g.gesto, sugestao: null, resultado: null, erro: "Descreva o pedido no campo acima antes de continuar." });
-      return;
-    }
     setOcupado(true);
     try {
-      const sugestao = await api.metodo.comandoSugerido(workspaceId, trabalho?.id ?? null, g.gesto, arg);
-      setPainel({ rotulo: g.rotulo, gesto: g.gesto, sugestao, resultado: null, erro: null, caminho: trabalho?.entrega?.arquivo ?? trabalho?.pasta, motivo: sugestao.motivo_bloqueio ?? undefined });
+      const sugestao = await api.metodo.comandoSugerido(workspaceId, trabalho.id, g.gesto, null);
+      setPainel({ rotulo: g.rotulo, gesto: g.gesto, sugestao, resultado: null, erro: null, caminho: trabalho.entrega?.arquivo ?? trabalho.pasta, motivo: sugestao.motivo_bloqueio ?? undefined });
     } catch (e) {
       setPainel({ rotulo: g.rotulo, gesto: g.gesto, sugestao: null, resultado: null, erro: e instanceof Error ? e.message : "Falha ao montar o comando." });
     }
@@ -79,25 +76,22 @@ export function AcoesMetodo({ workspaceId, trabalho }: { workspaceId: string; tr
     if (!api || !painel?.gesto || !painel.sugestao || painel.sugestao.somente_humano) return;
     setOcupado(true);
     try {
-      const resultado = await api.metodo.disparar({ workspace_id: workspaceId, trabalho_id: trabalho?.id ?? null, gesto: painel.gesto, argumento: arg, pane_id: null });
+      const resultado = await api.metodo.disparar({ workspace_id: workspaceId, trabalho_id: trabalho.id, gesto: painel.gesto, argumento: null, pane_id: null });
       setPainel({ ...painel, resultado, erro: null });
+      // D-610: comando enviado → leva à tela Terminais e foca o painel (preferência "Ir para o terminal ao disparar"); falha nunca navega
+      if (entregue(resultado)) execucao.registrar(resultado, { workspaceId, rotulo: painel.rotulo, pedido: trabalho.titulo });
     } catch (e) {
       setPainel({ ...painel, erro: e instanceof Error ? e.message : "Falha ao disparar." });
     }
     setOcupado(false);
   };
 
-  const humanas = trabalho ? acoesHumanas(trabalho) : [];
+  const humanas = acoesHumanas(trabalho);
   const s = painel?.sugestao ?? null;
-  const falhou = painel?.resultado && !painel.resultado.ok;
+  const falhou = painel?.resultado && !entregue(painel.resultado);
 
   return (
     <section className="met-acoes" aria-label="Ações do método">
-      {!trabalho ? (
-        <label className="met-campo">Pedido ou descrição
-          <input type="text" value={argumento} onChange={(e) => setArgumento(e.target.value)} placeholder="Ex.: exportar relatório em PDF" />
-        </label>
-      ) : null}
       <div className="met-acoes-botoes">
         {gestos.map((g) => <button key={g.gesto} type="button" className="met-botao" disabled={ocupado} onClick={() => void sugerir(g)}>{g.rotulo}</button>)}
         {humanas.map((h) => (
@@ -121,10 +115,10 @@ export function AcoesMetodo({ workspaceId, trabalho }: { workspaceId: string; tr
               <p>Comando exato: <code className="met-comando">{s.comando}</code></p>
               {s.pane_separado ? <p className="met-aviso">Abre em Pane separado do implementador.</p> : null}
               {s.motivo_bloqueio ? <p className="met-erro">{s.motivo_bloqueio}</p> : null}
-              {!painel.resultado?.ok ? <button type="button" className="met-botao met-botao-primario" disabled={ocupado || !!s.motivo_bloqueio} onClick={() => void disparar()}>Disparar no Pane</button> : null}
+              {!(painel.resultado && entregue(painel.resultado)) ? <button type="button" className="met-botao met-botao-primario" disabled={ocupado || !!s.motivo_bloqueio} onClick={() => void disparar()}>Disparar no Pane</button> : null}
             </>
           ) : null}
-          {painel.resultado?.ok ? <p role="status" className="met-ok">Enviado ao Pane{painel.resultado.pane_id ? ` ${painel.resultado.pane_id}` : ""}: <code>{painel.resultado.comando}</code></p> : null}
+          {painel.resultado && entregue(painel.resultado) ? <p role="status" className="met-ok">Enviado ao Pane{painel.resultado.pane_id ? ` ${painel.resultado.pane_id}` : ""}: <code>{painel.resultado.comando}</code></p> : null}
           {falhou ? <p role="alert" className="met-erro">{/aguard/i.test(painel.resultado?.motivo ?? "") ? MENSAGEM_AGUARDANDO : painel.resultado?.motivo ?? "O comando não foi enviado."}</p> : null}
         </div>
       ) : null}

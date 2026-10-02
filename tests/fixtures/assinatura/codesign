@@ -1,0 +1,22 @@
+#!/bin/sh
+# Dublê de `codesign` (T-21.10/T-21.11). Alvo "não assinado": arquivo contendo NAO_ASSINADO ou pasta com `.nao-assinado`.
+[ -n "$FALSO_LOG" ] && echo "codesign $*" >> "$FALSO_LOG"
+for a in "$@"; do alvo="$a"; done
+nao_assinado() {
+  if [ -d "$alvo" ]; then [ -f "$alvo/.nao-assinado" ]; else grep -aq NAO_ASSINADO "$alvo" 2>/dev/null; fi
+}
+case "$1" in
+  --sign) echo "simulado: assinaria o alvo"; exit 0 ;;
+  --verify)
+    if nao_assinado; then echo "$alvo: code object is not signed at all" >&2; exit 1; fi
+    exit 0 ;;
+  -dv)
+    if nao_assinado; then echo "$alvo: code object is not signed at all" >&2; exit 1; fi
+    printf 'Identifier=falso\nAuthority=Developer ID Application: Falso (FAKETEAM01)\nTeamIdentifier=FAKETEAM01\n' >&2
+    exit 0 ;;
+  -d)
+    if nao_assinado; then echo "$alvo: code object is not signed at all" >&2; exit 1; fi
+    cat "${FALSO_ENTITLEMENTS:-$(dirname "$0")/entitlements-falso.plist}"
+    exit 0 ;;
+esac
+exit 0

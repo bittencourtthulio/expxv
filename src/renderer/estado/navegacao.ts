@@ -54,3 +54,48 @@ export function aoPedirPaleta(ouvinte: () => void): () => void {
   ouvintesPaleta.add(ouvinte);
   return () => void ouvintesPaleta.delete(ouvinte);
 }
+
+// ---- foco de uma sessão na tela Terminais (painel de workspaces): a tela é lazy, então o pedido espera pouco pelo primeiro ouvinte.
+export const VALIDADE_FOCO_SESSAO_MS = 4_000;
+const ouvintesFoco = new Set<(sessaoId: string) => void>();
+let focoPendente: { id: string; em: number } | null = null;
+
+/** Mostra a tela Terminais e pede para focar o painel da sessão (a tela dona da grade decide onde ele está). */
+export function pedirFocoSessao(sessaoId: string): void {
+  pedirTela("terminais");
+  if (ouvintesFoco.size === 0) { focoPendente = { id: sessaoId, em: Date.now() }; return; }
+  focoPendente = null;
+  [...ouvintesFoco].forEach((o) => o(sessaoId));
+}
+export function aoPedirFocoSessao(ouvinte: (sessaoId: string) => void): () => void {
+  ouvintesFoco.add(ouvinte);
+  if (focoPendente !== null) { const p = focoPendente; focoPendente = null; if (Date.now() - p.em <= VALIDADE_FOCO_SESSAO_MS) ouvinte(p.id); }
+  return () => void ouvintesFoco.delete(ouvinte);
+}
+
+// ---- seção das Configurações: quem manda abrir Configurações pode pedir uma seção (ex.: o microfone leva a "Voz e captura").
+// A tela carrega sob demanda e fica montada oculta depois de visitada: vale o pedido pendente (ao montar) e o ouvinte (já montada).
+
+export type SecaoConfigPedida = "voz" | "memoria" | "modulos" | "limite" | "aprovacao_workers";
+
+const ouvintesDeSecao = new Set<(s: SecaoConfigPedida) => void>();
+let secaoPendente: { secao: SecaoConfigPedida; em: number } | null = null;
+
+/** Abre Configurações já na seção pedida. */
+export function pedirConfiguracoes(secao: SecaoConfigPedida): void {
+  secaoPendente = { secao, em: Date.now() };
+  ouvintesDeSecao.forEach((o) => o(secao));
+  pedirTela("config");
+}
+
+/** Consome o pedido pendente (tela que acabou de montar). Expira como as ações. */
+export function consumirSecaoConfigPedida(): SecaoConfigPedida | null {
+  const p = secaoPendente;
+  secaoPendente = null;
+  return p !== null && Date.now() - p.em <= VALIDADE_PEDIDO_MS ? p.secao : null;
+}
+
+export function aoPedirSecaoConfig(ouvinte: (s: SecaoConfigPedida) => void): () => void {
+  ouvintesDeSecao.add(ouvinte);
+  return () => void ouvintesDeSecao.delete(ouvinte);
+}

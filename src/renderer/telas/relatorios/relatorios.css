@@ -1,0 +1,50 @@
+/* Tela Relatórios (Fase 19, D-32): uma linha de controles, lista de pacotes + painel. Só tokens de tokens.css. */
+.relatorios { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 0; gap: var(--espaco-1); font-size: var(--fs-rotulo); }
+.rl-barra { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--barra-altura); overflow-x: auto; white-space: nowrap; scrollbar-width: none; font-size: var(--fs-pequeno); }
+.rl-barra::-webkit-scrollbar { display: none; }
+.rl-espaco { flex: 1; }
+.relatorios select, .relatorios input:not([type="checkbox"]), .relatorios textarea { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--superficie); color: var(--texto); font: var(--fs-pequeno) var(--fonte); }
+.relatorios textarea { padding: var(--espaco-1) var(--espaco-2); width: 100%; resize: vertical; }
+.rl-btn { display: inline-flex; align-items: center; gap: var(--espaco-1); min-height: var(--botao-altura); padding: 0 var(--espaco-3); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--superficie); color: var(--texto); font: var(--fs-pequeno) var(--fonte); cursor: pointer; }
+.rl-btn:hover:not(:disabled) { background: var(--superficie-2); }
+.rl-btn[data-primario] { background: var(--destaque); border-color: var(--destaque); color: var(--sobre-destaque); }
+.rl-btn:disabled { opacity: 0.5; cursor: default; }
+.relatorios button:focus-visible, .relatorios select:focus-visible, .relatorios input:focus-visible, .relatorios textarea:focus-visible, .relatorios [tabindex]:focus-visible, .relatorios summary:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.rl-meta { color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.rl-meta[data-estoura] { color: var(--alerta); }
+.rl-corpo { flex: 1; min-height: 0; overflow: auto; }
+.rl-faixa { display: flex; align-items: center; gap: var(--espaco-2); flex-wrap: wrap; margin: 0 0 var(--espaco-2); padding: var(--espaco-1) var(--espaco-2); border: 1px solid var(--aviso); border-radius: 6px; color: var(--aviso); font-size: var(--fs-pequeno); }
+.rl-faixa[data-tom="erro"] { border-color: var(--alerta); color: var(--alerta); }
+.rl-faixa[data-tom="info"] { border-color: var(--borda); color: var(--texto-suave); }
+.rl-faixa ul { margin: var(--espaco-1) 0 0; padding-left: var(--espaco-4); }
+.rl-faixa button { height: var(--botao-altura); padding: 0 var(--espaco-2); border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; font: var(--fs-pequeno) var(--fonte); cursor: pointer; }
+.rl-carregando, .rl-vazio { padding: var(--espaco-3); color: var(--texto-suave); margin: 0; }
+.rl-duas { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--espaco-2); height: 100%; min-height: 0; }
+/* coluna de pacotes no padrão único de listas (D-694): seleção por barra de destaque + aria-pressed */
+.rl-lista { margin: 0; padding: 0; overflow: auto; border-right: 1px solid var(--borda); }
+.rl-painel { min-width: 0; min-height: 0; overflow: auto; padding-right: var(--espaco-1); }
+.rl-cab { display: flex; align-items: center; gap: var(--espaco-2); flex-wrap: wrap; margin-bottom: var(--espaco-1); }
+.rl-cab h3 { margin: 0; font-size: var(--fs-base); }
+.rl-selo { display: inline-block; padding: 0 var(--espaco-2); border: 1px solid var(--borda); border-radius: 8px; font-size: var(--fs-micro); color: var(--texto-suave); }
+.rl-selo[data-estado="pronto"], .rl-selo[data-revisao="aprovado"], .rl-selo[data-estado="enviado"] { border-color: var(--sucesso); color: var(--sucesso); }
+.rl-selo[data-estado="falhou"] { border-color: var(--alerta); color: var(--alerta); }
+.rl-acoes { display: flex; align-items: flex-end; gap: var(--espaco-2); flex-wrap: wrap; margin: var(--espaco-1) 0; }
+.rl-campo { display: inline-flex; flex-direction: column; gap: var(--espaco-1); font-size: var(--fs-pequeno); color: var(--texto-suave); }
+.rl-check { display: flex; align-items: center; gap: var(--espaco-2); margin: var(--espaco-1) 0; }
+.rl-avisos { margin: var(--espaco-1) 0; font-size: var(--fs-pequeno); color: var(--aviso); }
+.rl-previa { width: 100%; height: min(60vh, 560px); border: 1px solid var(--borda); border-radius: 4px; background: var(--painel); }
+.rl-previa-texto { margin: var(--espaco-1) 0; padding: var(--espaco-2) var(--espaco-2); max-height: min(60vh, 560px); overflow: auto; white-space: pre-wrap; word-break: break-word; border: 1px solid var(--borda); border-radius: 4px; background: var(--superficie); font: var(--fs-pequeno) var(--mono); }
+.rl-bloco, .rl-variante, .rl-secao { margin: 0 0 var(--espaco-2); padding: var(--espaco-2); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
+.rl-bloco h4, .rl-variante h4, .rl-secao h4, .rl-divulgacao h4 { margin: 0 0 var(--espaco-2); font-size: var(--fs-rotulo); }
+.rl-variante header { display: flex; align-items: center; gap: var(--espaco-2); }
+.rl-canal { display: flex; align-items: center; gap: var(--espaco-2); flex-wrap: wrap; }
+.rl-fila { list-style: none; margin: 0; padding: 0; }
+.rl-fila li { margin: 0 0 var(--espaco-2); padding: var(--espaco-2) var(--espaco-2); border: 1px solid var(--borda); border-radius: 4px; }
+.rl-linha { display: flex; align-items: center; gap: var(--espaco-2); }
+.rl-so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* janela estreita: a lista de pacotes vai para cima (rolagem própria) e o painel ocupa o resto */
+@media (max-width: 899px) {
+  .rl-duas { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .rl-lista { border-right: 0; border-bottom: 1px solid var(--borda); max-height: 30%; }
+}
+@media (prefers-reduced-motion: reduce) { .relatorios * { transition: none !important; animation: none !important; } }

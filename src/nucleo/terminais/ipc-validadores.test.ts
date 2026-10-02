@@ -153,6 +153,11 @@ describe("LayoutTerminais", () => {
     l.abas[0]!.arvore.primeiro["injetado"] = 1;
     expect(validarLayoutTerminais(l)).toMatchObject({ ok: false });
   });
+  it("proporção opcional da divisão (D-515): número finito entre 0,05 e 0,95; recusa o resto", () => {
+    const com = (proporcao: unknown): unknown => ({ ...base(), abas: [{ arvore: { tipo: "divisao", orientacao: "vertical", proporcao, primeiro: folha("a"), segundo: folha("b") } }] });
+    expect(validarLayoutTerminais(com(0.45))).toMatchObject({ ok: true, valor: { abas: [{ arvore: { proporcao: 0.45 } }] } });
+    for (const ruim of [0, 1, 0.01, 0.96, -1, Number.NaN, Number.POSITIVE_INFINITY, "0.5", null]) expect(validarLayoutTerminais(com(ruim))).toMatchObject({ ok: false });
+  });
   it("recusa versão, ids ruins, tipo inválido e orientação inválida", () => {
     expect(validarLayoutTerminais({ ...base(), versao: 1 })).toMatchObject({ ok: false });
     expect(validarLayoutTerminais({ ...base(), ativa: "a b" })).toMatchObject({ ok: false });
@@ -169,6 +174,12 @@ describe("LayoutTerminais", () => {
     const muitasAbas = Array.from({ length: 33 }, () => ({ arvore: { tipo: "divisao", orientacao: "vertical", primeiro: folha("a"), segundo: folha("b") } }));
     expect(validarLayoutTerminais({ ...base(), abas: muitasAbas })).toMatchObject({ ok: false }); // 99 nós
     expect(validarLayoutTerminais({ ...base(), fixadas: Array(65).fill("x") })).toMatchObject({ ok: false });
+  });
+  it("D-570: aceita expandido e foco_unico opcionais e recusa tipos errados", () => {
+    expect(validarLayoutTerminais({ ...base(), expandido: "x", foco_unico: true })).toMatchObject({ ok: true, valor: { expandido: "x", foco_unico: true } });
+    expect(validarLayoutTerminais({ ...base(), expandido: null })).toMatchObject({ ok: true });
+    expect(validarLayoutTerminais({ ...base(), expandido: "../x" })).toMatchObject({ ok: false });
+    expect(validarLayoutTerminais({ ...base(), foco_unico: "sim" })).toMatchObject({ ok: false });
   });
   it("terminais:layout_gravar aplica o validador ao layout", () => {
     expect(VALIDADORES_TERMINAIS["terminais:layout_gravar"]({ workspace_id: "ws_1", layout: base() })).toMatchObject({ ok: true });

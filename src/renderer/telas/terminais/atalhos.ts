@@ -10,6 +10,8 @@ export type AcaoAtalho =
   /** tira o foco do terminal (que engole Tab) e leva à aba ativa: saída de teclado obrigatória (WCAG 2.1.2). */
   | { tipo: "sair" }
   | { tipo: "paleta" }
+  /** "Pedir ao Maestro" com o contexto do painel em foco. */
+  | { tipo: "maestro" }
   | { tipo: "expandir" }
   | { tipo: "tema" };
 
@@ -42,6 +44,7 @@ export function interpretarAtalho(e: Evento, mac: boolean = EH_MAC): AcaoAtalho 
       if (tecla === "d") return { tipo: "dividir", orientacao: "vertical" };
       if (tecla === "l") return { tipo: "tema" };
       if (tecla === "m") return { tipo: "sair" };
+      if (tecla === "e") return { tipo: "maestro" };
       if (e.code === "BracketRight" || tecla === "}") return { tipo: "aba", passo: 1 };
       if (e.code === "BracketLeft" || tecla === "{") return { tipo: "aba", passo: -1 };
       return null;
@@ -68,6 +71,7 @@ export function interpretarAtalho(e: Evento, mac: boolean = EH_MAC): AcaoAtalho 
   if (tecla === "p") return { tipo: "paleta" };
   if (tecla === "l") return { tipo: "tema" };
   if (tecla === "m") return { tipo: "sair" };
+  if (tecla === "e") return { tipo: "maestro" };
   return digito === null ? null : { tipo: "aba-numero", numero: Number(digito) };
 }
 
@@ -93,5 +97,10 @@ export const LISTA_ATALHOS: ReadonlyArray<{ acao: string; mac: string; outros: s
   { acao: "Painel vizinho", mac: "⌘⌥ setas", outros: "Ctrl+Alt setas" },
   { acao: "Expandir / restaurar painel", mac: "⌘⇧Enter", outros: "Ctrl+Shift+Enter" },
   { acao: "Buscar no terminal", mac: "⌘F", outros: "Ctrl+Shift+F" },
+  { acao: "Pedir ao Maestro", mac: "⌘⇧E", outros: "Ctrl+Shift+E" },
   { acao: "Trocar tema", mac: "⌘⇧L", outros: "Ctrl+Shift+L" },
+  // Executar projeto (▶/■ do cabeçalho; F5 exige fn no macOS, onde ⌘R/⌘./⌘⇧R fazem o mesmo)
+  { acao: "Executar ou parar o projeto", mac: "F5 · ⌘R", outros: "F5" },
+  { acao: "Parar a execução", mac: "⇧F5 · ⌘.", outros: "Shift+F5" },
+  { acao: "Reiniciar a execução", mac: "⌘⇧F5 · ⌘⇧R", outros: "Ctrl+Shift+F5" },
 ];

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist-relay",
+    "rootDir": "src",
+    "types": ["node"]
+  },
+  "include": ["src/nucleo/relay/**/*.ts", "src/compartilhado/relay.ts", "src/nucleo/produto.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

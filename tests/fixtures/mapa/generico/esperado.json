@@ -1,0 +1,47 @@
+{
+  "linguagem": "outra",
+  "arquivos": {
+    "Main.kt": {
+      "metricas": { "loc": 8, "loc_comentario": 3 },
+      "imports": [
+        { "especificador": "com.acme.util.Strings", "linha": 4 },
+        { "especificador": "kotlinx.coroutines.launch", "linha": 5 }
+      ]
+    },
+    "App.swift": {
+      "metricas": { "loc": 3, "loc_comentario": 1 },
+      "imports": [{ "especificador": "Foundation", "linha": 1 }, { "especificador": "SwiftUI.Color", "linha": 2 }]
+    },
+    "main.dart": {
+      "imports": [{ "especificador": "package:flutter/material.dart", "linha": 1 }, { "especificador": "src/util.dart", "linha": 2 }]
+    },
+    "Prog.pas": {
+      "metricas": { "loc_comentario": 1 },
+      "imports": [{ "especificador": "SysUtils" }, { "especificador": "Classes" }, { "especificador": "Unit2" }]
+    },
+    "Mod.pm": {
+      "metricas": { "loc_comentario": 1 },
+      "imports": [{ "especificador": "strict", "linha": 2 }, { "especificador": "Foo::Bar", "linha": 3 }, { "especificador": "Outro::Mod", "linha": 5 }],
+      "ausentes": { "imports": [{ "especificador": "Falso::Comentario" }] }
+    },
+    "Prog.vb": {
+      "metricas": { "loc_comentario": 1 },
+      "imports": [{ "especificador": "System.Collections", "linha": 1 }, { "especificador": "Acme.Util", "linha": 3 }],
+      "ausentes": { "imports": [{ "especificador": "Falso.Comentario" }] }
+    },
+    "PROG.cbl": {
+      "metricas": { "loc_comentario": 1 },
+      "imports": [{ "especificador": "CLIENTE", "linha": 3 }]
+    },
+    "esquema.sql": {
+      "metricas": { "loc_comentario": 3 },
+      "dados": [
+        { "tabela": "clientes", "operacao": "define", "linha": 2, "confianca": "heuristica", "fonte": "ddl" },
+        { "tabela": "pedidos", "operacao": "define", "linha": 5, "fonte": "ddl" },
+        { "tabela": "log_acesso", "operacao": "escreve", "linha": 6, "fonte": "sql" },
+        { "tabela": "clientes", "operacao": "le" }
+      ],
+      "ausentes": { "dados": [{ "tabela": "falsa" }] }
+    }
+  }
+}

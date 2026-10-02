@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+// npm FALSO dos testes da suíte: nunca toca a rede. Modo por FAKE_NPM_MODO: ok | rede | trava | gigante | pacote_ruim | versao_outra | catalogo_sem_designx | sem_catalogo | catalogo_ilegivel | catalogo_vazio.
+const fs = require("node:fs");
+const path = require("node:path");
+const args = process.argv.slice(2);
+const registrar = (extra) => {
+  if (!process.env.FAKE_LOG) return;
+  const env = {};
+  for (const [k, v] of Object.entries(process.env)) if (/^(npm_config_|NPM_CONFIG_|CI$|ORCA_|CLAUDE|NODE_OPTIONS|FAKE_)/i.test(k)) env[k] = v;
+  fs.appendFileSync(process.env.FAKE_LOG, JSON.stringify({ quem: "npm", argv: args, cwd: process.cwd(), env, ...extra }) + "\n");
+};
+if (args[0] === "--version") { registrar({ tipo: "versao" }); console.log("10.9.0"); process.exit(0); }
+registrar({ tipo: "install" });
+const modo = process.env.FAKE_NPM_MODO || "ok";
+if (modo === "rede") { console.error("npm error code ENOTFOUND\nnpm error network request to https://registry.npmjs.org/expxdev failed"); process.exit(1); }
+if (modo === "trava") { console.log("npm http fetch GET 200 registry"); setInterval(() => {}, 1000); return; }
+if (modo === "gigante") { const linha = "x".repeat(1000) + "\n"; const bombear = () => { while (process.stdout.write(linha)) { /* até encher o pipe */ } process.stdout.once("drain", bombear); }; bombear(); return; }
+const spec = args.find((a) => a.startsWith("expxdev@")) || "expxdev@0.0.0";
+const prefix = args[args.indexOf("--prefix") + 1] || process.cwd();
+let versao = spec.slice("expxdev@".length);
+if (modo === "versao_outra") versao = "9.9.9";
+const dest = path.join(prefix, "node_modules", "expxdev");
+fs.cpSync(path.join(__dirname, "..", "expxdev-falso"), dest, { recursive: true });
+const pj = JSON.parse(fs.readFileSync(path.join(dest, "package.json"), "utf8"));
+pj.version = versao;
+if (modo === "pacote_ruim") pj.name = "outro-pacote";
+fs.writeFileSync(path.join(dest, "package.json"), JSON.stringify(pj));
+const cat = path.join(dest, "dist", "nucleo", "catalogo.js");
+if (modo === "catalogo_sem_designx") fs.writeFileSync(cat, 'exports.NOMES = ["sprintx", "runx", "legadox", "stackx", "mergex", "memox", "prodx", "buildx"];');
+if (modo === "sem_catalogo") fs.rmSync(cat);
+if (modo === "catalogo_ilegivel") fs.writeFileSync(cat, "isto nao e javascript {{{");
+if (modo === "catalogo_vazio") fs.writeFileSync(cat, 'exports.NOMES = ["outra-skill"];');
+for (const l of ["npm http fetch GET 200 https://registry.npmjs.org/expxdev", "added 1 package"]) console.log(l);
+process.exit(0);

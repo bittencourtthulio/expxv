@@ -3,7 +3,8 @@
 import type { DiagnosticoTerminais, FerramentaDetectada } from "../../compartilhado/terminais";
 import type { ProvedorInfo } from "../../compartilhado/dominio";
 import { ocultarPastaPessoal } from "../terminais/diagnostico";
-import type { ServicoContas } from "./contas";
+import type { Conta } from "../dominio";
+import { PROVEDORES_COM_PADRAO, type LoginDaConta, type ServicoContas } from "./contas";
 
 export interface DetectorDeProvedores {
   detectar(): Promise<FerramentaDetectada[]>;
@@ -23,25 +24,60 @@ export interface ServicoProvedores {
   /** Forma da tool MCP `provider_list`: só CLIs instaladas e só contas habilitadas. */
   providerList(): Promise<ItemProviderList[]>;
   diagnostico(): Promise<DiagnosticoTerminais>;
+  /** Cria, sob demanda e de forma idempotente, a "Conta padrão" das CLIs instaladas que ainda não têm uma. Devolve as criadas agora. */
+  garantirContasPadrao(): Promise<Conta[]>;
 }
 
-export function criarServicoProvedores(deps: { detector: DetectorDeProvedores; contas: ServicoContas }): ServicoProvedores {
+export function criarServicoProvedores(deps: {
+  detector: DetectorDeProvedores;
+  contas: ServicoContas;
+  /** Chamado quando a autodetecção criou contas (religa limites/harness; a UI recarrega a lista). */
+  aoContasCriadas?: (criadas: readonly Conta[]) => void;
+  /** Autodetecção da conta padrão (padrão: ligada). */
+  autoPadrao?: boolean;
+}): ServicoProvedores {
   const { detector, contas } = deps;
   const ferramentas = (): Promise<FerramentaDetectada[]> => detector.detectar();
+
+  async function garantirContasPadrao(): Promise<Conta[]> {
+    const criadas: Conta[] = [];
+    if (deps.autoPadrao === false) return criadas;
+    for (const f of await ferramentas().catch(() => [] as FerramentaDetectada[])) {
+      // desabilitada pelo usuário continua existindo: `temPadrao` não olha `habilitada`, então nunca é recriada nem religada
+      if (!f.instalado || !PROVEDORES_COM_PADRAO.includes(f.id) || contas.temPadrao(f.id)) continue;
+      const c = contas.criarPadrao(f.id);
+      if (c !== null) criadas.push(c);
+    }
+    if (criadas.length > 0) deps.aoContasCriadas?.(criadas);
+    return criadas;
+  }
+  /** Conta padrão sem sinal de login não entra no roteamento (a UI a mostra como "não autenticada"). */
+  const semLogin = (c: Conta): boolean => contas.ehPadrao(c) && contas.loginDaConta(c) === "nao_autenticada";
 
   return {
     async listar(forcar) {
       if (forcar) detector.invalidar();
-      const [lista, todas] = [await ferramentas(), contas.listar()];
-      return lista.map((ferramenta) => ({ ferramenta, contas: todas.filter((c) => c.provedor === ferramenta.id) }));
+      const lista = await ferramentas();
+      await garantirContasPadrao();
+      const todas = contas.listar();
+      return lista.map((ferramenta) => {
+        const deste = todas.filter((c) => c.provedor === ferramenta.id);
+        const estado: Record<string, LoginDaConta> = {};
+        for (const c of deste) if (contas.ehPadrao(c)) estado[c.id] = contas.loginDaConta(c);
+        return { ferramenta, contas: deste, ...(Object.keys(estado).length > 0 ? { login_contas: estado } : {}) };
+      });
     },
 
+    garantirContasPadrao,
+
     async providerList() {
+      const lista = await ferramentas();
+      await garantirContasPadrao();
       const todas = contas.listar();
-      return (await ferramentas())
+      return lista
         .filter((f) => f.instalado && f.id !== "terminal")
         .map((f) => {
-          const deste = todas.filter((c) => c.provedor === f.id);
+          const deste = todas.filter((c) => c.provedor === f.id && !semLogin(c));
           const ativas = deste.filter((c) => c.habilitada);
           return {
             provider: f.id,

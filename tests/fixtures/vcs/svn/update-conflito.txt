@@ -1,0 +1,5 @@
+Updating '.':
+C    a.txt
+Updated to revision 5.
+Summary of conflicts:
+  Text conflicts: 1

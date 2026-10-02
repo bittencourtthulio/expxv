@@ -3,12 +3,6 @@ name: release
 on:
   push:
     tags: ['v*']
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag da release a compilar'
-        required: true
-        type: string
 jobs:
   empacotar:
     strategy:
@@ -58,6 +52,5 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag || github.ref_name }}
           files: instaladores/*
           draft: true

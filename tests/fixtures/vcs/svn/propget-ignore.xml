@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+<target
+   path="/tmp/gravado/wc">
+<property
+   name="svn:ignore">*.log
+</property>
+</target>
+</properties>

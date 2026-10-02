@@ -167,7 +167,7 @@ describe("permissão do workspace (D-14)", () => {
   }
 
   it("'seguro' (padrão) não injeta argumentos automáticos em nenhuma ferramenta", () => {
-    for (const f of ["claude", "codex", "gemini", "opencode", "aider", "qwen"]) expect(argvAberto(() => "seguro", f)).toEqual([]);
+    for (const f of ["claude", "codex", "gemini", "opencode", "aider", "qwen", "grok"]) expect(argvAberto(() => "seguro", f)).toEqual([]);
   });
 
   it("'automatico' injeta os argumentos oficiais da ferramenta", () => {
@@ -294,6 +294,15 @@ describe("canais de sessão", () => {
     const falho = montar({ aoDescartar: () => { throw new Error("banco indisponível"); } });
     await expect(falho.invocar("terminais:descartar", { sessao_id: SESSAO })).resolves.toBe(true);
     expect(falho.sessoes["descartar"]).toHaveBeenCalledWith(SESSAO);
+  });
+
+  it("escrever avisa o pulso do bichinho (só o id da sessão, nunca o conteúdo) e uma falha do aviso não impede a escrita", async () => {
+    const aoEscrever = vi.fn(() => { throw new Error("falhou"); });
+    const { enviar, sessoes } = montar({ aoEscrever });
+    enviar("terminais:escrever", { sessao_id: SESSAO, dados: "segredo" });
+    await aguardar();
+    expect(aoEscrever).toHaveBeenCalledWith(SESSAO);
+    expect(sessoes["escrever"]).toHaveBeenCalledWith(SESSAO, "segredo");
   });
 
   it("escrever/redimensionar/interromper encaminham em ordem; falha volta por terminais:falha", async () => {

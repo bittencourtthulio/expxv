@@ -26,6 +26,8 @@ export interface EstadoWorkspaces {
 export interface ProvedorInfo {
   ferramenta: FerramentaDetectada;
   contas: Conta[];
+  /** Só das contas padrão (login existente da CLI): "autenticada" (há sinal de login/uso) ou "nao_autenticada". */
+  login_contas?: Record<string, "autenticada" | "nao_autenticada" | "nao_aplicavel">;
 }
 
 // ---- missões ----
@@ -38,6 +40,13 @@ export interface PedidoCriarMissao {
   pedido: string;
   /** CLI por papel; `piloto` obrigatório nos modos squad e agentico. */
   clis: Partial<Record<Papel, string>>;
+  /**
+   * Fase 14: slug da squad (modo `squad`/`agentico`; recusado no `livre`). Com squad, o piloto é o orquestrador dela e `clis.piloto`
+   * é ignorado (a CLI vem do perfil do membro). Ausente = comportamento do MVP.
+   */
+  squad_id?: string;
+  /** Cadeado do wizard: CLI imposta a todos os membros SÓ nesta Missão (modelo/esforço dos que não existem nela voltam ao padrão). Exige `squad_id`. */
+  squad_cli?: string;
 }
 
 export interface DetalheMissao {
@@ -59,7 +68,13 @@ export type GestoMetodo =
   | "entrega_check"
   | "entrega_atencao"
   | "entrega_qa"
-  | "entrega_pr";
+  | "entrega_pr"
+  // contexto do projeto que o método GERA (D-495): comando sem argumento, nunca cria trabalho
+  | "gerar_convencoes"
+  | "gerar_produto"
+  | "gerar_memoria"
+  | "gerar_design_system"
+  | "gerar_perfil_legado";
 
 export interface ComandoSugerido {
   /** texto exato a digitar no Pane (já com o prefixo do harness e o argumento). */
@@ -86,6 +101,15 @@ export interface ResultadoDisparo {
   pane_id: string | null;
   comando: string | null;
   motivo: string | null;
+  /** D-610: sessão de terminal do Pane que recebeu o comando (para a UI focar o painel); ausente/null quando ainda não há sessão. */
+  sessao_id?: string | null;
+  /**
+   * D-620: estado REAL da entrega (não só "o Pane foi criado"). `entregue` = o comando está na CLI (prompt inicial no lançamento ou escrito no PTY);
+   * `falhou` = recusa ou a CLI saiu antes de receber (o `motivo` explica e diz o que fazer). A UI só diz "enviado" com `estado === "entregue"`.
+   */
+  estado?: "entregue" | "falhou";
+  /** como chegou: `prompt_inicial` (Pane novo: argumento da CLI, sem corrida de prontidão) ou `escrita` (Pane existente, escrito no PTY). */
+  entrega?: "prompt_inicial" | "escrita" | null;
 }
 
 export interface ResumoMudancaMetodo {

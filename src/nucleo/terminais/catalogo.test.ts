@@ -6,7 +6,7 @@ import {
 
 describe("catálogo enxuto", () => {
   it("tem exatamente as ferramentas do MVP, na ordem", () => {
-    expect(CATALOGO_TERMINAIS.map((f) => f.id)).toEqual(["terminal", "claude", "codex", "gemini", "opencode", "aider", "qwen", "kilo"]);
+    expect(CATALOGO_TERMINAIS.map((f) => f.id)).toEqual(["terminal", "claude", "codex", "gemini", "opencode", "aider", "qwen", "kilo", "grok"]);
     expect(CATALOGO_TERMINAIS.find((f) => f.id === "kilo")?.executaveis).toEqual(["kilo", "kilocode"]);
   });
 });
@@ -30,7 +30,7 @@ describe("argumentosAutomaticos (D-14)", () => {
 describe("tecla de interrupção", () => {
   it("ESC para as CLIs de IA, Ctrl+C para shell e sem mapa", () => {
     for (const id of ["claude", "codex", "gemini", "opencode", "qwen", "kilo"]) expect(teclaDeInterrupcao(id)).toBe("\x1b");
-    for (const id of ["terminal", "personalizado", "aider"]) expect(teclaDeInterrupcao(id)).toBe("\x03");
+    for (const id of ["terminal", "personalizado", "aider", "grok"]) expect(teclaDeInterrupcao(id)).toBe("\x03");
   });
 });
 

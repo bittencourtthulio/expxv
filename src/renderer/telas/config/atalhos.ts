@@ -10,5 +10,7 @@ export const ATALHOS: readonly { acao: string; mac: string; outros: string }[] =
   { acao: "Navegar painéis", mac: "⌘⌥ setas", outros: "Ctrl+Alt setas" },
   { acao: "Expandir painel", mac: "⌘⇧Enter", outros: "Ctrl+Shift+Enter" },
   { acao: "Buscar no terminal", mac: "⌘F", outros: "Ctrl+Shift+F" },
+  { acao: "Abrir chat orquestrador", mac: "⌘⇧K", outros: "Ctrl+Shift+K" },
+  { acao: "Abrir conhecimento (grafo)", mac: "⌘⇧G", outros: "Ctrl+Shift+G" },
   { acao: "Trocar tema", mac: "⌘⇧L", outros: "Ctrl+Shift+L" },
 ];

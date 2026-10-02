@@ -45,6 +45,12 @@
       "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
       "rapido": [{ "modelo": "default", "esforco": null, "confirmado": false }]
     },
+    "grok": {
+      "topo": [{ "modelo": "grok-4.7", "esforco": null, "confirmado": true }],
+      "alto": [{ "modelo": "grok-4.7", "esforco": null, "confirmado": true }],
+      "medio": [{ "modelo": "default", "esforco": null, "confirmado": false }],
+      "rapido": [{ "modelo": "grok-4.7-build-fast", "esforco": null, "confirmado": true }]
+    },
     "openrouter": { "topo": [], "alto": [], "medio": [], "rapido": [] }
   }
 }

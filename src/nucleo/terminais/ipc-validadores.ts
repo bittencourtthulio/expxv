@@ -17,7 +17,7 @@ import {
 } from "../../main/ipc/validar";
 
 export const FERRAMENTAS_IDS: readonly FerramentaId[] = [
-  "terminal", "claude", "codex", "gemini", "opencode", "aider", "qwen", "kilo", "personalizado",
+  "terminal", "claude", "codex", "gemini", "opencode", "aider", "qwen", "kilo", "grok", "personalizado",
 ];
 
 export const LIMITES_ANEXO_IPC = {
@@ -125,14 +125,16 @@ function validarNo(v: unknown, profundidade: number, contador: { n: number }): R
     return id.ok ? ok({ tipo: "terminal", sessao_id: id.valor }) : falha("sessao_id do layout inválido");
   }
   if (o["tipo"] === "divisao") {
-    const extra = soChaves(o, ["tipo", "orientacao", "primeiro", "segundo"]);
+    const extra = soChaves(o, ["tipo", "orientacao", "proporcao", "primeiro", "segundo"]);
     if (extra !== null) return falha(`campo desconhecido: ${extra}`);
     if (o["orientacao"] !== "horizontal" && o["orientacao"] !== "vertical") return falha("orientação inválida");
+    const proporcao = o["proporcao"];
+    if (proporcao !== undefined && (typeof proporcao !== "number" || !Number.isFinite(proporcao) || proporcao < 0.05 || proporcao > 0.95)) return falha("proporção inválida");
     const primeiro = validarNo(o["primeiro"], profundidade + 1, contador);
     if (!primeiro.ok) return primeiro;
     const segundo = validarNo(o["segundo"], profundidade + 1, contador);
     if (!segundo.ok) return segundo;
-    return ok({ tipo: "divisao", orientacao: o["orientacao"], primeiro: primeiro.valor, segundo: segundo.valor });
+    return ok({ tipo: "divisao", orientacao: o["orientacao"], ...(proporcao === undefined ? {} : { proporcao }), primeiro: primeiro.valor, segundo: segundo.valor });
   }
   return falha("tipo de nó inválido");
 }
@@ -140,7 +142,7 @@ function validarNo(v: unknown, profundidade: number, contador: { n: number }): R
 export const validarLayoutTerminais: Validador<LayoutTerminais> = (valor) => {
   const v = objetoSimples(valor);
   if (v === null) return falha("esperado objeto");
-  const extra = soChaves(v, ["versao", "ativa", "abas", "fixadas"]);
+  const extra = soChaves(v, ["versao", "ativa", "abas", "fixadas", "expandido", "foco_unico"]);
   if (extra !== null) return falha(`campo desconhecido: ${extra}`);
   if (v["versao"] !== 2) return falha("versão de layout desconhecida");
   const vId = vTexto({ min: 1, max: 80, padrao: ID_LAYOUT });
@@ -163,6 +165,15 @@ export const validarLayoutTerminais: Validador<LayoutTerminais> = (valor) => {
   const fixadas = vLista(vId, LIMITES_LAYOUT.fixadas)(v["fixadas"]);
   if (!fixadas.ok) return falha(`fixadas: ${fixadas.erro}`);
   const layout: LayoutTerminais = { versao: 2, ativa, abas, fixadas: fixadas.valor };
+  if (v["expandido"] !== undefined && v["expandido"] !== null) {
+    const r = vId(v["expandido"]);
+    if (!r.ok) return falha("expandido: identificador inválido");
+    layout.expandido = r.valor;
+  }
+  if (v["foco_unico"] !== undefined) {
+    if (typeof v["foco_unico"] !== "boolean") return falha("foco_unico: esperado booleano");
+    if (v["foco_unico"]) layout.foco_unico = true;
+  }
   if (Buffer.byteLength(JSON.stringify(layout)) > LIMITES_LAYOUT.bytes) return falha("layout grande demais");
   return ok(layout);
 };

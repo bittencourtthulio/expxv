@@ -25,11 +25,22 @@ export interface OpcoesGitCmd extends OpcoesBase {
 
 const FLAGS_PROIBIDAS = new Set(["--force", "-f", "--force-with-lease", "--force-if-includes"]);
 
-/** Roda `git` pelo executor. Recusa `push` e flags de força; nunca usa shell. */
+/**
+ * ALLOWLIST dos subcomandos que `rodarGit` aceita (T-06.40, A-01). O subcomando é SEMPRE o primeiro argumento: opção global antes dele
+ * (`-C`, `-c alias.x=!cmd`, `--exec-path`…) é recusada. Rede (`fetch`/`pull`/`push`/`clone`) só por `rodarRemoto`; nada de `gc`, `filter-branch`,
+ * `daemon`, `credential`, `remote`, `send-email`… Subcomando novo = decisão consciente, aqui.
+ */
+export const SUBCOMANDOS_GIT: ReadonlySet<string> = new Set([
+  "add", "apply", "blame", "branch", "check-attr", "check-ignore", "check-ref-format", "cat-file", "checkout", "cherry-pick", "commit", "config", "diff", "diff-tree",
+  "for-each-ref", "grep", "interpret-trailers", "log", "ls-files", "ls-tree", "merge", "merge-base", "merge-tree", "mv", "name-rev", "rebase", "reflog", "restore", "rev-list",
+  "rev-parse", "revert", "rm", "show", "show-ref", "sparse-checkout", "stash", "status", "submodule", "svn", "switch", "symbolic-ref", "tag", "update-index", "update-ref",
+  "worktree", "reset", "clean", "hash-object", "read-tree", "write-tree", "commit-tree", "var", "version",
+]);
+
+/** Roda `git` pelo executor. Só subcomandos da allowlist (nunca `push`/rede) e sem flags de força; nunca usa shell. */
 export function rodarGit(raiz: string, args: readonly string[], op: OpcoesGitCmd = {}): Promise<ResultadoExec> {
   if (args.length === 0 || args.some((a) => typeof a !== "string" || a.includes("\0"))) throw new GitOperacaoProibidaErro(args);
-  const sub = args.find((a) => !a.startsWith("-"));
-  if (sub === "push" || args.some((a) => FLAGS_PROIBIDAS.has(a))) throw new GitOperacaoProibidaErro(args);
+  if (!SUBCOMANDOS_GIT.has(args[0] as string) || args.some((a) => FLAGS_PROIBIDAS.has(a))) throw new GitOperacaoProibidaErro(args);
   const ex = op.executor ?? executorPadrao;
   return ex.executar(args, {
     cwd: raiz,

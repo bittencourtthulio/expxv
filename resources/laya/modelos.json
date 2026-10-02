@@ -1,0 +1,160 @@
+{
+  "versao": 1,
+  "fonte": "docs/ade/base/L-laya-local.md",
+  "runtime": "onnxruntime-node@1.30.0",
+  "revisao": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+  "hosts_origem": ["huggingface.co"],
+  "hosts_arquivos": ["*.hf.co", "*.huggingface.co"],
+  "modelos": [
+    {
+      "id": "laya-en",
+      "nome": "laya (inglês)",
+      "descricao": "Checkpoints em inglês do laya (ModernBERT-large, 421 milhões de parâmetros). Decisões tipadas choice/score/noul com confiança calibrada.",
+      "idiomas": ["en"],
+      "pt_br": false,
+      "familia": "modernbert_large",
+      "perfil": "equilibrado",
+      "recomendado": false,
+      "contexto_max_tokens": 512,
+      "tipos_pergunta": ["choice", "score", "noul"],
+      "tokenizador": "bpe_bytelevel",
+      "ram_estimada_mb": 1600,
+      "tamanho_onnx_estimado": true,
+      "notas": "Fraqueza zero-shot declarada pelo próprio laya: sem ajuste por domínio, espere abstenções frequentes (o consentimento avisa).",
+      "licenca": {
+        "id": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "atribuicao": "laya © convaiinnovations (Apache-2.0); exportação ONNX int8 pelo script oficial do projeto."
+      },
+      "origem": { "host": "huggingface.co", "caminho_base": "/convaiinnovations/laya/resolve/55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851/" },
+      "arquivos": [
+        {
+          "nome": "tokenizer.json",
+          "papel": "tokenizador",
+          "bytes": 3583228,
+          "sha256": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+          "origem_caminho": "tokenizer/tokenizer.json"
+        },
+        {
+          "nome": "rl_agent_config.json",
+          "papel": "config",
+          "bytes": 745,
+          "sha256": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+          "origem_caminho": "rl_agent_config.json"
+        },
+        {
+          "nome": "encoder.onnx",
+          "papel": "encoder",
+          "bytes": 423000000,
+          "sha256": "a_verificar"
+        },
+        {
+          "nome": "head.onnx",
+          "papel": "head",
+          "bytes": 1000000,
+          "sha256": "a_verificar"
+        }
+      ]
+    },
+    {
+      "id": "laya-td",
+      "nome": "laya typed-decisions (inglês)",
+      "descricao": "Checkpoints especializados em decisões tipadas do laya (ModernBERT-large, 421 milhões de parâmetros, contexto 1024). A variante recomendada para o decisor local.",
+      "idiomas": ["en"],
+      "pt_br": false,
+      "familia": "modernbert_large",
+      "perfil": "recomendado",
+      "recomendado": true,
+      "contexto_max_tokens": 1024,
+      "tipos_pergunta": ["choice", "score", "noul"],
+      "tokenizador": "bpe_bytelevel",
+      "ram_estimada_mb": 1600,
+      "tamanho_onnx_estimado": true,
+      "notas": "Fraqueza zero-shot declarada pelo próprio laya: sem ajuste por domínio, espere abstenções frequentes (o consentimento avisa).",
+      "licenca": {
+        "id": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "atribuicao": "laya © convaiinnovations (Apache-2.0); exportação ONNX int8 pelo script oficial do projeto."
+      },
+      "origem": { "host": "huggingface.co", "caminho_base": "/convaiinnovations/laya/resolve/55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851/" },
+      "arquivos": [
+        {
+          "nome": "tokenizer.json",
+          "papel": "tokenizador",
+          "bytes": 3583228,
+          "sha256": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+          "origem_caminho": "typed-decisions/tokenizer/tokenizer.json"
+        },
+        {
+          "nome": "rl_agent_config.json",
+          "papel": "config",
+          "bytes": 847,
+          "sha256": "ebf0cd524d92342a6be5e48e9fca3d7c2babfb5a56ccd79d2171ef5d8c7f7be8",
+          "origem_caminho": "typed-decisions/rl_agent_config.json"
+        },
+        {
+          "nome": "encoder.onnx",
+          "papel": "encoder",
+          "bytes": 423000000,
+          "sha256": "a_verificar"
+        },
+        {
+          "nome": "head.onnx",
+          "papel": "head",
+          "bytes": 1000000,
+          "sha256": "a_verificar"
+        }
+      ]
+    },
+    {
+      "id": "laya-ml",
+      "nome": "laya multilíngue",
+      "descricao": "Checkpoints multilíngues do laya (mmBERT-base, 322 milhões de parâmetros, 100+ idiomas incluindo português, contexto 1024 com cabeças até 8192).",
+      "idiomas": ["pt", "en", "es", "fr", "de", "it", "nl", "ru", "ja", "zh", "hi", "ar"],
+      "pt_br": true,
+      "familia": "mmbert_base",
+      "perfil": "multilingue",
+      "recomendado": false,
+      "contexto_max_tokens": 1024,
+      "tipos_pergunta": ["choice", "score", "noul"],
+      "tokenizador": "wordpiece",
+      "ram_estimada_mb": 1300,
+      "tamanho_onnx_estimado": true,
+      "notas": "Experimental: o tokenizador deste checkpoint (WordPiece) ainda não é coberto pelo runtime TypeScript desta fase — fica indisponível até adaptação futura. Fraqueza zero-shot declarada pelo laya.",
+      "licenca": {
+        "id": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "atribuicao": "laya © convaiinnovations (Apache-2.0); exportação ONNX int8 pelo script oficial do projeto."
+      },
+      "origem": { "host": "huggingface.co", "caminho_base": "/convaiinnovations/laya/resolve/55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851/" },
+      "arquivos": [
+        {
+          "nome": "tokenizer.json",
+          "papel": "tokenizador",
+          "bytes": 34363188,
+          "sha256": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+          "origem_caminho": "multilingual/tokenizer/tokenizer.json"
+        },
+        {
+          "nome": "rl_agent_config.json",
+          "papel": "config",
+          "bytes": 472,
+          "sha256": "25061739243b617ad88d1219ba6f8a9c86c5881ca28df024fa2d9b3b2fcc30c6",
+          "origem_caminho": "multilingual/rl_agent_config.json"
+        },
+        {
+          "nome": "encoder.onnx",
+          "papel": "encoder",
+          "bytes": 323000000,
+          "sha256": "a_verificar"
+        },
+        {
+          "nome": "head.onnx",
+          "papel": "head",
+          "bytes": 1000000,
+          "sha256": "a_verificar"
+        }
+      ]
+    }
+  ]
+}

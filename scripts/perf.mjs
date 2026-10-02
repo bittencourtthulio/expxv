@@ -41,9 +41,10 @@ if (faltando.length > 0) {
   falhou = true;
 }
 for (const m of medicoes) {
-  const sinal = m.ok ? "✔" : "✖";
+  const sinal = m.medido === false ? "—" : m.ok ? "✔" : "✖"; // «—» = não medido (ex.: P-168 sem Docker): nunca verde falso
   const op = m.sentido === "min" ? "≥" : "≤";
-  process.stdout.write(`  ${sinal} ${m.id.padEnd(5)} ${m.descricao.padEnd(78)} ${String(m.valor).padStart(8)} ${m.unidade} (${op} ${m.limite})${m.pior === undefined ? "" : `  pior ${m.pior}`}\n`);
-  if (!m.ok) falhou = true;
+  if (m.medido === false) process.stdout.write(`  ${sinal} ${m.id.padEnd(5)} ${m.descricao.padEnd(78)} não medido: ${m.motivo ?? "?"}\n`);
+  else process.stdout.write(`  ${sinal} ${m.id.padEnd(5)} ${m.descricao.padEnd(78)} ${String(m.valor).padStart(8)} ${m.unidade} (${op} ${m.limite})${m.pior === undefined ? "" : `  pior ${m.pior}`}\n`);
+  if (!m.ok && m.medido !== false) falhou = true;
 }
 process.exit(falhou || testesFalharam ? 1 : 0);

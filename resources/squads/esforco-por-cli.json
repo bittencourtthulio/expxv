@@ -1,0 +1,96 @@
+{
+  "versao": 1,
+  "clis": {
+    "claude": {
+      "tipo": "flag",
+      "confirmado": true,
+      "fonte": "`claude --help` local: --effort <level> (low, medium, high, xhigh, max)",
+      "flag": "--effort",
+      "flag_help": "--effort",
+      "niveis_nativos": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "mapa": {
+        "minimo": "low",
+        "baixo": "low",
+        "medio": "medium",
+        "alto": "high",
+        "maximo": "max"
+      }
+    },
+    "codex": {
+      "tipo": "config",
+      "confirmado": true,
+      "fonte": "`codex --help` local: -c, --config <key=value>; chave model_reasoning_effort presente no binário e na documentação pública do Codex",
+      "chave": "model_reasoning_effort",
+      "flag_help": "--config",
+      "niveis_nativos": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "mapa": {
+        "minimo": "minimal",
+        "baixo": "low",
+        "medio": "medium",
+        "alto": "high",
+        "maximo": "xhigh"
+      }
+    },
+    "aider": {
+      "tipo": "flag",
+      "confirmado": true,
+      "fonte": "documentação pública do aider (opções: --reasoning-effort); CLI não instalada nesta máquina, não verificada por --help local",
+      "flag": "--reasoning-effort",
+      "flag_help": "--reasoning-effort",
+      "niveis_nativos": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "mapa": {
+        "minimo": "low",
+        "baixo": "low",
+        "medio": "medium",
+        "alto": "high",
+        "maximo": "high"
+      }
+    },
+    "opencode": {
+      "tipo": "indicativo",
+      "confirmado": false,
+      "fonte": "`opencode --help` local: --variant existe só em `opencode run` (valores dependem do provedor); sessão interativa sem flag de esforço",
+      "nota": "usa instrução no prompt"
+    },
+    "kilo": {
+      "tipo": "indicativo",
+      "confirmado": false,
+      "fonte": "`kilo --help` local: --variant existe só em `kilo run` (valores dependem do provedor); sessão interativa sem flag de esforço",
+      "nota": "usa instrução no prompt"
+    },
+    "gemini": {
+      "tipo": "indicativo",
+      "confirmado": false,
+      "fonte": "nenhum parâmetro de esforço confirmado; CLI não instalada nesta máquina",
+      "nota": "usa instrução no prompt"
+    },
+    "qwen": {
+      "tipo": "indicativo",
+      "confirmado": false,
+      "fonte": "nenhum parâmetro de esforço confirmado; CLI não instalada nesta máquina",
+      "nota": "usa instrução no prompt"
+    },
+    "grok": {
+      "tipo": "indicativo",
+      "confirmado": false,
+      "fonte": "`grok --help` local 1.0.46: --reasoning-effort <EFFORT> (alias --effort) existe, mas a ajuda não lista os níveis (a documentação instalada cita none..max e cada modelo aceita só os que anuncia): indicativo até o dono confirmar",
+      "nota": "usa instrução no prompt"
+    }
+  }
+}

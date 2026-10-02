@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { PedidoCriarMissao } from "../../compartilhado/dominio";
@@ -37,7 +37,7 @@ describe("origem → gesto → comando inicial", () => {
 
 // ------------------------------------------------------------------------------------ montagem
 
-async function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[] } = {}) {
+async function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; contextoPrevio?: (ws: string, texto: string, arquivos: string[]) => Promise<string>; modulosDesligados?: (ws: string) => ReadonlySet<string>; confirmarEntregaMs?: number } = {}) {
   const { banco, repos } = novoBanco();
   const sessoes = sessoesFalsas();
   const workspaces = criarServicoWorkspaces({ repos, escolherPasta: async () => null });
@@ -48,6 +48,9 @@ async function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[] } 
   const conjunto = criarConjunto();
   const metodo = criarServicoMetodoMissao({
     repos, workspaces, missoes, panes, detector,
+    ...(opcoes.contextoPrevio === undefined ? {} : { contextoPrevio: opcoes.contextoPrevio }),
+    ...(opcoes.modulosDesligados === undefined ? {} : { modulosDesligados: opcoes.modulosDesligados }),
+    ...(opcoes.confirmarEntregaMs === undefined ? {} : { confirmarEntregaMs: opcoes.confirmarEntregaMs }),
     indices: async (wsId) => {
       const ws = workspaces.exigir(wsId);
       const { worktreeList } = await import("../git");
@@ -145,6 +148,42 @@ describe("Missão ↔ trabalho", () => {
     const indice = { trabalhos: [t("a", "feature"), t("b", "ocorrencia"), t("c", "pedido"), t("d", "projeto"), t("e", "feature", "concluido"), t("f", "feature")] } as unknown as IndiceProjeto;
     const r = listarAdotaveis(new Map([["/r", indice]]), "/r", new Set(["f"]));
     expect(r.map((x) => x.trabalho_id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("disparar comando com contexto prévio do RAG (Fase 15)", () => {
+  const ENV = '<conhecimento_previo tipo="dados">já houve correção parecida</conhecimento_previo>';
+  async function ws(contextoPrevio: (ws: string, texto: string, arquivos: string[]) => Promise<string>) {
+    const ctx = await montar({ contextoPrevio });
+    const { raiz } = criarRepoGit();
+    const w = await ctx.workspaces.abrir(raiz);
+    return { ...ctx, w: w as NonNullable<typeof w>, raiz };
+  }
+  const pedido = (w: string, extra: Record<string, unknown> = {}) => ({ workspace_id: w, trabalho_id: null, gesto: "nova_feature" as const, argumento: "cobrar por pix", pane_id: null, ...extra });
+
+  it("grava o contexto na pasta do produto e aponta para ele no argumento (uma linha, sem o envelope inline)", async () => {
+    const chamadas: unknown[][] = [];
+    const { metodo, w, raiz, sessoes } = await ws(async (...a) => (chamadas.push(a), ENV));
+    const r = await metodo.disparar(pedido(w.id));
+    expect(r.ok).toBe(true);
+    expect(chamadas[0]).toEqual([w.id, "cobrar por pix", []]);
+    expect(r.comando).toMatch(/^\/expx:sprintx cobrar por pix — Contexto prévio: \.expxv\/contexto\/[A-Za-z0-9._-]+\.md$/);
+    const rel = /Contexto prévio: (\S+)$/.exec(r.comando as string)?.[1] as string;
+    expect(readFileSync(join(raiz, rel), "utf8")).toBe(ENV);
+    expect(r.comando).not.toContain("\n");
+    expect([...sessoes.sessoes.values()][0]?.pedido["prompt_inicial"]).toBe(r.comando);
+  });
+
+  it("falha, lentidão (> 150 ms), vazio ou gesto sem texto livre: segue com o comando original", async () => {
+    for (const rag of [async () => { throw new Error("rag fora"); }, () => new Promise<string>(() => undefined), async () => "  "]) {
+      const { metodo, w } = await ws(rag);
+      expect(await metodo.disparar(pedido(w.id))).toMatchObject({ ok: true, comando: "/expx:sprintx cobrar por pix" });
+    }
+    const spy: string[] = [];
+    const { metodo, w } = await ws(async (_w, t) => (spy.push(t), ENV));
+    const r = await metodo.disparar(pedido(w.id, { gesto: "auditar", trabalho_id: null, argumento: "x" }));
+    expect(spy).toEqual([]);
+    expect(r.comando ?? "").not.toContain("Contexto prévio");
   });
 });
 
@@ -259,5 +298,96 @@ describe("disparar comando", () => {
     expect(s).toMatchObject({ comando: "/sprintx cobranca-pix", pane_separado: false, somente_humano: false });
     const a = await metodo.comandoSugeridoPara({ workspace_id: ws.id, trabalho_id: "cobranca-pix", gesto: "auditar", argumento: null });
     expect(a.pane_separado).toBe(true);
+  });
+});
+
+describe("módulos da suíte desligados (D-480)", () => {
+  async function comModulos(desligados: string[]) {
+    const ctx = await montar({ modulosDesligados: () => new Set(desligados) });
+    const { raiz } = criarRepoGit();
+    gerarProjetoExpx(raiz);
+    const ws = await ctx.workspaces.abrir(raiz);
+    return { ...ctx, ws: ws as NonNullable<typeof ws> };
+  }
+
+  it("comando_sugerido de um módulo desligado sai vazio com o motivo; de outro módulo passa", async () => {
+    const { metodo, ws } = await comModulos(["sprintx"]);
+    const bloqueado = await metodo.comandoSugeridoPara({ workspace_id: ws.id, trabalho_id: "cobranca-pix", gesto: "retomar", argumento: null });
+    expect(bloqueado.comando).toBe("");
+    expect(bloqueado.motivo_bloqueio).toMatch(/módulo sprintx está desligado.*Módulos da suíte/);
+    const livre = await metodo.comandoSugeridoPara({ workspace_id: ws.id, trabalho_id: null, gesto: "nova_ocorrencia", argumento: "bug no login" });
+    expect(livre.comando).toBe("/expx:runx bug no login");
+  });
+
+  it("disparar de um módulo desligado é recusado e NÃO abre Pane; ligado volta a abrir", async () => {
+    let off = ["sprintx"];
+    const ctx = await montar({ modulosDesligados: () => new Set(off) });
+    const { raiz } = criarRepoGit();
+    gerarProjetoExpx(raiz);
+    const ws = (await ctx.workspaces.abrir(raiz)) as NonNullable<Awaited<ReturnType<typeof ctx.workspaces.abrir>>>;
+    const pedido = { workspace_id: ws.id, trabalho_id: "cobranca-pix", gesto: "retomar" as const, argumento: null, pane_id: null };
+    const r = await ctx.metodo.disparar(pedido);
+    expect(r.ok).toBe(false);
+    expect(r.motivo).toMatch(/sprintx está desligado/);
+    expect([...ctx.sessoes.sessoes.values()]).toHaveLength(0);
+    off = [];
+    expect((await ctx.metodo.disparar(pedido)).ok).toBe(true);
+  });
+
+  it("uma porta que lança vale como nenhum módulo desligado", async () => {
+    const ctx = await montar({ modulosDesligados: () => { throw new Error("x"); } });
+    const { raiz } = criarRepoGit();
+    gerarProjetoExpx(raiz);
+    const ws = (await ctx.workspaces.abrir(raiz)) as NonNullable<Awaited<ReturnType<typeof ctx.workspaces.abrir>>>;
+    expect((await ctx.metodo.comandoSugeridoPara({ workspace_id: ws.id, trabalho_id: "cobranca-pix", gesto: "retomar", argumento: null })).comando).toBe("/expx:sprintx cobranca-pix");
+  });
+});
+
+describe("entrega confirmada do comando (causa do 'Pane aberto e vazio')", () => {
+  const base = (ws: string, extra: Record<string, unknown> = {}) => ({ workspace_id: ws, trabalho_id: null, gesto: "nova_feature" as const, argumento: "exportar relatório", pane_id: null, ...extra });
+  async function ctxEntrega(confirmarEntregaMs = 0) {
+    const ctx = await montar({ confirmarEntregaMs });
+    const { raiz } = criarRepoGit();
+    gerarProjetoExpx(raiz);
+    const ws = (await ctx.workspaces.abrir(raiz)) as NonNullable<Awaited<ReturnType<typeof ctx.workspaces.abrir>>>;
+    return { ...ctx, ws };
+  }
+
+  it("Pane livre COM preparo de MCP/settings (o caso real do dono): o comando chega à CLI como prompt inicial e o resultado diz 'entregue'", async () => {
+    const { metodo, panes, ws, sessoes } = await ctxEntrega();
+    panes.definirPreparador(async () => ({ argumentos: ["--mcp-config", "/x/mcp.json", "--settings", "/x/s.json"], ambiente: {} }));
+    const r = await metodo.disparar(base(ws.id));
+    expect(r).toMatchObject({ ok: true, estado: "entregue", entrega: "prompt_inicial", motivo: null, comando: "/expx:sprintx exportar relatório" });
+    const s = sessoes.sessoes.get(r.sessao_id as string);
+    expect(s?.pedido["prompt_inicial"]).toBe("/expx:sprintx exportar relatório");
+  });
+
+  it("CLI que sai na largada: NÃO é 'enviado'; volta falhou com a causa em linguagem simples e a ação", async () => {
+    const { metodo, ws, sessoes } = await ctxEntrega(300);
+    const abrir = sessoes.abrir;
+    sessoes.abrir = ((...a: Parameters<typeof abrir>) => {
+      const r = abrir(...a);
+      setTimeout(() => sessoes.emitir(r.sessao_id, { tipo: "encerramento", codigo: 1, sinal: null }), 20);
+      return r;
+    }) as typeof abrir;
+    const r = await metodo.disparar(base(ws.id));
+    expect(r.ok).toBe(false);
+    expect(r.estado).toBe("falhou");
+    expect(r.motivo).toMatch(/A CLI Claude Code saiu antes de receber o comando/);
+    expect(r.motivo).toMatch(/autentic|instal/i);
+    expect(r.pane_id).not.toBeNull();
+  });
+
+  it("Pane existente pronto: escrita real no PTY => entregue/escrita; Pane ocupado => falhou (nada escrito)", async () => {
+    const { metodo, panes, ws, sessoes } = await ctxEntrega();
+    const p = await panes.abrirPane({ workspace_id: ws.id, cli: "claude", papel: "nenhum" });
+    sessoes.emitir(p.sessao_id, { tipo: "estado", estado: "executando", erro_codigo: null, mensagem: null });
+    const ok = await metodo.disparar(base(ws.id, { pane_id: p.pane.id }));
+    expect(ok).toMatchObject({ ok: true, estado: "entregue", entrega: "escrita", sessao_id: p.sessao_id });
+    expect(sessoes.sessoes.get(p.sessao_id)?.escritas).toEqual(["/expx:sprintx exportar relatório\r"]);
+    sessoes.emitir(p.sessao_id, { tipo: "atividade", atividade: "trabalhando" });
+    const ocupado = await metodo.disparar(base(ws.id, { pane_id: p.pane.id }));
+    expect(ocupado).toMatchObject({ ok: false, estado: "falhou" });
+    expect(sessoes.sessoes.get(p.sessao_id)?.escritas).toHaveLength(1);
   });
 });

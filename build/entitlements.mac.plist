@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Fase 11 (T-11.01): ditado por voz. Só o microfone; câmera, contatos, localização e rede de servidor NÃO estão aqui. -->
+  <key>com.apple.security.device.audio-input</key>
+  <true/>
+  <!-- Revisão T-21.10 (D-345). Justificativas por chave; qualquer chave nova exige comentário "Justificativa" e D-NN. -->
+  <!-- Justificativa allow-jit: o V8 do Electron compila JS em memória executável; sem isto o runtime endurecido derruba o processo. -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <!-- Justificativa allow-unsigned-executable-memory: necessário ao Electron 37 (V8/WebAssembly do renderer e do worker) com runtime endurecido. -->
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <!-- Justificativa disable-library-validation: o node-pty (prebuilds do npm carregados por dlopen em app.asar.unpacked, D-12) e extensões nativas
+       opcionais (sqlite-vec, D-97/P-57) não são garantidamente assinados com a identidade do app; com a validação ligada o runtime endurecido recusa o dlopen.
+       Remover assim que o verificar:nativos com esperado=assinado provar que todo nativo sai assinado pela mesma identidade (D-NN sugerido). -->
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+</dict>
+</plist>

@@ -45,6 +45,24 @@ describe("core.fsmonitor malicioso no .git/config", () => {
   });
 });
 
+describe("diff.<driver>.textconv e diff externo do .git/config (A-03)", () => {
+  it("o diff nunca executa textconv/diff externo do repositório, mesmo em pasta confiável", async () => {
+    const txc = scriptExecutavel(join(raiz, "txc.sh"), `touch '${marcador}'\ncat "$1"`);
+    git(repo, "config", "--unset", "core.fsmonitor");
+    git(repo, "config", "diff.evil.textconv", txc);
+    git(repo, "config", "diff.external", txc);
+    escrever(repo, ".gitattributes", "*.txt diff=evil\n");
+    escrever(repo, "a.txt", "UM\ndois\ntres\n");
+    for (const ex of [new ExecutorVcs(), new ExecutorVcs().comConfianca("confiavel")]) {
+      const d = await diffGit(repo, { executor: ex });
+      expect(d.arquivos[0]).toMatchObject({ caminho: "a.txt" });
+      const staged = await diffGit(repo, { executor: ex, staged: true });
+      expect(staged.arquivos).toHaveLength(0);
+    }
+    expect(existsSync(marcador)).toBe(false);
+  });
+});
+
 describe("confiança da pasta", () => {
   it("configSegura: fsmonitor sempre desligado; hooks/ext/file só em pasta não confiável", () => {
     expect(configSegura("leitura", "confiavel")).toContain("core.fsmonitor=false");

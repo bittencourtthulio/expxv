@@ -36,6 +36,18 @@ function juntar(a: Json, b: Json): Json {
     hooks[evento] = [...la, ...lb];
   }
   if (Object.keys(hooks).length > 0) saida["hooks"] = hooks;
+  // regras de permissão de cada arquivo SOMAM (um `deny` nunca apaga o `deny` de outro: o gate de módulos desligados e o piso do Maestro valem juntos)
+  const pa = ehObjeto(a["permissions"]) ? a["permissions"] : null;
+  const pb = ehObjeto(b["permissions"]) ? b["permissions"] : null;
+  if (pa !== null && pb !== null) {
+    const permissions: Json = { ...pa, ...pb };
+    for (const chave of ["deny", "allow", "ask"]) {
+      const la = Array.isArray(pa[chave]) ? (pa[chave] as unknown[]) : [];
+      const lb = Array.isArray(pb[chave]) ? (pb[chave] as unknown[]) : [];
+      if (la.length + lb.length > 0) permissions[chave] = [...new Set([...la, ...lb])];
+    }
+    saida["permissions"] = permissions;
+  }
   return saida;
 }
 

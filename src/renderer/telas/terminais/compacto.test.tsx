@@ -124,7 +124,7 @@ describe("D-32: uma única linha de controles", () => {
     for (const nome of [/Nova sessão/, /Dividir lado a lado/, /Dividir em cima e embaixo/, /Buscar no terminal/, /Atalhos de teclado/]) expect(within(barra).getByRole("button", { name: nome })).toBeTruthy();
     // a tela tem só a barra antes do corpo (sem linha de abas separada)
     const tela = document.querySelector(".terminais-tela") as HTMLElement;
-    const irmaosAntesDoCorpo = Array.from(tela.children).filter((c) => !c.classList.contains("terminais-corpo") && !c.classList.contains("terminais-borda"));
+    const irmaosAntesDoCorpo = Array.from(tela.children).filter((c) => !c.classList.contains("terminais-miolo") && !c.classList.contains("terminais-borda"));
     expect(irmaosAntesDoCorpo).toEqual([barra]);
   });
 

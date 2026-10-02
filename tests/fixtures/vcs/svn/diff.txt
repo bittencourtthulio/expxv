@@ -1,0 +1,47 @@
+Index: b.txt
+===================================================================
+--- b.txt	(revision 5)
++++ b.txt	(nonexistent)
+@@ -1 +0,0 @@
+-x
+Index: bin.dat
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+
+Property changes on: bin.dat
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: novo.txt
+===================================================================
+--- novo.txt	(nonexistent)
++++ novo.txt	(working copy)
+@@ -0,0 +1 @@
++novo
+Index: src/f.ts
+===================================================================
+--- src/f.ts	(revision 5)
++++ src/f.ts	(working copy)
+@@ -1 +1,2 @@
+ f1
++p
+
+Property changes on: src/f.ts
+___________________________________________________________________
+Added: svn:needs-lock
+## -0,0 +1 ##
++*
+\ No newline at end of property
+Index: .
+===================================================================
+--- .	(revision 5)
++++ .	(working copy)
+
+Property changes on: .
+___________________________________________________________________
+Added: svn:ignore
+## -0,0 +1 ##
++*.log

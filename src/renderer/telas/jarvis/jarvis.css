@@ -1,0 +1,43 @@
+/* Tela Jarvis e controle remoto (Fase 13), compacta (D-32). Só tokens existentes; estados por forma e texto, nunca só cor. */
+.jarvis-tela { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.jarvis-barra { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--barra-altura); padding: var(--espaco-1) var(--espaco-3); border-bottom: 1px solid var(--borda); }
+.jarvis-corpo { flex: 1; min-height: 0; overflow: auto; padding: var(--espaco-2) var(--espaco-3); font-size: var(--fs-rotulo); }
+.jarvis-corpo h2 { margin: 0 0 var(--espaco-2); font-size: var(--fs-base); }
+.jarvis-tela button:focus-visible, .jarvis-tela select:focus-visible, .jarvis-tela input:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.jarvis-nota { color: var(--texto-suave); margin: var(--espaco-1) 0; }
+.jarvis-aviso { background: var(--superficie); border-left: 3px solid var(--aviso); padding: var(--espaco-1) var(--espaco-2); margin: var(--espaco-2) 0; }
+.jarvis-aviso-destaque { background: var(--superficie); border-left: 3px solid var(--destaque); padding: var(--espaco-2) var(--espaco-2); margin: 0 0 var(--espaco-3); font-weight: 600; }
+.jarvis-erro { background: var(--superficie); border-left: 3px solid var(--alerta); padding: var(--espaco-2) var(--espaco-2); margin: var(--espaco-2) 0; }
+.jarvis-linha { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; margin: var(--espaco-2) 0; }
+.jarvis-espaco { flex: 1; }
+.jarvis-bloco { margin-bottom: var(--espaco-4); }
+.jarvis-botao { height: var(--botao-altura); padding: 0 var(--espaco-3); border: 1px solid var(--borda); border-radius: 4px; background: var(--superficie); color: var(--texto); font-size: var(--fs-rotulo); cursor: pointer; }
+.jarvis-botao:disabled { opacity: 0.5; cursor: default; }
+.jarvis-botao[aria-pressed="true"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.jarvis-botao-destaque { background: var(--destaque); color: var(--sobre-destaque); border-color: var(--destaque); }
+.jarvis-botao-perigo { border-color: var(--alerta); }
+.jarvis-campo { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--fundo); color: var(--texto); font-size: var(--fs-rotulo); }
+input.jarvis-campo { flex: 1; min-width: 160px; }
+/* o select mostra o valor inteiro: nunca encolhe na linha (quebra para a linha de baixo se faltar espaço) */
+select.jarvis-campo { flex: none; max-width: 100%; }
+.jarvis-rotulo-campo { color: var(--texto-suave); }
+.jarvis-check { display: flex; align-items: center; gap: var(--espaco-2); margin: var(--espaco-1) 0; }
+.jarvis-fieldset { border: 1px solid var(--borda); border-radius: 4px; margin: var(--espaco-2) 0; padding: var(--espaco-1) var(--espaco-2); }
+.jarvis-confirmacao { border: 1px solid var(--destaque); border-radius: 4px; padding: var(--espaco-2) var(--espaco-2); margin: var(--espaco-2) 0; background: var(--superficie); }
+.jarvis-confirmacao-texto { margin: 0 0 var(--espaco-1); overflow-wrap: anywhere; }
+.jarvis-historico { min-height: 120px; max-height: 45vh; overflow: auto; border: 1px solid var(--borda); border-radius: 4px; padding: var(--espaco-2) var(--espaco-2); margin: var(--espaco-2) 0; }
+.jarvis-msg { display: flex; flex-direction: column; gap: var(--espaco-1); margin-bottom: var(--espaco-2); overflow-wrap: anywhere; }
+.jarvis-msg[data-papel="usuario"] { align-items: flex-start; }
+.jarvis-msg[data-tom="recusa"] { border-left: 3px solid var(--aviso); padding-left: var(--espaco-2); }
+.jarvis-quem { font: 600 var(--fs-pequeno) var(--mono); color: var(--texto-suave); }
+.jarvis-linhas { margin: var(--espaco-1) 0 0; padding-left: var(--espaco-4); }
+.jarvis-detalhe { color: var(--texto-suave); }
+.jarvis-codigo, .jarvis-sas { font: 700 20px var(--mono); letter-spacing: 2px; margin: var(--espaco-1) 0; }
+.jarvis-lista { list-style: none; margin: 0; padding: 0; }
+.jarvis-lista > li + li .lst-linha { border-top: 1px solid var(--borda); }
+.jarvis-lista li[data-revogado="sim"] { opacity: 0.6; }
+.jarvis-lista li[data-revogado="sim"] .lst-nome { text-decoration: line-through; }
+.jarvis-dispositivo-form { padding: var(--espaco-1) 0 var(--espaco-2); }
+.jarvis-tabela { width: 100%; border-collapse: collapse; }
+.jarvis-tabela th, .jarvis-tabela td { text-align: left; padding: var(--espaco-1) var(--espaco-2); border-bottom: 1px solid var(--borda); vertical-align: top; overflow-wrap: anywhere; }
+.jarvis-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

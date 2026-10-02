@@ -1,0 +1,10 @@
+{
+  "name": "x",
+  "scripts": {
+    "dev": "node a.js",
+    "--eval": "x",
+    "-rf": "y",
+    "a b": "z",
+    "test;rm": "w"
+  }
+}

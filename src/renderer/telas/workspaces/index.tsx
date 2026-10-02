@@ -4,6 +4,7 @@ import type { Permissao, Workspace } from "../../../compartilhado/dominio";
 import { DialogoConfirmacao } from "../../componentes/Dialogo";
 import { EstadoVazio } from "../../componentes/EstadoVazio";
 import { Pagina } from "../../componentes/Pagina";
+import { storeAdicionarWorkspace } from "../../estado/adicionar-workspace";
 import { storeWorkspaces, useWorkspaces, type StoreWorkspaces } from "../../estado/workspaces";
 import { Cartao } from "./Cartao";
 import { AVISO_AUTOMATICO } from "./textos";
@@ -27,19 +28,19 @@ export function TelaWorkspaces({ store = storeWorkspaces }: { store?: StoreWorks
   };
 
   return (
-    <Pagina titulo="Projetos" subtitulo="Pastas de trabalho, worktrees e permissão das CLIs.">
+    <Pagina modo="leitura" largura="padrao" titulo="Projetos" subtitulo="Pastas de trabalho, worktrees e permissão das CLIs.">
       <div className="barra-acoes">
-        <button type="button" className="botao botao-primario" onClick={() => void store.abrir(null)}>Abrir pasta…</button>
+        <button type="button" className="botao botao-primario" onClick={() => storeAdicionarWorkspace.abrir("pasta")}>Adicionar workspace…</button>
       </div>
       {erro !== null ? <p role="alert" className="erro-caixa">{erro}</p> : null}
       {!carregado ? <div aria-busy="true" /> : recentes.length === 0 ? (
         <EstadoVazio icone="workspaces" titulo="Nenhum workspace aberto" texto="Comece escolhendo a pasta do seu projeto.">
           <ol className="ws-passos">
-            <li>Clique em <strong>Abrir pasta…</strong> e escolha a pasta do projeto.</li>
+            <li>Clique em <strong>Adicionar workspace…</strong> e escolha a pasta, clone um repositório ou crie um projeto novo.</li>
             <li>Confira a permissão das CLIs (o padrão é seguro).</li>
             <li>Abra um terminal ou crie uma missão neste workspace.</li>
           </ol>
-          <button type="button" className="botao botao-primario" onClick={() => void store.abrir(null)}>Abrir pasta…</button>
+          <button type="button" className="botao botao-primario" onClick={() => storeAdicionarWorkspace.abrir("pasta")}>Adicionar workspace…</button>
         </EstadoVazio>
       ) : (
         <ul className="ws-lista" aria-label="Workspaces recentes">

@@ -1,0 +1,32 @@
+/* Diálogos de Executar projeto (confiança e editor de configurações). Escala "conforto" (tokens de conforto.css) e só tokens de cor. */
+.exec-confianca p { margin: 0 0 var(--espaco-3); }
+.exec-meta { color: var(--texto-suave); font-size: var(--fs-pequeno); }
+.exec-meta code, .exec-confianca code, .exec-form code { font-family: var(--mono); font-size: var(--fs-pequeno); }
+.exec-aviso { color: var(--aviso); font-size: var(--fs-campo); }
+.exec-comando {
+  margin: 0 0 var(--espaco-3); padding: var(--espaco-3); max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); color: var(--texto); font: var(--fs-pequeno) / 1.5 var(--mono);
+}
+.exec-corpo { max-height: 140px; color: var(--texto-suave); }
+
+.exec-editor { display: grid; grid-template-columns: minmax(180px, 230px) minmax(0, 1fr); gap: var(--espaco-4); min-height: 360px; }
+.exec-lista { display: flex; flex-direction: column; gap: var(--espaco-2); min-width: 0; }
+.exec-lista ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--espaco-1); }
+.exec-lista-item {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 40px; padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid transparent; border-radius: var(--raio-pequeno); background: transparent; color: var(--texto); text-align: left; font-size: var(--fs-campo); cursor: pointer;
+}
+.exec-lista-item:hover { background: var(--superficie-2); }
+.exec-lista-item[aria-current="true"] { background: var(--superficie); border-color: var(--destaque); }
+.exec-lista-item small { color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.exec-form { display: flex; flex-direction: column; min-width: 0; }
+.exec-linha-dupla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espaco-3); }
+.exec-marca { display: flex; align-items: center; gap: var(--espaco-2); margin-bottom: var(--espaco-3); color: var(--texto-suave); font-size: var(--fs-campo); }
+.exec-acoes { flex-wrap: wrap; }
+.exec-espaco { flex: 1; }
+@media (max-width: 760px) { .exec-editor { grid-template-columns: minmax(0, 1fr); } .exec-linha-dupla { grid-template-columns: minmax(0, 1fr); } }
+
+/* prechecagens (D-581): aviso por configuração com o pré-passo sugerido; nada é executado nem adicionado sem o clique */
+.exec-prechecagens { display: flex; flex-direction: column; gap: var(--espaco-2); margin-bottom: var(--espaco-3); }
+.exec-prechecagem { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2) var(--espaco-3); margin: 0; padding: var(--espaco-2) var(--espaco-3); border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); }
+.exec-prechecagem span { flex: 1 1 260px; min-width: 0; }

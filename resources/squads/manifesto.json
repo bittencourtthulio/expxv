@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "versao_pacote": 1,
+  "squads": [
+    {
+      "id": "acessibilidade-ux",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "1827e9106acc742cc8b64e17be4e0c8a5baf98044f55036528ac720a452aab1b",
+        "membros/orquestrador.md": "05849ade5d879202acd3d035ea71760ca94f12018f2ce8dddebb99c066bae7f0",
+        "membros/auditor-de-acessibilidade.md": "f1d65e5ca2390573663fdc3dc7d202c0e0ac0824df38492abe6b4dac2a5f02cd",
+        "membros/explorador-de-telas.md": "1090a336a4adc170d7d164ea493a3275eb29af65a8d935bb58636eb50ff14f44",
+        "membros/implementador-de-correcoes.md": "5e6a7680296e2a404a3eef2f5b17c0fc0cbc75c79307d500246753899060708a",
+        "membros/testador.md": "22e1eb2e2855b2683ef1f8d6705eb30c4ba84a4f738e80885fc28571baf1e90f",
+        "membros/revisor.md": "32f916e0251d6507c2afd02a3e9494c25de88b2c91dfbb095efc094d30313463"
+      }
+    },
+    {
+      "id": "api-contratos",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "c8fd6360dc1e735bf047f4aa4f93b56b60495a667592db30746529bab80f8571",
+        "membros/orquestrador.md": "def296514a47149e8a6660a4590718c49fbf264d802c1aa8a26c95fd3e937fd7",
+        "membros/explorador-de-contratos.md": "cb3cecef9fd291f1e8240afc053d55f730a80fa3b2d1aea775f76c3dd147120c",
+        "membros/projetista-de-contrato.md": "16236c9e8bc2bfd883263f1ad2efbb5c16e9bca8504f577004656c58d3366759",
+        "membros/implementador-de-api.md": "39934b8223537810bf95f1a118c779d9af12517a569cb4c63ca43767a17ae314",
+        "membros/testador-de-contrato.md": "3870ca07f0ca6283f36f8bdc138eba658bc81fbf88025e24bc774bbc2a56b321",
+        "membros/revisor.md": "abe14ce74169bfec365bb032c2bb4243bc79ae281a13132d9452b19e16206201"
+      }
+    },
+    {
+      "id": "auditoria-seguranca",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "64af8492e7f41ecd3bac66e9ba4d3521baba6ee41667f15a5ef3c3933ef2539d",
+        "membros/orquestrador.md": "611ea1bdaa890f98edfc8bec4dcbb41286a5177dff4c8ba0f7db41af2f5aefc2",
+        "membros/modelador-de-ameacas.md": "71e94691de6957305470c1059dd5d61e2bf89290fde52de95973c9d087cfabb5",
+        "membros/cacador-de-vulnerabilidades.md": "a14a2475ef8e7e8efe6d6a1739b6750128ec67c4a514dfd5ba5ddff22daa1c67",
+        "membros/verificador.md": "78802904534ba5c7ddf357fc778a356fde03feadd5522b85785349d2da806b38"
+      }
+    },
+    {
+      "id": "correcao-de-bug",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "72303103bbbedc304d4e0df5195498b82bf1305902478255f35c134a77cece2c",
+        "membros/orquestrador.md": "6f59c06ffb8f66f7181cfb7541b128f0ef7ebc72aad4ab692ac44e45ab21d731",
+        "membros/investigador.md": "c531e95cfe334dc083ea9a194f100a8026bda935d9113f97b292d6ee0e812077",
+        "membros/corretor.md": "7740975416d4c469a7e9f84888facc0f78a0746e07a446ccddd83a01cb5de8c8",
+        "membros/testador-regressao.md": "373b78ae07b60af81e170fc7e22c19687acfe2ffc9f1be6124a2f7f8ce1a0da1",
+        "membros/revisor.md": "e5f215fbb3c4b27634fd14cd38950c5ff1a4a6495ff0d9534408703d179b2b9f"
+      }
+    },
+    {
+      "id": "dados-migracoes",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "a10b0c2dd783d9b15b7ad90c1b13fc05dc6764a579f3a3480b19c32d66ca14ea",
+        "membros/orquestrador.md": "b32ab79022ef4f9167dfbe3a90a113fa0186c0fe3b66b96ebb3f04ccad727c00",
+        "membros/cartografo-de-dados.md": "5f225c285511f5a3e5f5a3d5d152a051c19b8a7fcd344531cbe70c9a9947c24c",
+        "membros/analista-de-impacto.md": "f40a3f5a4f0b769af52f1528dd1c076e7f5976ce443494b7c7396a720f0a28e4",
+        "membros/implementador-de-migracao.md": "1b5fe5fb83382e52d143e56ddc7e1e91d7f14c0aa9dce68b3e0361b6b9604291",
+        "membros/testador-de-migracao.md": "3c6a0ba7e63ae55a7dbdd62fa875ed27657ee11b4202188dd0083a8e111e6e7a",
+        "membros/revisor.md": "3ea13b8dae1ee376b80ec65b780187dc7a1d0690f2a8d176bffdd4aaba8599a6"
+      }
+    },
+    {
+      "id": "devops-ci",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "8eea630cd4f71e279adc8a65868dbd207daa941a76d43e0a8046133c0a9c11a5",
+        "membros/orquestrador.md": "d3cf8fde50079607c24d8e38f4fff88a58afee47b02a3539aafbba6d4637bcfc",
+        "membros/engenheiro-de-pipeline.md": "7e4dc158591136c13ea9a4f878790ef74356df4ea0128d464e15a01f0ea9610a",
+        "membros/engenheiro-de-containers.md": "8ada8ce45275ed71073e74b19f43ca62490ee1a7b3f985fe5db7bbabd170326e",
+        "membros/revisor.md": "ef715d2f3e44db321fad185b10406570bec27d8717a8091079d02b2f46d2a48f"
+      }
+    },
+    {
+      "id": "documentacao",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "169ec81934ab97849d2fa39c605d9546e44cd7217287dacb4c944dcdc668fddb",
+        "membros/orquestrador.md": "34af698988179ceba5ab980d9d4141d3dba5c838aa8aed0a9d9a4fb179f0f2bf",
+        "membros/leitor-de-codigo.md": "5360420c75cff5aaebf6449e839a077d3866b096f4c5bb110ea736f6b45e7c96",
+        "membros/redator.md": "720885ba7c49d33c107f8387e199c172a7b3fa409306efbe1e7582e4063030bc",
+        "membros/revisor.md": "4164837c71bf972bbb4b3e2c47c3352c1ffc28bb8a4ad49587984e2b43643d7c"
+      }
+    },
+    {
+      "id": "dupla-rapida",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "b7d6a9012c3686917e0a3a8540d15ac36e0eccd55c358d19669fe5925e82ddfa",
+        "membros/orquestrador.md": "afa373621f593dc857efdb60ce094c2027e4926a77a1cd7370efb69b1e57ee2d",
+        "membros/implementador.md": "c1edd61bc5995ce8cfb434306b83a92e194a769780df4bf476f22ee6c6fa3030",
+        "membros/revisor.md": "a8453ab9ad4ebacdd9f6510dfe460f86120db7b17d9ce639deba48f3cf41dfe9"
+      }
+    },
+    {
+      "id": "feature-fullstack",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "88e483557cbea304d64f948443cd6cb62d436bbbad137699f1997045fb1a74ff",
+        "membros/orquestrador.md": "c6a17ee761bd0ec0be27b0ba4b305a6b88d1268ed5addf2c31abc5a80e3662f0",
+        "membros/explorador-codigo.md": "45fad916f75b0e0927d46529141888f5f776ae9fefa9cfee422387873cc0cc2a",
+        "membros/implementador-backend.md": "977d04a20b4820b9eeec7ec7b828f2ff41cb1ce626c1f1ea5990643c2340938b",
+        "membros/implementador-frontend.md": "5a9c910baa55c828a47634c6ca683d77989822ac5c676b9281cdcb2473101edb",
+        "membros/testador.md": "833388ba0bca8d5571ffc55aef78f81aa98655ccfcb4968276ab390bf43068e9",
+        "membros/revisor.md": "5b52997ddf45e8fec1c8967104642cd709f442451ea45929b3c5f7aad29b59f1"
+      }
+    },
+    {
+      "id": "migracao-dependencias",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "b9f3d2e03c665c16ede2e74daa0bc49410b90ae191ae4c426fed4d1be05426f9",
+        "membros/orquestrador.md": "4b6d5bdb4050e9f52258a68b0c4683eedb30fca509590d138d39489ed348e480",
+        "membros/analista-de-impacto.md": "ef8de0f29b4653061ccb3dbc7f916be1d8e585614102bbd9a22381bb0b46a765",
+        "membros/atualizador.md": "db635fcce65209b5abd014004b84460c37592ea2dff026589d94fddf1053a912",
+        "membros/testador.md": "39bb5f57a0fa39120c39a0ea31f5fec5b9facb30f9bfc4ba5da0ca30c3cb680d",
+        "membros/revisor.md": "eab7731b6e4776baf6f1a16754397f001676de3574fd42ec3da12b3927875610"
+      }
+    },
+    {
+      "id": "observabilidade",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "2b4edb0cb4efa15b0d94876dc7ee183ec2c10c91a29459e812504504dc049ca1",
+        "membros/orquestrador.md": "4abf39a955de0b4e4c96c95e082e91c310b56c35e6d46a07c463bda10f468417",
+        "membros/explorador-de-fluxos.md": "8a771b8e70ec84321cb2d23d619a1fef4bd1839e28b732294ba14ef990033b00",
+        "membros/engenheiro-de-instrumentacao.md": "694855f30c9c623464d6385a537ba42a9dae74a4c50a6bdbdde5b35e2b6f0f7f",
+        "membros/engenheiro-de-alertas.md": "033d75462cffe2241d899e6867bac5529a8fceb2737745a9240aa569550d4e74",
+        "membros/revisor.md": "71dea6b1a2c7aa701789846cf9e3541d81e20cc3702e3dad9d37d3f4453f7f0a"
+      }
+    },
+    {
+      "id": "onboarding-projeto",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "98f1f64050df5b39ccdfb83b841ecae996ba7adccee3c4ac4b084c51d935fa0e",
+        "membros/orquestrador.md": "4b6d8fa1ccf9c6d5292f1fafdafd0ae0a8975e048692eb86a560938ad0b07cae",
+        "membros/cartografo.md": "d8e49de597b8480eaa3dc7a359d58408d677eb87cbd54a75c0bbdc7fb082bbf3",
+        "membros/convencoes.md": "130b43dc8c027618ff6e5cf9f66e462e2b08db8839a78f40521d4adb039bf941",
+        "membros/perfil-de-legado.md": "368a9500669b88a9799652332915d6a22aa7242d720fc5110f7a28723c24c1b4",
+        "membros/revisor.md": "38fa8d7c02b4747f9df662ee7e97d2b20d9caffb19a3c926c81ee96ce2c11e07"
+      }
+    },
+    {
+      "id": "performance",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "497cd210cd43f8b0334c74bfa8939f6250a68027615b07d24e3066012464d64c",
+        "membros/orquestrador.md": "8d606342e6984535383a1e3e25838a77a6178999e066b3eab8bddb3a8c5ad53d",
+        "membros/perfilador.md": "fdbd85a626154b012a421548077fd225db7f9fc0353275583fd41fbe790fb300",
+        "membros/otimizador.md": "8307d814cc7ed9f108c20be9645df8fe68730107b37419b3b8f08027609a4a8e",
+        "membros/medidor.md": "13b2876852ffe75aad21f7dace4ad1a1c852d0497c67b3c62e314902d7915611"
+      }
+    },
+    {
+      "id": "refatoracao-legado",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "fda61bf57bba02e59cccf6b9d62b343b46536cd144dfcf5668f0af0c0774fca0",
+        "membros/orquestrador.md": "f958969250e9ccfb01ef22b4fdd4c29bdf93fdf7ce265af85ea8a875ca2cea85",
+        "membros/cartografo.md": "d8023ce46a71b7dc503e3430c902cb790be6f2131a8f0cd77bbbdf9626819a6c",
+        "membros/autor-caracterizacao.md": "20588ac33bdc7a74dd4c6aa7f8a83c1bd7b9255a7f7a3633e39ec8aac36338f4",
+        "membros/refatorador.md": "362303b4262cb007cf422c282a1469d66c92173a7e5a2ab6831b8c0901f19fc6",
+        "membros/revisor.md": "b05ea82e9124eb74fa923362869dd89fd24ab4d184fea6205a34f5c5127aa298"
+      }
+    },
+    {
+      "id": "revisao-de-pr",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "78d8a4ab2bc6474fd7fdcd51bd077f0f91795f3edbd7d4f3112f843c7545ce5a",
+        "membros/orquestrador.md": "6f12f4adc206362ba2c31cc23a33c761b0e742a03fcf834164b05695af30e23d",
+        "membros/leitor-de-diff.md": "ddedeb2b83f82e9c920df69f90785e1a3c6887be55fc119c5e0148b8d867a3fd",
+        "membros/revisor-logica.md": "bed112d371d3d06c85f0b34b11a19090d3e964a721ca122f108d5f74509ceb29",
+        "membros/revisor-seguranca.md": "aba4980ff117880e2e527834f811add2708d15d14becb4723f98c45e52958446",
+        "membros/revisor-testes-estilo.md": "aeb71b42229daae8df7949eddeebf9d2587ef4a0162b287a8dc22f7cb67cab74"
+      }
+    },
+    {
+      "id": "spike-pesquisa",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "5928b466fb5344aec23b67a7998a4882b81e6757cac2562df159289cdca631fe",
+        "membros/orquestrador.md": "7670e22e0449295b5cc25bf2c8e938b189724e5f07222afc1df4e3ea68149722",
+        "membros/pesquisador.md": "19e612cfe38d700487efb9e626bfab2e9b745950aa3aa6b01ce35be56fe63b55",
+        "membros/sintetizador.md": "474e7ac5418ce02a0b4da68643ebd8fddde0acd284cb8aa6f7c7d5b6819f1544",
+        "membros/verificador-de-fontes.md": "e4cdfe07e984e03a8043d56753c641b613aabe572d5f79e735d4308c4828b871"
+      }
+    },
+    {
+      "id": "testes-qa",
+      "versao": 1,
+      "arquivos": {
+        "squad.json": "f2c0196ad7c566e8b979adbff61e5443c470ebf529a8cd7402377879e5599c66",
+        "membros/orquestrador.md": "dae7e704d66b1f445d20bd2b34ba2aca3bc78c039640b9816744bdec14abfce3",
+        "membros/gerador-de-testes.md": "55b6b90c07981c1e8d0861152a65ce3f43521560f9c0b64a52f7619f56ab288a",
+        "membros/analista-de-cobertura.md": "e7eb05ddacb8d2d33c2ff08ceab3b2ff06c9785d021bceb4f88c30f6ff6389fd",
+        "membros/revisor-de-testes.md": "89101824905c9d9709ac9dfd50947622f98fe7e7a8844a3156c837551f782fa2"
+      }
+    }
+  ]
+}

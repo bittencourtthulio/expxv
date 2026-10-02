@@ -41,7 +41,7 @@ function threadEmProcesso(dados: Parameters<NonNullable<Parameters<typeof inicia
 const abertas: Orquestracao[] = [];
 afterEach(async () => { while (abertas.length) await abertas.pop()?.encerrar(); });
 
-function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; servidorReal?: boolean } = {}) {
+function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; servidorReal?: boolean; squads?: import("../nucleo/mcp/portas").PortaSquads; openrouter?: import("./openrouter").PortaOpenRouterMain } = {}) {
   const b = novoBanco();
   const { banco, repos } = b;
   const dados = criarTmp("orq-dados-");
@@ -49,7 +49,7 @@ function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; servido
   const ws = repos.workspace.criar({ nome: "ws", raiz });
   const sessoes = sessoesFalsas();
   const detector = detectorFalso(opcoes.ferramentas ?? [ferramenta("claude"), ferramenta("codex"), ferramenta("opencode"), ferramenta("gemini")]);
-  const contas = criarServicoContas({ banco, repos, pastaDeDados: dados });
+  const contas = criarServicoContas({ banco, repos, pastaDeDados: dados, casa: dados, env: {} }); // casa vazia: sem login existente da máquina
   const workspaces = { exigir: (id: string) => repos.workspace.exigir(id) };
   const barramento = criarBarramento();
   const eventos: Array<{ tipo: string; payload: unknown }> = [];
@@ -64,11 +64,12 @@ function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; servido
       urlGanchos: "http://127.0.0.1:1/hooks",
       porta: 1,
       ...infoServidor,
-      emitirToken: (p) => `token-${p.pane_id}-${p.role}`,
+      emitirToken: (p) => { pedidosDeToken.push(p); return `token-${p.pane_id}-${p.role}`; },
       revogar: (id) => void revogados.push(id),
       fechar: async () => undefined,
     });
   const revogados: string[] = [];
+  const pedidosDeToken: Array<{ pane_id: string; role: string; piloto_com_squad?: boolean }> = [];
   const infoServidor: { portaAnterior: number | null; portaReutilizada: boolean } = { portaAnterior: null, portaReutilizada: true };
   const novaOrquestracao = (): Orquestracao => {
     const o = criarOrquestracao({
@@ -83,6 +84,8 @@ function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; servido
     avisar: (m) => void avisos.push(m),
     atrasoFechamentoMs: 10,
     intervaloSegurancaMs: 50,
+    ...(opcoes.squads === undefined ? {} : { harness: { portas: () => ({ squads: opcoes.squads as import("../nucleo/mcp/portas").PortaSquads }), pilotoEditaPolitica: () => false } }),
+    ...(opcoes.openrouter === undefined ? {} : { openrouter: () => opcoes.openrouter as import("./openrouter").PortaOpenRouterMain }),
     ...(opcoes.servidorReal === true
       ? { iniciarServidor: (deps, ganchos) => iniciarServidorRemoto({ caminhoWorker: "-", deps, ganchos, criarThread: threadEmProcesso }) }
       : { iniciarServidor: falsoServidor }),
@@ -91,7 +94,7 @@ function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; servido
     return o;
   };
   const orq = novaOrquestracao();
-  return { orq, novaOrquestracao, infoServidor, banco, repos, dados, raiz, ws, sessoes, panes, missoes, barramento, eventos, avisos, revogados, contas };
+  return { orq, novaOrquestracao, infoServidor, pedidosDeToken, banco, repos, dados, raiz, ws, sessoes, panes, missoes, barramento, eventos, avisos, revogados, contas };
 }
 
 async function missaoAgentica(m: ReturnType<typeof montar>, opcoes: { portoes?: boolean } = {}) {
@@ -195,6 +198,16 @@ describe("pane_spawn (PortaPanes.spawn)", () => {
     expect(m.repos.task.listarPorMissao(missao.id).itens.map((t) => t.task_ref)).toEqual(["t-1", "t-2"]);
   });
 
+  it("skills da política (pane_spawn auto) chegam ao worker no prompt inicial; no Claude em Missão agêntica a restrição é imposta (Fase 7)", async () => {
+    const m = montar();
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    const { pane_id } = await m.orq.portas.panes.spawn({ ...pedidoSpawn(m, missao, piloto), skills: ["expx:designx"] });
+    const sessao = [...m.sessoes.sessoes.values()].find((s) => s.ambiente[`${PRODUTO.prefixoEnv}MCP_TOKEN`] === `token-${pane_id}-executor`);
+    const args = sessao?.pedido["argumentos"] as string[];
+    expect(args[args.length - 1]).toContain(`Skills permitidas neste Pane (restrição imposta pelo ${PRODUTO.nome}): expx:designx.`);
+  });
+
   it("revisor leva a Missão a revisando", async () => {
     const m = montar();
     await m.orq.iniciar();
@@ -233,6 +246,28 @@ describe("pane_spawn (PortaPanes.spawn)", () => {
     expect(m.repos.task.listarPorMissao(missao.id).itens[0]?.estado).toBe("descartada");
   });
 
+  it("task_ref explícito (Fase 10): cria o card com a referência do método; reaproveita a linha `aberta` da delegação; card já delegado é `conflict` (ux_task_ref)", async () => {
+    const m = montar();
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    // sem linha prévia: cria `T-01.01` (não `t-1`)
+    const { pane_id } = await m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto, { task_ref: "T-01.01" }));
+    expect(m.repos.task.listarPorMissao(missao.id).itens.map((t) => [t.task_ref, t.estado, t.pane_id])).toEqual([["T-01.01", "reivindicada", pane_id]]);
+    // com linha `aberta` criada antes (o que `delegarCard` faz): reaproveita, nunca duplica
+    const previa = m.repos.task.criar({ mission_id: missao.id, task_ref: "T-01.02", titulo: "Card", papel: "executor" });
+    const r2 = await m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto, { task_ref: "T-01.02" }));
+    const linhas = m.repos.task.listarPorMissao(missao.id).itens.filter((t) => t.task_ref === "T-01.02");
+    expect(linhas).toHaveLength(1);
+    expect(linhas[0]).toMatchObject({ id: previa.id, estado: "reivindicada", pane_id: r2.pane_id });
+    // o mesmo card de novo: conflito, nenhum Pane novo
+    const panesAntes = m.repos.pane.listarPorMissao(missao.id).length;
+    await expect(m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto, { task_ref: "T-01.02" }))).rejects.toMatchObject({ name: "DuplicadoErro" });
+    expect(m.repos.pane.listarPorMissao(missao.id)).toHaveLength(panesAntes);
+    // sem task_ref a numeração segue como antes
+    await m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto));
+    expect(m.repos.task.listarPorMissao(missao.id).itens.map((t) => t.task_ref)).toContain("t-3");
+  });
+
   it("listar não traz conteúdo de tela e respeita Missão/workspace; obter devolve o task_id", async () => {
     const m = montar();
     await m.orq.iniciar();
@@ -252,6 +287,112 @@ describe("pane_spawn (PortaPanes.spawn)", () => {
     const r = await m.orq.portas.panes.spawn({ workspace_id: m.ws.id, mission_id: null, pedido_por_pane_id: "x", provedor: "claude", modelo: null, conta_id: null, papel: "executor", agente_id: null, briefing_path: null, cwd: null });
     expect(m.repos.pane.exigir(r.pane_id).mission_id).toBeNull();
     expect([...m.sessoes.sessoes.values()][0]?.pedido["argumentos"]).toEqual([]);
+  });
+});
+
+describe("agentes de squad (PortaAgentes, Fase 14)", () => {
+  const agenteFalso = { agente_id: "eq.orq", invocation_id: "inv_1", instrucoes: "INSTRUCOES-DO-AGENTE ".repeat(200), argumentos: ["--model", "opus", "--effort", "high"], ambiente: { CONTA_X: "1" } };
+
+  it("o piloto recebe as instruções e os argumentos do agente (no lugar das do papel); o hook de wake e o MCP continuam", async () => {
+    const m = montar();
+    const vistos: string[] = [];
+    m.orq.definirAgentes({
+      preparar: async (e) => {
+        vistos.push(`${e.pane.eh_piloto ? "piloto" : "worker"}:${e.missao?.modo}`);
+        return agenteFalso;
+      },
+      ajustarSpawn: async (p) => ({ pedido: p, contexto: null }),
+    });
+    await m.orq.iniciar();
+    const { piloto } = await missaoAgentica(m);
+    expect(vistos).toEqual(["piloto:agentico"]);
+    const sessao = [...m.sessoes.sessoes.values()][0];
+    const args = sessao?.pedido["argumentos"] as string[];
+    expect(args).toEqual(expect.arrayContaining(["--model", "opus", "--effort", "high", "--mcp-config"]));
+    expect(args).toContain("--append-system-prompt-file"); // texto longo vai por arquivo (limite de argv)
+    expect(readFileSync(join(m.dados, "panes", piloto.id, "instrucoes.md"), "utf8")).toContain("INSTRUCOES-DO-AGENTE");
+    expect(readFileSync(join(m.dados, "panes", piloto.id, "instrucoes.md"), "utf8")).not.toContain("Você é o piloto");
+    expect(sessao?.ambiente["CONTA_X"]).toBe("1");
+    expect(sessao?.ambiente[`${PRODUTO.prefixoEnv}MCP_TOKEN`]).toBe(`token-${piloto.id}-piloto`);
+  });
+
+  it("squad: o token do piloto leva `piloto_com_squad` e a permissão efetiva do membro chega às sessões; sem agente nada disso existe", async () => {
+    const m = montar();
+    m.orq.definirAgentes({ preparar: async () => ({ ...agenteFalso, permissao: "seguro" as const }), ajustarSpawn: async (p) => ({ pedido: p, contexto: null }) });
+    await m.orq.iniciar();
+    const { piloto } = await missaoAgentica(m);
+    expect(m.pedidosDeToken.find((t) => t.pane_id === piloto.id)).toMatchObject({ role: "piloto", piloto_com_squad: true });
+    expect([...m.sessoes.sessoes.values()].map((x) => x.permissao)).toEqual(["seguro"]);
+
+    const sem = montar();
+    sem.orq.definirAgentes({ preparar: async () => null, ajustarSpawn: async (p) => ({ pedido: p, contexto: null }) });
+    await sem.orq.iniciar();
+    await missaoAgentica(sem);
+    expect(sem.pedidosDeToken.every((t) => t.piloto_com_squad === undefined)).toBe(true);
+    expect([...sem.sessoes.sessoes.values()].map((x) => x.permissao)).toEqual([undefined]);
+  });
+
+  it("porta que devolve null deixa o lançamento idêntico ao MVP", async () => {
+    const m = montar();
+    m.orq.definirAgentes({ preparar: async () => null, ajustarSpawn: async (p) => ({ pedido: p, contexto: null }) });
+    await m.orq.iniciar();
+    const { piloto } = await missaoAgentica(m);
+    const args = [...m.sessoes.sessoes.values()][0]?.pedido["argumentos"] as string[];
+    expect(args).not.toContain("--model");
+    expect(readFileSync(join(m.dados, "panes", piloto.id, "instrucoes.md"), "utf8")).toContain("piloto");
+  });
+
+  it("erro do preparo do agente: o Pane NÃO abre (nenhuma sessão órfã) e fica encerrado como falha_ao_abrir", async () => {
+    const m = montar();
+    m.orq.definirAgentes({ preparar: async () => { throw new Error("prompt do membro inválido"); }, ajustarSpawn: async (p) => ({ pedido: p, contexto: null }) });
+    await m.orq.iniciar();
+    await m.missoes.criar({ workspace_id: m.ws.id, modo: "agentico", origem: "livre", titulo: "X", pedido: "x", clis: { piloto: "claude" } });
+    expect(m.sessoes.sessoes.size).toBe(0);
+    expect(m.repos.pane.listarPorWorkspace(m.ws.id).itens[0]).toMatchObject({ estado: "encerrado", encerrado_motivo: "falha_ao_abrir" });
+  });
+
+  it("pane_spawn com agent_id passa pelo ajuste: o perfil do membro troca provedor/modelo, o contexto chega ao preparador e o worker leva instruções do agente", async () => {
+    const m = montar();
+    const preparos: Array<Record<string, unknown> | undefined> = [];
+    m.orq.definirAgentes({
+      preparar: async (e) => {
+        if (e.pane.eh_piloto) return null;
+        preparos.push(e.pedido.contexto as Record<string, unknown>);
+        return { ...agenteFalso, agente_id: "eq.impl", instrucoes: "PROMPT-DO-WORKER-EDITADO", argumentos: ["--model", "sonnet"], ambiente: {} };
+      },
+      ajustarSpawn: async (p) => ({ pedido: { ...p, provedor: "codex", modelo: null }, contexto: { agente: { agente_id: p.agente_id, resolucao: { cli: "codex" } } } }),
+    });
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    const { pane_id } = await m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto, { provedor: "claude", modelo: "ignorado", agente_id: "eq.impl" }));
+    expect(m.repos.pane.exigir(pane_id)).toMatchObject({ cli: "codex" });
+    expect(preparos).toHaveLength(1);
+    expect(preparos[0]).toMatchObject({ card: { task_ref: "t-1" }, agente: { agente_id: "eq.impl", resolucao: { cli: "codex" } } });
+    const sessao = [...m.sessoes.sessoes.values()].find((s) => s.ambiente[`${PRODUTO.prefixoEnv}MCP_TOKEN`] === `token-${pane_id}-executor`);
+    const args = sessao?.pedido["argumentos"] as string[];
+    expect(args).toEqual(expect.arrayContaining(["--model", "sonnet"]));
+    expect(args.join(" ")).not.toContain("ignorado");
+    expect(readFileSync(join(m.dados, "panes", pane_id, "instrucoes.md"), "utf8")).toContain("PROMPT-DO-WORKER-EDITADO");
+  });
+
+  it("recusa do ajuste (limit_reached, forbidden_role…) propaga e NENHUM card é criado", async () => {
+    const m = montar();
+    m.orq.definirAgentes({ preparar: async () => null, ajustarSpawn: async () => { throw new ErroMcp("rule_violation", "Limite atingido", "limit_reached"); } });
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    await expect(m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto, { agente_id: "eq.impl" }))).rejects.toMatchObject({ subcode: "limit_reached" });
+    expect(m.repos.task.listarPorMissao(missao.id).itens).toHaveLength(0);
+  });
+
+  it("sem porta de agentes, pane_spawn com agent_id é o do MVP (o agente só vira título do card)", async () => {
+    const m = montar();
+    m.orq.definirAgentes({ preparar: async () => null, ajustarSpawn: async (p) => ({ pedido: p, contexto: null }) });
+    m.orq.definirAgentes(null);
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    const { pane_id } = await m.orq.portas.panes.spawn(pedidoSpawn(m, missao, piloto, { agente_id: "dev-backend" }));
+    expect(m.repos.pane.exigir(pane_id).cli).toBe("claude");
+    expect(m.repos.task.listarPorMissao(missao.id).itens[0]?.titulo).toBe("dev-backend");
   });
 });
 
@@ -538,6 +679,40 @@ describe("ciclo de vida", () => {
 });
 
 describe("servidor MCP em worker thread (RPC real)", () => {
+  it("agent_list e agent_invoke atravessam o RPC real: só o piloto COM squad as vê; erro nominal da porta chega com code/subcode", async () => {
+    const chamadas: unknown[] = [];
+    const squads: import("../nucleo/mcp/portas").PortaSquads = {
+      listar: async (id) => { chamadas.push(["listar", id]); return { agents: [{ agent_id: "eq.impl", role: "executor", label: "Impl", description: "implementa", tier: "alto", max_instances: 2, in_flight: 0 }] }; },
+      invocar: async (claims, args) => {
+        chamadas.push(["invocar", claims, args]);
+        if (args.agent_id === "eq.bloqueado") throw new ErroMcp("rule_violation", "portão pendente", "gate_pending");
+        return { pane_id: "pane_novo", invocation_id: "inv_1" };
+      },
+    };
+    const m = montar({ servidorReal: true, squads });
+    m.orq.definirAgentes({ preparar: async () => ({ agente_id: "eq.orq", invocation_id: "inv_0", instrucoes: "x", argumentos: [], ambiente: {}, permissao: "seguro" }), ajustarSpawn: async (p) => ({ pedido: p, contexto: null }) });
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    const servidor = m.orq.servidor()!;
+    const tokenPiloto = readFileSync(join(m.dados, "panes", piloto.id, "mcp.json"), "utf8").match(/Bearer ([^"]+)/)?.[1] as string;
+    const c = new Client({ name: "teste", version: "1" });
+    await c.connect(new StreamableHTTPClientTransport(new URL(servidor.url), { requestInit: { headers: { Authorization: `Bearer ${tokenPiloto}` } } }) as never);
+    expect((await c.listTools()).tools.map((t) => t.name)).toEqual(expect.arrayContaining(["agent_list", "agent_invoke"]));
+    const texto = async (nome: string, args: Record<string, unknown>) => {
+      const r = await c.callTool({ name: nome, arguments: args });
+      return { erro: r.isError === true, dados: JSON.parse((r.content as Array<{ text: string }>)[0]?.text ?? "null") as Record<string, any> };
+    };
+    expect((await texto("agent_list", { mission_id: "mis_outra" })).dados["agents"]).toHaveLength(1);
+    const ok = await texto("agent_invoke", { agent_id: "eq.impl", prompt: "faça", pane_id: "falso" });
+    expect(ok).toEqual({ erro: false, dados: { pane_id: "pane_novo", invocation_id: "inv_1" } });
+    const bloqueado = await texto("agent_invoke", { agent_id: "eq.bloqueado" });
+    expect(bloqueado.erro).toBe(true);
+    expect(bloqueado.dados).toMatchObject({ code: "rule_violation", subcode: "gate_pending" });
+    expect(chamadas[0]).toEqual(["listar", missao.id]);
+    expect(chamadas[1]).toEqual(["invocar", { workspace_id: m.ws.id, mission_id: missao.id, pane_id: piloto.id, role: "piloto", mode: "agentico" }, { agent_id: "eq.impl", prompt: "faça" }]);
+    await c.close();
+  });
+
   it("cliente MCP lista só as tools do papel, cria worker, entrega handoff e o wake chega; token adulterado/revogado é unauthorized", async () => {
     const m = montar({ servidorReal: true });
     await m.orq.iniciar();
@@ -623,4 +798,79 @@ describe("tokens persistentes (reinício do app)", () => {
     expect(await status(s3.url, vivo)).toBe(401);
     await s3.fechar();
   }, 30_000);
+});
+
+describe("pane_spawn com provider openrouter (T-09.28)", () => {
+  const CHAVE = "sk-or-v1-SENTINELA-orquestracao-77aa11bb";
+  const lancamento = { cli: "opencode", modelo: "anthropic/claude-x", faixa: "topo" as const, argumentos: ["--model", "openrouter/anthropic/claude-x"], ambiente: { OPENROUTER_API_KEY: CHAVE }, avisos: [] as string[] };
+  const portaOr = (sobre: Partial<import("./openrouter").PortaOpenRouterMain> = {}) => {
+    const pedidos: unknown[] = [];
+    const porta: import("./openrouter").PortaOpenRouterMain = {
+      provedor: async () => ({ provedor: "openrouter", cli: "opencode", contas: ["conta_or"], habilitado: true, clis: ["opencode"] }),
+      modelos: async () => [{ modelo: "anthropic/claude-x", niveis_esforco: [], faixa: "topo" }],
+      lancar: async (p) => (pedidos.push(p), lancamento),
+      ...sobre,
+    };
+    return { porta, pedidos };
+  };
+  const pedidoOr = (m: ReturnType<typeof montar>, missao: { id: string }, piloto: { id: string }, extra: Record<string, unknown> = {}) =>
+    pedidoSpawn(m, missao, piloto, { provedor: "openrouter", modelo: "anthropic/claude-x", cli: null, ...extra });
+
+  it("na Missão: abre a CLI compatível com o adaptador (argv/ambiente do Pane), chave só no ambiente, rota openrouter gravada", async () => {
+    const { porta, pedidos } = portaOr();
+    const m = montar({ openrouter: porta });
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    const { pane_id } = await m.orq.portas.panes.spawn(pedidoOr(m, missao, piloto, { cli: "opencode" }));
+    expect(pedidos[0]).toEqual({ workspace_id: m.ws.id, cli: "opencode", modelo: "anthropic/claude-x", conta_id: null });
+    const pane = m.repos.pane.exigir(pane_id);
+    expect(pane).toMatchObject({ cli: "opencode", conta_id: null });
+    const sessao = [...m.sessoes.sessoes.values()].find((s) => s.ambiente[`${PRODUTO.prefixoEnv}MCP_TOKEN`] === `token-${pane_id}-executor`);
+    const args = sessao?.pedido["argumentos"] as string[];
+    expect(args).toEqual(expect.arrayContaining(["--model", "openrouter/anthropic/claude-x"]));
+    expect(args.filter((a) => a === "--model")).toHaveLength(1); // o `--model` nativo (id sem prefixo) NÃO é somado
+    expect(args.join(" ")).not.toContain(CHAVE);
+    expect(sessao?.ambiente["OPENROUTER_API_KEY"]).toBe(CHAVE);
+    expect(m.repos.paneRota.obter(pane_id)).toMatchObject({ perfil: { provider: "openrouter", cli: "opencode", modelo: "anthropic/claude-x", faixa: "topo" } });
+  });
+
+  it("fora de Missão: mesmo caminho (Pane comum na CLI compatível)", async () => {
+    const { porta } = portaOr();
+    const m = montar({ openrouter: porta });
+    await m.orq.iniciar();
+    const { pane_id } = await m.orq.portas.panes.spawn({ workspace_id: m.ws.id, mission_id: null, pedido_por_pane_id: "x", provedor: "openrouter", cli: null, modelo: "anthropic/claude-x", conta_id: null, papel: "executor", agente_id: null, briefing_path: null, cwd: null });
+    expect(m.repos.pane.exigir(pane_id)).toMatchObject({ cli: "opencode" });
+    expect([...m.sessoes.sessoes.values()][0]?.pedido["argumentos"]).toEqual(["--model", "openrouter/anthropic/claude-x"]);
+  });
+
+  it("recusa nominal da porta (modelo não habilitado/sem CLI) atravessa e NÃO deixa card nem Pane órfão", async () => {
+    const m = montar({ openrouter: portaOr({ lancar: async () => { throw new ErroMcp("rule_violation", "x", "model_not_enabled"); } }).porta });
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    const antesTasks = m.repos.task.listarPorMissao(missao.id).itens.length;
+    const antesSessoes = m.sessoes.sessoes.size;
+    await expect(m.orq.portas.panes.spawn(pedidoOr(m, missao, piloto))).rejects.toMatchObject({ code: "rule_violation", subcode: "model_not_enabled" });
+    expect(m.repos.task.listarPorMissao(missao.id).itens).toHaveLength(antesTasks);
+    expect(m.sessoes.sessoes.size).toBe(antesSessoes);
+  });
+
+  it("sem a porta do OpenRouter ligada: indisponível (nunca tenta abrir uma CLI chamada openrouter)", async () => {
+    const m = montar();
+    await m.orq.iniciar();
+    const { missao, piloto } = await missaoAgentica(m);
+    await expect(m.orq.portas.panes.spawn(pedidoOr(m, missao, piloto))).rejects.toMatchObject({ code: "unavailable" });
+  });
+
+  it("provedor virtual na lista (com o motivo quando desligado) e modelos habilitados com faixa; falha da porta não derruba a lista nativa", async () => {
+    const m = montar({ openrouter: portaOr().porta });
+    const lista = await m.orq.portas.provedores.listar("x");
+    expect(lista.find((p) => p.provedor === "openrouter")).toMatchObject({ habilitado: true, clis: ["opencode"], contas: ["conta_or"] });
+    expect(lista.some((p) => p.provedor === "claude")).toBe(true);
+    expect(await m.orq.portas.provedores.modelos("openrouter")).toEqual([{ modelo: "anthropic/claude-x", niveis_esforco: [], faixa: "topo" }]);
+    const quebrado = montar({ openrouter: portaOr({ provedor: async () => { throw new Error("boom"); } }).porta });
+    const nativos = await quebrado.orq.portas.provedores.listar("x");
+    expect(nativos.some((p) => p.provedor === "openrouter")).toBe(false);
+    expect(nativos.some((p) => p.provedor === "claude")).toBe(true);
+    expect(await montar().orq.portas.provedores.modelos("openrouter")).toEqual([]);
+  });
 });

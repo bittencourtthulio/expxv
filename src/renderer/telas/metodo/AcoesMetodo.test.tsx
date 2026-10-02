@@ -70,14 +70,14 @@ describe("AcoesMetodo", () => {
     expect((await screen.findByRole("alert")).textContent).toMatch(/aguardando você.*não é reenviado/);
   });
 
-  it("sem trabalho, exige o pedido antes de montar o comando", async () => {
-    const f = instalar({ comando: "/expx:sprintx pdf", pane_separado: false, somente_humano: false, motivo_bloqueio: null });
-    render(<AcoesMetodo workspaceId="w1" trabalho={null} />);
-    fireEvent.click(screen.getByRole("button", { name: "Nova feature" }));
-    expect((await screen.findByRole("alert")).textContent).toMatch(/Descreva o pedido/);
-    expect(f.comandoSugerido).not.toHaveBeenCalled();
-    fireEvent.change(screen.getByLabelText(/Pedido ou descrição/), { target: { value: "pdf" } });
-    fireEvent.click(screen.getByRole("button", { name: "Nova feature" }));
-    await waitFor(() => expect(f.comandoSugerido).toHaveBeenCalledWith("w1", null, "nova_feature", "pdf"));
+  it("disparo bem-sucedido leva ao terminal (D-610); falha não navega", async () => {
+    const { criarStoreExecucaoMetodo } = await import("../../estado/execucao-metodo");
+    const ir = vi.fn();
+    const ex = criarStoreExecucaoMetodo({ irParaSessao: ir, irParaTerminais: ir, config: () => undefined, armazem: () => undefined });
+    instalar({ comando: "/expx:sprintx x", pane_separado: false, somente_humano: false, motivo_bloqueio: null }, { ok: true, pane_id: "p1", comando: "/expx:sprintx x", motivo: null, sessao_id: "s9" });
+    render(<AcoesMetodo workspaceId="w1" trabalho={t} execucao={ex} />);
+    fireEvent.click(screen.getByRole("button", { name: "Avançar" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Disparar no Pane" }));
+    await waitFor(() => expect(ir).toHaveBeenCalledWith("s9"));
   });
 });

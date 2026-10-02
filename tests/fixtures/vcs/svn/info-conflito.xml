@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+<entry
+   kind="dir"
+   path="."
+   revision="5">
+<url>file:///tmp/gravado/repo/trunk</url>
+<relative-url>^/trunk</relative-url>
+<repository>
+<root>file:///tmp/gravado/repo</root>
+<uuid>764337ab-9b18-4f4c-92d4-96fc437c2a8d</uuid>
+</repository>
+<wc-info>
+<wcroot-abspath>/tmp/gravado/wc</wcroot-abspath>
+<schedule>normal</schedule>
+<depth>infinity</depth>
+</wc-info>
+<commit
+   revision="5">
+<author>dev</author>
+<date>2026-10-01T03:28:11.079354Z</date>
+</commit>
+</entry>
+</info>

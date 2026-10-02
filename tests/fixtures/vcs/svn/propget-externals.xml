@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+<target
+   path="/tmp/gravado/wc">
+<property
+   name="svn:externals">^/branches/feature ext
+https://example.com/x/y fora
+-r2 ^/trunk/src ver
+</property>
+</target>
+</properties>

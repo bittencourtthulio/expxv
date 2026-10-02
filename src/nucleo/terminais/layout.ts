@@ -22,7 +22,9 @@ function validarNo(no: unknown, profundidade: number, contagem: { nos: number })
     if (typeof primeiro === "string") return primeiro;
     const segundo = validarNo(n["segundo"], profundidade + 1, contagem);
     if (typeof segundo === "string") return segundo;
-    return { tipo: "divisao", orientacao: n["orientacao"], primeiro, segundo };
+    const p = n["proporcao"];
+    const proporcao = typeof p === "number" && Number.isFinite(p) && p >= 0.05 && p <= 0.95 ? { proporcao: p } : {};
+    return { tipo: "divisao", orientacao: n["orientacao"], ...proporcao, primeiro, segundo };
   }
   return "nó desconhecido";
 }
@@ -52,6 +54,10 @@ export function validarLayout(valor: unknown): ResultadoLayout {
   const existentes = new Set(abas.flatMap((a) => folhas(a.arvore)));
   const fixadas = [...new Set(bruto as string[])].filter((id) => existentes.has(id));
   const layout: LayoutTerminais = { versao: 2, ativa: ativa as string | null, abas, fixadas };
+  // D-570: modo foco por workspace (opcionais; o que não vale é descartado)
+  const exp = v["expandido"];
+  if (typeof exp === "string" && ID.test(exp) && existentes.has(exp)) layout.expandido = exp;
+  if (v["foco_unico"] === true) layout.foco_unico = true;
   if (Buffer.byteLength(JSON.stringify(layout)) > LIMITES_LAYOUT.arquivo_bytes) return { ok: false, erro: "layout grande demais" };
   return { ok: true, layout };
 }
@@ -62,7 +68,7 @@ function podar(no: NoLayout, vivas: ReadonlySet<string>): NoLayout | null {
   const segundo = podar(no.segundo, vivas);
   if (primeiro === null) return segundo;
   if (segundo === null) return primeiro;
-  return { tipo: "divisao", orientacao: no.orientacao, primeiro, segundo };
+  return { tipo: "divisao", orientacao: no.orientacao, ...(no.proporcao === undefined ? {} : { proporcao: no.proporcao }), primeiro, segundo };
 }
 
 /**
@@ -74,7 +80,10 @@ export function restaurarLayout(layout: LayoutTerminais, sessoesVivas: Iterable<
   const abas = layout.abas.flatMap((aba) => { const arvore = podar(aba.arvore, vivas); return arvore === null ? [] : [{ arvore }]; });
   const existentes = new Set(abas.flatMap((a) => folhas(a.arvore)));
   const ativa = layout.ativa !== null && existentes.has(layout.ativa) ? layout.ativa : (abas[0] === undefined ? null : folhas(abas[0].arvore)[0] ?? null);
-  return { versao: 2, ativa, abas, fixadas: layout.fixadas.filter((id) => existentes.has(id)) };
+  const saida: LayoutTerminais = { versao: 2, ativa, abas, fixadas: layout.fixadas.filter((id) => existentes.has(id)) };
+  if (layout.expandido != null && existentes.has(layout.expandido)) saida.expandido = layout.expandido;
+  if (layout.foco_unico === true) saida.foco_unico = true;
+  return saida;
 }
 
 export interface ArmazemLayout { ler(): LayoutTerminais | null; gravar(layout: LayoutTerminais): void }

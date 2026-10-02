@@ -1,6 +1,8 @@
-// Canais `provedores:openrouter_*` (Fase 9, T-09.01). SÓ validadores nesta onda; manipuladores na T-09.26.
-// A chave entra UMA vez (`chave_gravar`/`testar`), vai direto ao cofre/uso único e nunca volta. Rede só por clique.
+// Canais `provedores:openrouter_*` (Fase 9): validadores (T-09.01) e manipuladores (T-09.26).
+// A chave entra UMA vez (`chave_gravar`/`testar`), vai direto ao cofre/uso único e nunca volta. Rede só por clique e só com consentimento.
 import type { CanaisInvoke } from "../../compartilhado/ipc";
+import { OpenRouterErro, type ServicoOpenRouter } from "../../nucleo/openrouter";
+import type { RegistroIpc } from "./registro";
 import { FAIXAS } from "../../compartilhado/harness";
 import { vIdConta } from "./comum-dominio";
 import { vBooleano, vEnum, vInteiro, vLista, vObjeto, vTexto, type Validador } from "./validar";
@@ -48,3 +50,44 @@ export const VALIDADORES_OPENROUTER = {
 } satisfies ValidadoresDaFamilia<"provedores:openrouter_">;
 
 export type CanalOpenRouter = keyof typeof VALIDADORES_OPENROUTER;
+
+// ---------------------------------------------------------------- manipuladores (T-09.26)
+
+export interface DependenciasIpcOpenRouter {
+  registro: RegistroIpc;
+  /** serviço sob demanda (nada de cofre/rede até alguém clicar). */
+  servico: () => ServicoOpenRouter;
+}
+
+/**
+ * Erro que o renderer pode ver: `OpenRouterErro` (código nominal, mensagem fixa, sem chave) ou texto genérico. A mensagem original de qualquer
+ * outra falha (cofre, banco, rede) não é repassada: poderia citar caminho ou valor.
+ */
+export function sanearErroOpenRouter(e: unknown): Error {
+  if (e instanceof OpenRouterErro) return e;
+  return new Error("falha no OpenRouter");
+}
+
+export function registrarIpcOpenRouter({ registro, servico }: DependenciasIpcOpenRouter): void {
+  const V = VALIDADORES_OPENROUTER;
+  const com = <T>(f: (s: ServicoOpenRouter) => Promise<T> | T): Promise<T> =>
+    Promise.resolve()
+      .then(() => f(servico()))
+      .catch((e: unknown) => {
+        throw sanearErroOpenRouter(e);
+      });
+  registro.invoke("provedores:openrouter_estado", V["provedores:openrouter_estado"], () => com((s) => s.estado()));
+  registro.invoke("provedores:openrouter_consentir", V["provedores:openrouter_consentir"], ({ versao_texto }) => com((s) => s.consentir(versao_texto)));
+  registro.invoke("provedores:openrouter_revogar", V["provedores:openrouter_revogar"], () => com((s) => s.revogar()));
+  registro.invoke("provedores:openrouter_chave_gravar", V["provedores:openrouter_chave_gravar"], ({ conta_id, rotulo, chave }) =>
+    com((s) => s.gravarChave({ ...(conta_id === undefined ? {} : { conta_id }), rotulo, chave })),
+  );
+  registro.invoke("provedores:openrouter_chave_apagar", V["provedores:openrouter_chave_apagar"], ({ conta_id }) => com((s) => s.apagarChave(conta_id)));
+  registro.invoke("provedores:openrouter_testar", V["provedores:openrouter_testar"], ({ conta_id, chave }) =>
+    com((s) => s.testar({ ...(conta_id === undefined ? {} : { conta_id }), ...(chave === undefined ? {} : { chave }) })),
+  );
+  registro.invoke("provedores:openrouter_modelos_atualizar", V["provedores:openrouter_modelos_atualizar"], ({ conta_id }) => com((s) => s.atualizarModelos(conta_id)));
+  registro.invoke("provedores:openrouter_modelos_listar", V["provedores:openrouter_modelos_listar"], (p) => com((s) => s.listarModelos(p)));
+  registro.invoke("provedores:openrouter_modelo_gravar", V["provedores:openrouter_modelo_gravar"], (p) => com((s) => s.gravarModelo(p)));
+  registro.invoke("provedores:openrouter_saldo_atualizar", V["provedores:openrouter_saldo_atualizar"], ({ conta_id }) => com((s) => s.atualizarSaldo(conta_id)));
+}

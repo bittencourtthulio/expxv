@@ -1,0 +1,69 @@
+/* Padrão único de listas do app (D-694): uma entidade por linha, altura estável de 56 px (36–40 px na
+   densa), hierarquia nome ≫ descrição ≫ selos, meta em mono discreto e UMA ação de largura estável.
+   Só tokens; escuro e claro; sem cor literal. */
+.lst-linha {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2, 8px);
+  min-height: 56px;
+  padding: 0 var(--espaco-2, 8px);
+  border-bottom: 1px solid var(--borda);
+  border-left: 2px solid transparent;
+}
+.lst-linha:hover { background: var(--superficie); }
+.lst-linha[data-selecionado] { border-left-color: var(--destaque); background: var(--superficie-2); }
+.lst-linha[data-densa] { min-height: 38px; }
+.lst-linha[data-densa] .lst-corpo { grid-template-rows: minmax(20px, auto); grid-template-columns: minmax(96px, auto) minmax(0, 1fr); }
+.lst-linha[data-densa] .lst-nome { grid-column: 1; }
+.lst-linha[data-densa] .lst-desc { grid-column: 2; }
+
+.lst-corpo {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 1px;
+  padding: var(--espaco-1, 4px);
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+.lst-corpo:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.lst-nome { font-size: var(--fs-rotulo, 13px); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lst-desc { color: var(--texto-suave); font-size: var(--fs-pequeno, 12.5px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lst-selos { display: flex; gap: var(--espaco-1, 4px); overflow: hidden; }
+.lst-selo {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--espaco-2, 8px);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  color: var(--texto-suave);
+  font-size: var(--fs-micro, 11px);
+  line-height: 14px;
+  white-space: nowrap;
+  flex: none;
+}
+.lst-selo[data-tom="destaque"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.lst-selo[data-tom="sucesso"] { border-color: var(--sucesso); color: var(--sucesso); }
+.lst-selo[data-tom="aviso"] { border-color: var(--aviso); color: var(--aviso); }
+.lst-selo[data-tom="alerta"] { border-color: var(--alerta); color: var(--alerta); }
+
+.lst-meta { flex: none; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto-discreto); font: var(--fs-micro, 11px) var(--mono); }
+.lst-acao { display: inline-flex; align-items: center; gap: var(--espaco-2, 8px); flex: none; }
+.lst-acao .botao { min-width: 84px; justify-content: center; }
+
+/* Janela estreita: a meta some (o dado segue no detalhe) e os selos quebram linha em vez de cortar */
+@media (max-width: 900px) {
+  .lst-meta { display: none; }
+  .lst-selos { flex-wrap: wrap; overflow: visible; }
+  .lst-linha { min-height: 48px; align-items: flex-start; }
+  .lst-linha .lst-corpo { align-self: stretch; align-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lst-linha, .lst-corpo, .lst-selo { transition: none; }
+}

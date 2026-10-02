@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+<entry
+   kind="file"
+   path="a.txt"
+   revision="5">
+<url>file:///tmp/gravado/repo/trunk/a.txt</url>
+<relative-url>^/trunk/a.txt</relative-url>
+<repository>
+<root>file:///tmp/gravado/repo</root>
+<uuid>764337ab-9b18-4f4c-92d4-96fc437c2a8d</uuid>
+</repository>
+<wc-info>
+<wcroot-abspath>/tmp/gravado/wc</wcroot-abspath>
+<schedule>normal</schedule>
+<depth>infinity</depth>
+<text-updated>2026-10-01T03:28:14.000000Z</text-updated>
+<checksum>f91f3f81835e0f8f7d8752e1085fd4c8b9e0146c</checksum>
+</wc-info>
+<commit
+   revision="5">
+<author>dev</author>
+<date>2026-10-01T03:28:11.079354Z</date>
+</commit>
+<lock>
+<token>opaquelocktoken:a3c6f886-6424-4370-b4d2-7304effc7672</token>
+<owner>dev</owner>
+<comment>teste</comment>
+<created>2026-10-01T03:28:18.152143Z</created>
+</lock>
+</entry>
+</info>

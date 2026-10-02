@@ -142,3 +142,32 @@ describe("assinantes", () => {
     expect(armazem.assinantes("sessao_h1")).toBe(0);
   });
 });
+
+describe("D-570: terminal de workspace oculto (sem assinante) segue acumulando e é reproduzido ao voltar", () => {
+  it("acumula a saída com o limite de tamanho, sem assinante, e o replay ao remontar é síncrono e em ordem", () => {
+    const armazem = criarArmazem(1_000);
+    for (let i = 1; i <= 20; i++) armazem.empurrar("oculta", i, `${String(i).padStart(2, "0")}${"x".repeat(98)}\n`); // 20 × 101 > limite
+    expect(armazem.assinantes("oculta")).toBe(0);
+    expect(armazem.truncado("oculta")).toBe(true);
+    expect(tamanho(armazem.chunks("oculta"))).toBeLessThanOrEqual(1_000);
+    const recebidos: string[] = [];
+    const cancelar = armazem.assinar("oculta", (c) => recebidos.push(c));
+    expect(recebidos).toEqual(armazem.chunks("oculta")); // replay já, no mesmo tick
+    expect(recebidos.at(-1)?.startsWith("20")).toBe(true);
+    armazem.empurrar("oculta", 21, "ao vivo");
+    expect(recebidos.at(-1)).toBe("ao vivo");
+    cancelar();
+    // desmonta de novo (troca de workspace): continua retendo
+    armazem.empurrar("oculta", 22, "oculto de novo");
+    expect(armazem.chunks("oculta").at(-1)).toBe("oculto de novo");
+  });
+
+  it("os buffers de workspaces diferentes são independentes (descartar uma sessão não toca nas outras)", () => {
+    const armazem = criarArmazem();
+    armazem.empurrar("a1", 1, "A");
+    armazem.empurrar("b1", 1, "B");
+    armazem.descartar("a1");
+    expect(armazem.chunks("a1")).toEqual([]);
+    expect(armazem.chunks("b1")).toEqual(["B"]);
+  });
+});

@@ -8,6 +8,9 @@ export interface FormMissao {
   /** CLI por papel; "" = não usar. */
   clis: Partial<Record<Papel, string>>;
   cadeado: boolean;
+  /** Fase 14: squad escolhida (modos squad/agêntico) e CLI do cadeado da squad (só nesta Missão). */
+  squad_id?: string;
+  squad_cli?: string;
 }
 
 export const TITULO_MAX = 120;
@@ -38,7 +41,18 @@ export function validar(f: FormMissao, instaladas: readonly string[]): ErrosMiss
 export function montarPedido(f: FormMissao, workspaceId: string): PedidoCriarMissao {
   const clis: Partial<Record<Papel, string>> = {};
   for (const p of papeisDoModo(f.modo)) { const c = f.clis[p]; if (c !== undefined && c !== "") clis[p] = c; }
-  return { workspace_id: workspaceId, modo: f.modo, origem: f.origem, titulo: f.titulo.trim(), pedido: f.pedido.trim(), clis };
+  const pedido: PedidoCriarMissao = { workspace_id: workspaceId, modo: f.modo, origem: f.origem, titulo: f.titulo.trim(), pedido: f.pedido.trim(), clis };
+  if (f.modo !== "livre" && f.squad_id !== undefined && f.squad_id !== "") {
+    pedido.squad_id = f.squad_id;
+    if (f.squad_cli !== undefined && f.squad_cli !== "") pedido.squad_cli = f.squad_cli;
+  }
+  return pedido;
+}
+
+/** Título de uma Missão com squad: nasce da primeira linha do objetivo (≤ 120). */
+export function tituloDoObjetivo(objetivo: string): string {
+  const linha = (objetivo.split(/\r?\n/).find((l) => l.trim() !== "") ?? "").trim();
+  return [...linha].slice(0, TITULO_MAX).join("") || "Missão com squad";
 }
 
 /** Cadeado: a CLI escolhida vale para todos os papéis do modo. */

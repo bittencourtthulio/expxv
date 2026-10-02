@@ -1,0 +1,5 @@
+#!/bin/sh
+# Dublê de `signtool` (sign / verify /pa).
+[ -n "$FALSO_LOG" ] && echo "signtool $*" >> "$FALSO_LOG"
+echo "simulado: signtool ok"
+exit 0

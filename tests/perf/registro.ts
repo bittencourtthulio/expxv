@@ -19,6 +19,9 @@ export interface Medicao {
   medido_em: string;
   /** pior amostra individual (quando a medição é uma mediana/percentil de várias). */
   pior?: number;
+  /** `false` = NÃO foi medido (ex.: P-168 sem Docker): nem verde nem vermelho, nunca aprovado por engano. `motivo` diz por quê. */
+  medido?: false;
+  motivo?: string;
 }
 
 export function fatorPerf(): number {
@@ -49,6 +52,13 @@ export function registrar(m: { id: string; descricao: string; valor: number; lim
   return registro;
 }
 
+/** Registra um orçamento que NÃO pôde ser medido (dependência ausente): aparece em `ultimo.json` como «não medido», sem aprovar nem reprovar a execução. */
+export function naoMedido(m: { id: string; descricao: string; limite: number; unidade: string; motivo: string }): Medicao {
+  const registro: Medicao = { id: m.id, descricao: m.descricao, valor: 0, limite: m.limite, unidade: m.unidade, sentido: "max", ok: false, medido_em: new Date().toISOString(), medido: false, motivo: m.motivo.slice(0, 160) };
+  medicoes.push(registro);
+  return registro;
+}
+
 export function gravarMedicoes(): void {
   let existentes: Medicao[] = [];
   if (existsSync(ARQUIVO_PERF)) {
@@ -65,7 +75,7 @@ export function gravarMedicoes(): void {
   mkdirSync(dirname(ARQUIVO_PERF), { recursive: true });
   writeFileSync(
     ARQUIVO_PERF,
-    JSON.stringify({ atualizado_em: new Date().toISOString(), fator: fatorPerf(), tudo_ok: todas.every((m) => m.ok), medicoes: todas }, null, 2),
+    JSON.stringify({ atualizado_em: new Date().toISOString(), fator: fatorPerf(), tudo_ok: todas.every((m) => m.medido === false || m.ok), medicoes: todas }, null, 2),
   );
 }
 

@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "slug": "correcao-de-bug",
+  "nome": "Correção de Bug",
+  "descricao": "Prova a causa raiz, escreve o teste de regressão vermelho e só então corrige, no menor escopo.",
+  "escopo": "desenvolvimento",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 4,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "correcao-de-bug",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "topo"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "investigador",
+      "papel": "scout",
+      "rotulo": "Investigador",
+      "descricao": "Reproduz o problema e prova a causa raiz com evidência.",
+      "prompt": "membros/investigador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "git"
+      ],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "corretor",
+      "papel": "executor",
+      "rotulo": "Corretor",
+      "descricao": "Aplica a menor correção que faz o teste de regressão passar.",
+      "prompt": "membros/corretor.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7"
+      ],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "testador-regressao",
+      "papel": "executor",
+      "rotulo": "Testador de regressão",
+      "descricao": "Escreve o teste que falha hoje e prova que a correção o faz passar.",
+      "prompt": "membros/testador-regressao.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor",
+      "papel": "reviewer",
+      "rotulo": "Revisor",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/revisor.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

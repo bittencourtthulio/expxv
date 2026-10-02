@@ -122,9 +122,9 @@ describe("handoff: relatório → banco → wake", () => {
     expect(t.log).toEqual(["banco", "wake_enfileirado", "wake"]);
     expect(t.enviados[0]).toContain("falhou");
     expect(await t.servico.relatorioLegivel("ws_1", "mis_1", join(PRODUTO.pastaNoProjeto, "missoes", "mis_1", "relatorios", "T-01.01.md"))).toBe(true);
-    t.agendados[0]?.();
-    await Promise.resolve();
-    expect(t.fechamentos).toEqual(["w1:handoff_failed"]);
+    // D-520: handoff que falhou NÃO fecha o painel (o dono e o orquestrador precisam ver o que aconteceu)
+    expect(t.agendados).toHaveLength(0);
+    expect(t.fechamentos).toEqual([]);
   });
 
   it("relatorioLegivel: null/ausente/vazio = false", async () => {

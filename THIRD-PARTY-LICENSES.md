@@ -22,3 +22,14 @@ Ideias reimplementadas (nenhum código copiado), com atribuição quando houver 
 (Apache-2.0: etiquetas de símbolos e PageRank para ordenar arquivos), a definição de complexidade ciclomática de McCabe
 (tabelas de nós de decisão no espírito de lizard e radon), e o vocabulário de regras de fronteira de dependency-cruiser,
 import-linter, deptrac e Packwerk (somente o formato dos arquivos estáticos de regras).
+
+## Voz local embutida (Fase 11, D-540 a D-549)
+
+| Componente | Versão | Licença | Uso |
+|---|---|---|---|
+| sherpa-onnx-node (Next-gen Kaldi) e pacotes nativos `sherpa-onnx-darwin-arm64`, `sherpa-onnx-darwin-x64`, `sherpa-onnx-win-x64` | 1.13.8 | Apache-2.0 | addon N-API pré-compilado (inclui o ONNX Runtime, MIT) que roda o reconhecimento de voz em processo próprio; viaja no pacote |
+| NVIDIA Parakeet TDT 0.6B v3 (exportação ONNX int8 do sherpa-onnx) | revisão fixada no catálogo | CC-BY-4.0 (NVIDIA) | **modelo baixado por ação consentida** (nunca embarcado); a atribuição aparece no consentimento e na lista de modelos |
+| OpenAI Whisper Small e Base (exportação ONNX int8 do sherpa-onnx) | revisão fixada no catálogo | MIT (repositório da OpenAI; o cartão do Hugging Face marca Apache-2.0) | modelos baixados por ação consentida |
+| Moonshine Tiny, inglês (exportação ONNX int8 do sherpa-onnx) | revisão fixada no catálogo | MIT (Useful Sensors) | modelo baixado por ação consentida |
+
+Modelos de licença não comercial (por exemplo o NeMo FastConformer PT, CC-BY-NC-4.0) **não** entram no catálogo; ele foi usado apenas para medir o runtime no desenvolvimento e não é distribuído.

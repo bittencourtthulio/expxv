@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "slug": "feature-fullstack",
+  "nome": "Feature Full-stack",
+  "descricao": "Entrega uma feature ponta a ponta, por camada, com testes e revisão independente.",
+  "escopo": "desenvolvimento",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 6,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "feature-fullstack",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "topo"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "explorador-codigo",
+      "papel": "scout",
+      "rotulo": "Explorador de código",
+      "descricao": "Mapeia o código, contratos e testes que a feature vai tocar.",
+      "prompt": "membros/explorador-codigo.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "haiku",
+        "esforco": "baixo",
+        "faixa": "rapido"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 2,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "implementador-backend",
+      "papel": "executor",
+      "rotulo": "Implementador backend",
+      "descricao": "Implementa a camada de servidor, dados e contrato de API do card.",
+      "prompt": "membros/implementador-backend.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7"
+      ],
+      "hooks": [],
+      "max_instancias": 2,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "implementador-frontend",
+      "papel": "executor",
+      "rotulo": "Implementador frontend",
+      "descricao": "Implementa a interface e o consumo do contrato de API do card.",
+      "prompt": "membros/implementador-frontend.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7",
+        "playwright-mcp"
+      ],
+      "hooks": [],
+      "max_instancias": 2,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "testador",
+      "papel": "executor",
+      "rotulo": "Testador",
+      "descricao": "Escreve os testes de integração e funcionais antes da implementação.",
+      "prompt": "membros/testador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "playwright-mcp"
+      ],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor",
+      "papel": "reviewer",
+      "rotulo": "Revisor",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/revisor.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

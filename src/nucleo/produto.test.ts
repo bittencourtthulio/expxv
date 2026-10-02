@@ -27,4 +27,15 @@ describe("PRODUTO", () => {
     expect(builder).toContain(`appId: ${PRODUTO.appId}`);
     expect(builder).toContain(`productName: ${PRODUTO.nome}`);
   });
+
+  it("separa a identidade de dados do nome (D-341, AU-18)", () => {
+    expect(PRODUTO.idDados).toMatch(/^[a-z][a-z0-9]{2,23}$/);
+    expect(Array.isArray(PRODUTO.idsAnteriores)).toBe(true);
+    for (const anterior of PRODUTO.idsAnteriores) {
+      expect(anterior).toMatch(/^[a-z][a-z0-9]{2,23}$/);
+      expect(anterior).not.toBe(PRODUTO.idDados);
+    }
+    expect(PRODUTO.canalPadrao).toBe("stable");
+    expect(PRODUTO.nomeDeExibicao).toBe(PRODUTO.nome);
+  });
 });

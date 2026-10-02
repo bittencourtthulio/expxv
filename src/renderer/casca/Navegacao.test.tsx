@@ -1,21 +1,30 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { Navegacao } from "./Navegacao";
 import { atualizarMontadas, type TelaId } from "./telas";
 
+/** Vai a uma tela pelo menu; se ela estiver num grupo fechado, abre o grupo antes (como a pessoa faria). */
 const ir = async (nome: string) => {
+  const achar = () => screen.queryByRole("button", { name: nome });
+  if (achar() === null) {
+    for (const cab of screen.getAllByRole("button", { expanded: false })) {
+      if (achar() !== null) break;
+      await act(async () => { fireEvent.click(cab); });
+    }
+  }
   await act(async () => {
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(nome) }));
+    fireEvent.click(screen.getByRole("button", { name: nome }));
   });
 };
+beforeEach(() => { try { localStorage.clear(); } catch { /* sem storage */ } });
 const montadas = () => [...document.querySelectorAll("[data-tela]")].map((e) => e.getAttribute("data-tela"));
 const visivel = () => [...document.querySelectorAll("[data-tela]:not([hidden])")].map((e) => e.getAttribute("data-tela"));
 
 describe("Navegacao", () => {
   it("começa em Início com aria-current e carrega a tela sob demanda", async () => {
     render(<Navegacao />);
-    expect(screen.getByRole("button", { name: /Início/ }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("button", { name: "Início" }).getAttribute("aria-current")).toBe("page");
     expect(await screen.findByRole("heading", { name: "Hoje" })).toBeTruthy();
     expect(montadas()).toEqual(["inicio"]);
   });
@@ -23,8 +32,8 @@ describe("Navegacao", () => {
   it("troca de tela move aria-current e oculta (não desmonta) a anterior", async () => {
     render(<Navegacao />);
     await ir("Missões");
-    expect(screen.getByRole("button", { name: /Missões/ }).getAttribute("aria-current")).toBe("page");
-    expect(screen.getByRole("button", { name: /Início/ }).getAttribute("aria-current")).toBeNull();
+    expect(screen.getByRole("button", { name: "Missões" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("button", { name: "Início" }).getAttribute("aria-current")).toBeNull();
     expect(await screen.findByRole("heading", { name: "Quadro" })).toBeTruthy();
     expect(visivel()).toEqual(["missoes"]);
     expect(montadas()).toContain("inicio");

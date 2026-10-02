@@ -1,4 +1,4 @@
-// E2E de acessibilidade (T-05.05) sobre o Electron real: as 7 telas só com teclado, foco sempre visível e sem armadilha,
+// E2E de acessibilidade (T-05.05) sobre o Electron real: as 11 telas (as 7 do MVP + Squads, Versionamento, Harness e Consumo) só com teclado, foco sempre visível e sem armadilha,
 // paleta (⌘K / Ctrl+Shift+P) devolvendo o foco, saída de teclado do terminal, zero diálogos nativos e prefers-reduced-motion.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Page } from "playwright";
@@ -8,9 +8,14 @@ import type { Ambiente } from "./terminais-ui-ajuda";
 
 const MAC = process.platform === "darwin";
 const TELAS = [
-  { id: "inicio", rotulo: "Início" }, { id: "missoes", rotulo: "Missões" }, { id: "terminais", rotulo: "Terminais" }, { id: "metodo", rotulo: "Método" },
+  { id: "inicio", rotulo: "Início" }, { id: "missoes", rotulo: "Missões" }, { id: "terminais", rotulo: "Terminais" }, { id: "metodo", rotulo: "Método" }, { id: "trabalhos", rotulo: "Trabalhos" },
   { id: "workspaces", rotulo: "Workspaces" }, { id: "provedores", rotulo: "Provedores" }, { id: "config", rotulo: "Configurações" },
-] as const;
+  // telas das fases 6, 9 e 14 (sem <h1>: casca compacta); `pronta` = a raiz de cada uma (ou o estado vazio, sem workspace)
+  { id: "squads", rotulo: "Squads", pronta: 'section[aria-label="Squads"], .estado-vazio' },
+  { id: "versionamento", rotulo: "Versionamento", pronta: ".vc-tela, .estado-vazio" },
+  { id: "harness", rotulo: "Harness", pronta: 'section[aria-label="Harness"], .estado-vazio' },
+  { id: "consumo", rotulo: "Consumo", pronta: 'section[aria-label="Consumo"], .estado-vazio' },
+] as ReadonlyArray<{ id: string; rotulo: string; pronta?: string }>;
 
 let amb: Ambiente;
 let app: AppAberto;
@@ -83,7 +88,9 @@ describe("acessibilidade, Electron real", () => {
     it(`${tela.rotulo}: só Tab/Shift+Tab/Enter, foco sempre visível, sem armadilha e com a ordem voltando ao menu`, async () => {
       const p = pagina();
       await irPorTeclado(p, tela.rotulo);
-      await p.waitForSelector(`[data-tela="${tela.id}"]:not([hidden]) h1, [data-tela="${tela.id}"]:not([hidden]) .terminais-tela`, { timeout: 15_000 });
+      const base = `[data-tela="${tela.id}"]:not([hidden])`;
+      const seletor = tela.pronta === undefined ? `${base} h1, ${base} .terminais-tela` : tela.pronta.split(",").map((x) => `${base} ${x.trim()}`).join(", ");
+      await p.waitForSelector(seletor, { timeout: 15_000 });
       expect(await p.locator(`nav button[aria-current="page"]`).innerText()).toContain(tela.rotulo);
       // percorre toda a sequência de Tab da tela até voltar ao menu (ciclo completo = nenhuma armadilha)
       const vistos: string[] = [];

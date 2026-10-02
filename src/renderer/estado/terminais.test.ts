@@ -181,3 +181,129 @@ describe("store de terminais: abrir e fechar", () => {
     expect(store.obter().erroFerramentas).toBe("x");
   });
 });
+
+describe("store de terminais: sessões externas e subagentes internos", () => {
+  it("adota a sessão aberta pelo main (evento de sessão desconhecida dispara listarSessoes) marcando `externa`", async () => {
+    vi.useFakeTimers();
+    try {
+      const { api, store, emitir } = montar([meta("a")]);
+      (api as Record<string, unknown>)["listarSessoes"] = vi.fn().mockResolvedValue([meta("a"), meta("w1"), meta("morta", "encerrada")]);
+      await store.iniciar();
+      emitir(ev("estado", "w1", 1, { estado: "executando", erro_codigo: null, mensagem: null }));
+      emitir(ev("estado", "w1", 2, { estado: "executando", erro_codigo: null, mensagem: null }));
+      await vi.advanceTimersByTimeAsync(100);
+      expect((api as unknown as { listarSessoes: ReturnType<typeof vi.fn> }).listarSessoes).toHaveBeenCalledTimes(1);
+      const ids = store.obter().sessoes.map((s) => [s.sessao_id, s.externa === true]);
+      expect(ids).toEqual([["a", false], ["w1", true]]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("não sincroniza enquanto uma abertura do próprio renderer está pendente e sessão fechada não volta", async () => {
+    const { api, store } = montar([]);
+    (api as Record<string, unknown>)["listarSessoes"] = vi.fn().mockResolvedValue([meta("novo")]);
+    await store.iniciar();
+    const id = await store.abrir(ferramenta());
+    store.fechar(id!);
+    expect(await store.sincronizar()).toEqual([]);
+  });
+
+  it("`adotar` registra a sessão devolvida pelo main sem marcá-la externa", async () => {
+    const { store } = montar([]);
+    await store.iniciar();
+    store.adotar({ sessao_id: "n1", ferramenta_id: "claude", estado: "executando" });
+    expect(store.obter().sessoes.map((s) => [s.sessao_id, s.externa])).toEqual([["n1", undefined]]);
+  });
+
+  it("conta subagentes internos (total e ativos) sem criar sessão", async () => {
+    const { store, emitir } = montar([meta("a")]);
+    await store.iniciar();
+    emitir(ev("subagente_iniciado", "a", 1, { subagente_id: "s1", rotulo: "x", descricao: null }));
+    emitir(ev("subagente_iniciado", "a", 2, { subagente_id: "s2", rotulo: "y", descricao: null }));
+    emitir(ev("subagente_iniciado", "a", 3, { subagente_id: "s2", rotulo: "y", descricao: null }));
+    emitir(ev("subagente_concluido", "a", 4, { subagente_id: "s1" }));
+    expect(store.obter().sessoes).toHaveLength(1);
+    expect(store.obter().sessoes[0]!.subagentes).toEqual({ total: 2, ativos: 1 });
+  });
+});
+
+describe("store de terminais: fechamento pedido pelo app (D-520)", () => {
+  it("`fechada` tira a sessão da lista na hora, solta o armazém, NÃO chama o descartar do main (ele já descartou) e eventos tardios são ignorados", async () => {
+    const { api, store, emitir, armazem } = montar([meta("a"), meta("w")]);
+    await store.iniciar();
+    emitir(ev("saida", "w", 1, { dados: "saída do worker" }));
+    emitir(ev("fechada", "w", 2));
+    expect(store.obter().sessoes.map((s) => s.sessao_id)).toEqual(["a"]);
+    expect(armazem.chunks("w")).toEqual([]);
+    expect(api.descartar).not.toHaveBeenCalled();
+    // o fim do processo chega depois (SIGTERM → 143): nada reaparece
+    emitir(ev("encerramento", "w", 3, { codigo: 143, sinal: null, solicitado: true }));
+    emitir(ev("estado", "w", 4, { estado: "encerrada", erro_codigo: null, mensagem: null }));
+    expect(store.obter().sessoes.map((s) => s.sessao_id)).toEqual(["a"]);
+  });
+
+  it("sessão fechada pelo app não volta pela sincronia de sessões externas", async () => {
+    const { api, store, emitir } = montar([meta("a")]);
+    (api as unknown as { listarSessoes: () => Promise<MetadadosSessao[]> }).listarSessoes = async () => [meta("a"), meta("w")];
+    await store.iniciar();
+    expect(await store.sincronizar()).toEqual(["w"]);
+    emitir(ev("fechada", "w", 1));
+    expect(await store.sincronizar()).toEqual([]);
+    expect(store.obter().sessoes.map((s) => s.sessao_id)).toEqual(["a"]);
+  });
+
+  it("`encerramento` solicitado nunca guarda o código (143 do SIGTERM não é resultado da CLI); o não solicitado guarda", async () => {
+    const { store, emitir } = montar([meta("a"), meta("b")]);
+    await store.iniciar();
+    emitir(ev("encerramento", "a", 1, { codigo: 143, sinal: null, solicitado: true }));
+    emitir(ev("encerramento", "b", 1, { codigo: 2, sinal: null }));
+    expect(store.obter().sessoes.find((s) => s.sessao_id === "a")?.codigo_saida).toBeNull();
+    expect(store.obter().sessoes.find((s) => s.sessao_id === "b")?.codigo_saida).toBe(2);
+  });
+});
+
+describe("D-570: workspace de origem das sessões (a tela nunca mistura workspaces)", () => {
+  const doWs = (sessao_id: string, workspace_id: string | null): MetadadosSessao => ({ ...meta(sessao_id), workspace_id });
+
+  it("a recuperação reanexa cada sessão ao workspace de origem (inclusive null = sem projeto)", async () => {
+    const { store } = montar([doWs("a1", "A"), doWs("b1", "B"), doWs("n1", null)]);
+    await store.iniciar();
+    expect(store.obter().sessoes.map((s) => [s.sessao_id, s.workspace_id])).toEqual([["a1", "A"], ["b1", "B"], ["n1", null]]);
+  });
+
+  it("sessão aberta pela tela grava o workspace da tela; sem workspace grava null", async () => {
+    const { store, api } = montar();
+    await store.iniciar();
+    api.abrir.mockResolvedValueOnce({ versao: 1, sessao_id: "novoA", estado: "iniciando" });
+    await store.abrir(ferramenta(), { workspaceId: "A" });
+    expect(api.abrir).toHaveBeenLastCalledWith(expect.objectContaining({ workspace_id: "A" }));
+    api.abrir.mockResolvedValueOnce({ versao: 1, sessao_id: "novoN", estado: "iniciando" });
+    await store.abrir(ferramenta());
+    expect(api.abrir).toHaveBeenLastCalledWith(expect.objectContaining({ workspace_id: null }));
+    expect(store.obter().sessoes.map((s) => [s.sessao_id, s.workspace_id])).toEqual([["novoA", "A"], ["novoN", null]]);
+  });
+
+  it("sessão aberta pelo main (worker) é adotada com o workspace dele, vinda de listarSessoes", async () => {
+    const { store, api } = montar();
+    (api as Record<string, unknown>)["listarSessoes"] = vi.fn().mockResolvedValue([doWs("w1", "B")]);
+    await store.iniciar();
+    const novas = await store.sincronizar();
+    expect(novas).toEqual(["w1"]);
+    expect(store.obter().sessoes[0]).toMatchObject({ sessao_id: "w1", workspace_id: "B", externa: true });
+  });
+
+  it("saída e estado de sessão de workspace oculto: a saída fica no armazém e confirma o consumo SEM notificar a interface", async () => {
+    const { store, emitir, armazem, api } = montar([doWs("a1", "A"), doWs("b1", "B")]);
+    await store.iniciar();
+    const ouvinte = vi.fn();
+    store.assinar(ouvinte);
+    emitir(ev("saida", "b1", 1, { dados: "oculta" }));
+    expect(armazem.chunks("b1")).toEqual(["oculta"]);
+    expect(api.confirmarConsumo).toHaveBeenCalledWith("b1", 6);
+    expect(ouvinte).not.toHaveBeenCalled(); // saída não re-renderiza ninguém
+    emitir(ev("atividade", "b1", 2, { atividade: "aguardando" }));
+    expect(store.obter().sessoes.find((s) => s.sessao_id === "b1")).toMatchObject({ workspace_id: "B", atividade: "aguardando" });
+    expect(store.obter().aguardando).toBe(1); // o contador global segue contando (o seletor da tela recorta por workspace)
+  });
+});

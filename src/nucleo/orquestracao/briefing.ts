@@ -5,6 +5,7 @@
  */
 import { readFile, writeFile } from "node:fs/promises";
 import type { Papel } from "../dominio";
+import type { PortaRag } from "../mcp/portas";
 import { ID_DE_ARQUIVO, caminhoBriefing, gravarNaPastaDoProduto, resolverDentro } from "./pasta";
 
 export const SECOES_BRIEFING = ["Contrato", "Resultado", "Executado_por"] as const;
@@ -18,6 +19,11 @@ export interface DadosBriefing {
   contrato: string;
   /** agente planejado pelo piloto (quando há squad) */
   agente_planejado?: string | null;
+  /**
+   * Fase 15 (DEC-4 b): contexto prévio do RAG (envelope `<conhecimento_previo tipo="dados">`, já saneado) anexado em `## Conhecimento prévio`, logo depois do
+   * Contrato. Ausente/vazio = briefing idêntico ao de antes, byte a byte.
+   */
+  conhecimento?: string | null;
 }
 
 const PLACEHOLDER_RESULTADO = "_(o worker preenche ao concluir)_";
@@ -33,6 +39,7 @@ export function gerarBriefing(d: DadosBriefing): string {
     "",
     d.contrato.trim(),
     "",
+    ...(d.conhecimento === undefined || d.conhecimento === null || d.conhecimento.trim() === "" ? [] : ["## Conhecimento prévio", "", d.conhecimento.trim(), ""]),
     "## Resultado",
     "",
     PLACEHOLDER_RESULTADO,
@@ -95,4 +102,40 @@ export async function registrarResultadoNoBriefing(raiz: string, rel: string, r:
   const novo = preencherSecao(preencherSecao(atual, "Resultado", r.resultado), "Executado_por", r.executado_por);
   await writeFile(abs, novo, "utf8");
   return true;
+}
+
+/** Teto de espera da injeção no despacho (a consulta já tem o seu de 150 ms; isto é a defesa final contra uma porta pendurada). */
+export const TETO_INJECAO_MS = 400;
+
+/**
+ * Contexto prévio do RAG para o despacho de um worker (camada b): lê o Contrato do briefing, pede o contexto pela porta e devolve o envelope ("" se nada).
+ * Porta ausente, falha, lentidão ou resultado vazio NUNCA bloqueiam o despacho: o retorno é "". A consulta fica registrada (`origem: "injecao"`) pela porta.
+ */
+export async function contextoPrevioDoBriefing(
+  rag: Pick<PortaRag, "contextoParaInjecao"> | null | undefined,
+  e: { raiz: string; briefing_path: string | null; workspace_id: string; mission_id: string | null; task_ref: string; pane_id: string | null; arquivos?: string[]; tetoMs?: number },
+): Promise<string> {
+  if (rag === null || rag === undefined) return "";
+  try {
+    const md = e.briefing_path === null ? null : await lerBriefing(e.raiz, e.briefing_path);
+    const contrato = md === null ? null : secoesDoBriefing(md).Contrato;
+    const tarefa = (contrato ?? "").replace(/\s+/g, " ").trim().slice(0, 2000);
+    if (tarefa === "") return "";
+    let relogio: NodeJS.Timeout | undefined;
+    const limite = new Promise<string>((ok) => {
+      relogio = setTimeout(() => ok(""), e.tetoMs ?? TETO_INJECAO_MS);
+      relogio.unref?.();
+    });
+    try {
+      const r = await Promise.race([
+        rag.contextoParaInjecao({ workspace_id: e.workspace_id, mission_id: e.mission_id, task_ref: e.task_ref, pane_id: e.pane_id, tarefa, arquivos: e.arquivos ?? [], origem: "injecao" }),
+        limite,
+      ]);
+      return typeof r === "string" ? r.trim() : "";
+    } finally {
+      if (relogio !== undefined) clearTimeout(relogio);
+    }
+  } catch {
+    return "";
+  }
 }

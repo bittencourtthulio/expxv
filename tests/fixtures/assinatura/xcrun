@@ -1,0 +1,11 @@
+#!/bin/sh
+# Dublê de `xcrun` (stapler validate, notarytool submit).
+[ -n "$FALSO_LOG" ] && echo "xcrun $*" >> "$FALSO_LOG"
+case "$1" in
+  stapler)
+    for a in "$@"; do alvo="$a"; done
+    if [ -d "$alvo" ] && [ -f "$alvo/.nao-assinado" ]; then echo "does not have a ticket stapled" >&2; exit 65; fi
+    exit 0 ;;
+  notarytool) echo "simulado: notarização aceita"; exit 0 ;;
+esac
+exit 0

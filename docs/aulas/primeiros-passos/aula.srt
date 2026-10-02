@@ -1,0 +1,109 @@
+1
+00:00:05,245 --> 00:00:05,540
+Olá!
+
+2
+00:00:05,540 --> 00:00:09,450
+Nesta aula você vai dar os primeiros passos no ExpxV.
+
+3
+00:00:09,450 --> 00:00:14,615
+Esta é a tela Hoje, de uma instalação limpa, ainda sem nenhum
+projeto.
+
+4
+00:00:14,615 --> 00:00:22,288
+Ela mostra o caminho em três passos: abrir um projeto,
+instalar o método Expx e criar a primeira Missão.
+
+5
+00:00:22,989 --> 00:00:24,725
+Vamos ao primeiro passo.
+
+6
+00:00:24,725 --> 00:00:26,461
+Clique em Abrir projeto.
+
+7
+00:00:26,461 --> 00:00:32,972
+Você pode abrir uma pasta que já existe, clonar um repositório
+ou começar um projeto novo.
+
+8
+00:00:32,972 --> 00:00:34,925
+Aqui vamos abrir uma pasta.
+
+9
+00:00:35,627 --> 00:00:36,137
+Pronto.
+
+10
+00:00:36,137 --> 00:00:40,656
+O projeto aparece no topo da janela, junto com a branch atual.
+
+11
+00:00:40,656 --> 00:00:44,155
+E o primeiro passo ficou marcado como concluído.
+
+12
+00:00:44,856 --> 00:00:46,332
+Agora, os Terminais.
+
+13
+00:00:46,332 --> 00:00:55,119
+Aqui ficam terminais de verdade, onde você roda as suas CLIs
+de inteligência artificial, como o Claude Code ou o Codex.
+
+14
+00:00:55,119 --> 00:00:59,844
+Você também pode usar o terminal normalmente, como este
+exemplo.
+
+15
+00:01:00,544 --> 00:01:02,899
+O segundo passo é o método Expx.
+
+16
+00:01:02,899 --> 00:01:11,288
+Nesta tela você descreve o que quer construir ou corrigir, e o
+ExpxV digita o comando certo no terminal para você.
+
+17
+00:01:11,288 --> 00:01:16,440
+Repare no aviso: a suíte só é instalada quando você clica em
+instalar.
+
+18
+00:01:16,440 --> 00:01:18,132
+Nunca acontece sozinho.
+
+19
+00:01:18,833 --> 00:01:21,278
+O terceiro passo é criar uma Missão.
+
+20
+00:01:21,278 --> 00:01:28,004
+Uma Missão reúne uma CLI e um objetivo dentro do projeto, e o
+quadro mostra todas elas por estágio.
+
+21
+00:01:28,705 --> 00:01:31,038
+Por fim, um atalho que vale ouro.
+
+22
+00:01:31,038 --> 00:01:38,252
+Aperte comando K para abrir a paleta, e digite o nome de
+qualquer tela ou ação para ir direto até ela.
+
+23
+00:01:38,954 --> 00:01:39,516
+É isso.
+
+24
+00:01:39,516 --> 00:01:45,376
+Abra um projeto, use os terminais, peça ao método e acompanhe
+as Missões.
+
+25
+00:01:45,376 --> 00:01:46,420
+Bons estudos!

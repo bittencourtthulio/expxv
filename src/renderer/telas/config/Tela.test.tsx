@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { criarStoreConfig, useConfig, type StoreConfig } from "../../estado/config";
-import { TelaConfig } from "./index";
+import { TelaConfig, SECOES_CONFIG, type SecaoConfig } from "./index";
 
 function montar(inicial: Record<string, unknown> = {}) {
   const disco = new Map<string, unknown>(Object.entries(inicial));
@@ -12,15 +12,15 @@ function montar(inicial: Record<string, unknown> = {}) {
   const store = criarStoreConfig({ api: () => api, raiz });
   return { api, disco, raiz, store };
 }
-async function abrir(store: StoreConfig) {
-  await act(async () => { render(<TelaConfig store={store} />); });
+async function abrir(store: StoreConfig, secao: SecaoConfig = "tema") {
+  await act(async () => { render(<TelaConfig store={store} secaoInicial={secao} />); });
 }
 const clicar = async (nome: string | RegExp) => { await act(async () => { fireEvent.click(screen.getByRole("button", { name: nome })); }); };
 
 describe("Tela de configurações", () => {
   it("scrollback persiste e fora de faixa é rejeitado na tela", async () => {
     const { store, api } = montar();
-    await abrir(store);
+    await abrir(store, "scrollback");
     const campo = screen.getByLabelText("Scrollback do terminal, valor");
     fireEvent.change(campo, { target: { value: "20000" } });
     await act(async () => { fireEvent.submit(campo.closest("form")!); });
@@ -32,7 +32,7 @@ describe("Tela de configurações", () => {
   });
   it("cor inválida é rejeitada; válida aplica sem recarregar; restaurar padrão limpa", async () => {
     const { store, raiz } = montar();
-    await abrir(store);
+    await abrir(store, "cor");
     const campo = screen.getByLabelText("Cor de destaque (hex)");
     fireEvent.change(campo, { target: { value: "verde" } });
     await clicar("Aplicar");
@@ -47,7 +47,7 @@ describe("Tela de configurações", () => {
   });
   it("modo automático mostra aviso e só grava depois da confirmação", async () => {
     const { store, api } = montar();
-    await abrir(store);
+    await abrir(store, "permissao");
     await clicar("Automático");
     expect(screen.getByRole("alert").textContent).toMatch(/sem pedir sua confirmação/);
     expect(api.gravar).not.toHaveBeenCalled();
@@ -58,7 +58,7 @@ describe("Tela de configurações", () => {
   });
   it("notificações ligam e desligam", async () => {
     const { store, api } = montar();
-    await abrir(store);
+    await abrir(store, "notificacoes");
     await act(async () => { fireEvent.click(screen.getByRole("switch")); });
     expect(api.gravar).toHaveBeenCalledWith("notificacoes", false);
   });
@@ -76,20 +76,39 @@ describe("Tela de configurações", () => {
     Object.defineProperty(navigator, "clipboard", { value: { writeText: escrever }, configurable: true });
     (globalThis as { ade?: unknown }).ade = { terminais: { diagnostico: vi.fn().mockResolvedValue({ texto: "diag: ok" }) }, versao: vi.fn().mockResolvedValue("1.2.3") };
     try {
-      await abrir(store);
+      await abrir(store, "diagnostico");
       await clicar("Gerar diagnóstico");
       expect((screen.getByLabelText("Texto do diagnóstico") as HTMLTextAreaElement).value).toBe("diag: ok");
       await clicar("Copiar");
       expect(escrever).toHaveBeenCalledWith("diag: ok");
+      await act(async () => { fireEvent.click(screen.getByRole("tab", { name: "Sobre" })); });
       expect(screen.getByText("1.2.3")).toBeTruthy();
     } finally { delete (globalThis as { ade?: unknown }).ade; }
   });
   it("atalhos aparecem em tabela somente leitura", async () => {
     const { store } = montar();
-    await abrir(store);
+    await abrir(store, "atalhos");
     expect(screen.getByText("Paleta de comandos")).toBeTruthy();
     expect(screen.getByText("⌘K")).toBeTruthy();
     expect(screen.getByText("Ctrl+Shift+P")).toBeTruthy();
+  });
+});
+
+describe("sub-navegação lateral", () => {
+  it("lista as seções agrupadas à esquerda (tablist vertical) e troca o painel por clique e por teclado", async () => {
+    const { store } = montar();
+    await abrir(store);
+    const lista = screen.getByRole("tablist", { name: "Seções das configurações" });
+    expect(lista.getAttribute("aria-orientation")).toBe("vertical");
+    expect(screen.getAllByRole("tab")).toHaveLength(SECOES_CONFIG.length);
+    expect(screen.getByRole("tab", { name: "Tema" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tabpanel").textContent).toMatch(/Tema/);
+    await act(async () => { fireEvent.click(screen.getByRole("tab", { name: "Atalhos" })); });
+    expect(screen.getByText("Paleta de comandos")).toBeTruthy();
+    expect(screen.queryByText("Cor de destaque (hex)")).toBeNull();
+    const atalhos = screen.getByRole("tab", { name: "Atalhos" });
+    await act(async () => { atalhos.focus(); fireEvent.keyDown(atalhos, { key: "ArrowDown" }); });
+    expect(screen.getByRole("tab", { name: "Memória" }).getAttribute("aria-selected")).toBe("true");
   });
 });
 

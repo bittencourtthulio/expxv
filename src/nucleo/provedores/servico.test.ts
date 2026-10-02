@@ -11,7 +11,7 @@ afterEach(limpar);
 function montar(detector: { detectar(): Promise<never[]> | Promise<ReturnType<typeof ferramenta>[]>; invalidar(): void }) {
   const { banco, repos } = novoBanco();
   const contas = criarServicoContas({ banco, repos, pastaDeDados: criarTmp("dados-") });
-  return { contas, servico: criarServicoProvedores({ detector: detector as never, contas }) };
+  return { contas, servico: criarServicoProvedores({ detector: detector as never, contas, autoPadrao: false }) };
 }
 
 describe("provedores", () => {

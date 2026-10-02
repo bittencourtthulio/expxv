@@ -96,6 +96,22 @@ describe("abrir", () => {
     expect(() => cenario({ ferramenta: "codex", catalogo }).abrir({ prompt_inicial: "oi" })).toThrow(/prompt inicial/);
   });
 
+  it("permissão efetiva do Pane (squad): a mais restrita que a do workspace NÃO recebe a flag automática do workspace", () => {
+    const catalogo: CatalogoSessoes = {
+      argumentosAutomaticos: () => ["--auto-do-workspace"],
+      argumentosDeRetomada: () => null,
+      argumentosDePromptInicial: () => null,
+      teclaDeInterrupcao: () => "\x1b",
+    };
+    const { chamadas, g } = cenario({ catalogo });
+    const pedido = { ...PEDIDO, ferramenta_id: "personalizado", workspace_id: "ws_a" };
+    g.abrir(pedido, { permissao: "seguro" });
+    g.abrir(pedido, { permissao: "equilibrado" });
+    g.abrir(pedido, { permissao: "automatico" });
+    g.abrir(pedido);
+    expect(chamadas.map((c) => c.argv)).toEqual([[], [], ["--auto-do-workspace"], ["--auto-do-workspace"]]);
+  });
+
   it("o ambiente do filho não leva a identidade do Claude Code", () => {
     const anterior = process.env["CLAUDE_CODE_SESSION_ID"];
     process.env["CLAUDE_CODE_SESSION_ID"] = "mae";
@@ -283,6 +299,60 @@ describe("encerramento", () => {
     expect(() => abrir()).toThrow(/encerradas/);
     g.liberarAdmissao();
     expect(() => abrir()).not.toThrow();
+  });
+});
+
+describe("fecharPelaApp (D-520: encerramento limpo pedido pelo app)", () => {
+  const PRAZOS = { sigint_ms: 15, sigterm_ms: 15, sigkill_ms: 15 };
+
+  it("avisa o renderer ANTES (`fechada`), manda SIGINT e, quando o processo sai, descarta; o fim sai marcado como solicitado (143 não é falha)", async () => {
+    const { g, processos, eventos, abrir } = cenario();
+    const { sessao_id } = abrir();
+    await aguardar();
+    expect(g.fecharPelaApp(sessao_id, PRAZOS)).toBe(true);
+    expect(eventos.map((e) => e.tipo).slice(-1)).toEqual(["fechada"]);
+    expect(processos[0]!.sinais).toEqual(["SIGINT"]);
+    processos[0]!.sair(130);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(processos[0]!.sinais).toEqual(["SIGINT"]); // saiu no primeiro sinal: sem escalada
+    expect(g.obter(sessao_id)).toBeUndefined(); // descartada de vez
+    const fim = eventos.find((e) => e.tipo === "encerramento");
+    expect(fim).toMatchObject({ tipo: "encerramento", codigo: 130, solicitado: true });
+    expect(eventos.findIndex((e) => e.tipo === "fechada")).toBeLessThan(eventos.findIndex((e) => e.tipo === "encerramento"));
+  });
+
+  it("CLI que ignora SIGINT e SIGTERM recebe SIGKILL nos prazos e a sessão é descartada mesmo assim (nenhum órfão)", async () => {
+    const { g, processos, abrir } = cenario();
+    const { sessao_id } = abrir();
+    await aguardar();
+    g.fecharPelaApp(sessao_id, PRAZOS);
+    await new Promise((r) => setTimeout(r, 90));
+    expect(processos[0]!.sinais).toEqual(["SIGINT", "SIGTERM", "SIGKILL"]);
+    expect(g.obter(sessao_id)).toBeUndefined();
+  });
+
+  it("sai no SIGTERM: sem SIGKILL; idempotente (segunda chamada não manda sinal de novo) e sessão desconhecida devolve false", async () => {
+    const { g, processos, abrir } = cenario();
+    const { sessao_id } = abrir();
+    await aguardar();
+    expect(g.fecharPelaApp(sessao_id, PRAZOS)).toBe(true);
+    expect(g.fecharPelaApp(sessao_id, PRAZOS)).toBe(true);
+    await new Promise((r) => setTimeout(r, 25));
+    processos[0]!.sair(143);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(processos[0]!.sinais).toEqual(["SIGINT", "SIGTERM"]);
+    expect(g.fecharPelaApp("sessao_nada")).toBe(false);
+  });
+
+  it("sessão que já terminou é só descartada (sem sinal)", async () => {
+    const { g, processos, abrir } = cenario();
+    const { sessao_id } = abrir();
+    await aguardar();
+    processos[0]!.sair(0);
+    expect(g.fecharPelaApp(sessao_id, PRAZOS)).toBe(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(processos[0]!.sinais).toEqual([]);
+    expect(g.obter(sessao_id)).toBeUndefined();
   });
 });
 

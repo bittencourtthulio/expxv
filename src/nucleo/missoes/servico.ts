@@ -12,6 +12,7 @@ import {
   type EstadoMissao, type Handoff, type Mission, type OrigemMissao, type Pagina, type Papel, type Workspace,
 } from "../dominio";
 import { PRODUTO } from "../produto";
+import { PREFIXO_CHAVE_AVULSA } from "../orquestracao/avulso";
 import { worktreeRemove } from "../git";
 import { caminhoAte, exigirTransicao, ocupaArvore } from "./estados";
 import { registrarEventoDominio } from "./eventos";
@@ -47,6 +48,11 @@ export interface ExtraCriarMissao {
   worktree_existente?: { worktree: string; branch: string | null };
   /** não cria worktree (adoção de trabalho que vive na árvore principal). */
   sem_worktree?: boolean;
+  /**
+   * cria worktree (branch `feature/<slug>`, D-22) mesmo para uma Missão que não é de `feature`/`ocorrencia` (ex.: a caixa de prompt de
+   * uma squad de desenvolvimento). A origem da Missão não muda; sem git não faz nada.
+   */
+  com_worktree?: boolean;
 }
 
 export interface ComandoInicialEntrada {
@@ -54,6 +60,18 @@ export interface ComandoInicialEntrada {
   pedido: string;
   cli: string;
   titulo: string;
+}
+
+/** CLI "Automático" (Fase 9, T-09.16): o harness escolhe CLI, modelo e conta pelo `task_type` do gesto. */
+export const CLI_AUTOMATICA = "auto";
+
+/** O que o harness devolve para um papel marcado como "Automático"; `rota` é opaca aqui (volta em `aoRotearPane`). */
+export interface ResolucaoAutomatica {
+  cli: string;
+  modelo: string | null;
+  conta_id: string | null;
+  esforco: string | null;
+  rota: unknown;
 }
 
 export interface DependenciasMissoes {
@@ -64,6 +82,10 @@ export interface DependenciasMissoes {
   pastaProjeto?: string;
   /** Comando do método a digitar no Pane inicial (vira prompt inicial); `null` = nenhum. */
   comandoInicial?: (e: ComandoInicialEntrada) => string | null;
+  /** Resolve a CLI "Automático" de um papel (erro nominal = a Missão não é criada; nada fica órfão). Ausente = "auto" é uma CLI inexistente. */
+  resolverCliAutomatica?: (e: { workspace_id: string; origem: string; papel: Papel; pedido: string }) => Promise<ResolucaoAutomatica>;
+  /** Pane aberto por uma resolução automática: o main grava `pane_rota` (perfil efetivo, task_type, decisão). */
+  aoRotearPane?: (paneId: string, resolucao: ResolucaoAutomatica) => void;
   aoMudar?: (e: { workspace_id: string; mission_id: string | null }) => void;
   /** Eventos de domínio do barramento (`mission.created`, `mission.closed`…). */
   aoEventoDominio?: (tipo: string, payload: Record<string, unknown>) => void;
@@ -144,6 +166,9 @@ export function criarServicoMissoes(deps: DependenciasMissoes): ServicoMissoes {
     if (titulo === "" || [...titulo].length > TITULO_MAX) throw new ValorInvalidoErro("titulo", pedido.titulo);
     if (!(MODOS_MISSAO as readonly string[]).includes(pedido.modo)) throw new ValorInvalidoErro("modo", pedido.modo);
     if (!(ORIGENS_MISSAO as readonly string[]).includes(pedido.origem)) throw new ValorInvalidoErro("origem", pedido.origem);
+    // `squad_id`/`squad_cli` (Fase 14) são tratados pelo fluxo de squads (intenção + perfil do orquestrador) ANTES deste serviço; chegar aqui
+    // com squad significaria criar a Missão SEM a squad em silêncio, então é recusado (o modo livre nunca usa squad).
+    if (pedido.squad_id !== undefined || pedido.squad_cli !== undefined) throw new ValorInvalidoErro("squad_id", "use o fluxo de squads");
     const clis = pedido.clis ?? {};
     const entradas = Object.entries(clis) as Array<[Papel, string]>;
     for (const [papel, cli] of entradas) {
@@ -152,23 +177,31 @@ export function criarServicoMissoes(deps: DependenciasMissoes): ServicoMissoes {
     if (pedido.modo !== "livre" && clis.piloto === undefined) throw new PilotoObrigatorioErro(pedido.modo);
     const ws = deps.workspaces.exigir(pedido.workspace_id);
 
+    // "Automático": o harness resolve ANTES de qualquer efeito (worktree, Missão); a falha de rota é nominal e sem sobra
+    const automaticas = new Map<Papel, ResolucaoAutomatica>();
+    if (deps.resolverCliAutomatica !== undefined) {
+      for (const [papel, cli] of entradas) {
+        if (cli === CLI_AUTOMATICA) automaticas.set(papel, await deps.resolverCliAutomatica({ workspace_id: ws.id, origem: pedido.origem, papel, pedido: typeof pedido.pedido === "string" ? pedido.pedido : "" }));
+      }
+    }
     // falha cedo: nenhuma CLI faltando depois de ter criado worktree e Missão
-    for (const [, cli] of entradas) await panes.exigirCli(cli);
+    for (const [papel, cli] of entradas) await panes.exigirCli(automaticas.get(papel)?.cli ?? cli);
 
     const trabalhoProprio = pedido.origem === "feature" || pedido.origem === "ocorrencia";
-    const vaiCriarWorktree = trabalhoProprio && ws.e_git && extra.worktree_existente === undefined && extra.sem_worktree !== true;
+    const vaiCriarWorktree = (trabalhoProprio || extra.com_worktree === true) && ws.e_git && extra.worktree_existente === undefined && extra.sem_worktree !== true;
     const worktreeDaMissao = extra.worktree_existente?.worktree ?? null;
     if (ocupaArvore({ modo: pedido.modo, origem: pedido.origem }) && !vaiCriarWorktree) {
       const ativas = banco.consultar<{ id: string; modo: Mission["modo"]; origem: Mission["origem"]; worktree: string | null }>(
-        "SELECT id, modo, origem, worktree FROM mission WHERE workspace_id = ? AND estado NOT IN ('concluida','falhou','abortada')",
-        [ws.id],
+        // a Missão AVULSA (painel livre que orquestra, D-420) não ocupa a árvore: ela é só o agrupador dos workers de um painel e convive com a Missão de trabalho
+        "SELECT id, modo, origem, worktree FROM mission WHERE workspace_id = ? AND estado NOT IN ('concluida','falhou','abortada') AND NOT EXISTS (SELECT 1 FROM config c WHERE c.chave = ? || mission.id)",
+        [ws.id, PREFIXO_CHAVE_AVULSA],
       );
       const dona = ativas.find((a) => ocupaArvore(a) && a.worktree === worktreeDaMissao);
       if (dona !== undefined) throw new ArvoreOcupadaErro(worktreeDaMissao ?? ".", dona.id);
     }
 
     const criado = vaiCriarWorktree
-      ? await criarWorktreeDaMissao({ raizRepo: ws.raiz, titulo, origem: pedido.origem, ocId: extra.oc_id, tipoOcorrencia: extra.tipo_ocorrencia })
+      ? await criarWorktreeDaMissao({ raizRepo: ws.raiz, titulo, origem: trabalhoProprio ? pedido.origem : "feature", ocId: extra.oc_id, tipoOcorrencia: extra.tipo_ocorrencia })
       : null;
     let mission: Mission;
     try {
@@ -195,8 +228,23 @@ export function criarServicoMissoes(deps: DependenciasMissoes): ServicoMissoes {
     const ordem = [...entradas].sort(([a], [b]) => Number(b === "piloto") - Number(a === "piloto"));
     for (const [indice, [papel, cli]] of ordem.entries()) {
       try {
-        const comando = indice === 0 ? (deps.comandoInicial?.({ origem: pedido.origem, pedido: pedido.pedido, cli, titulo }) ?? null) : null;
-        await panes.abrirPane({ missao_id: mission.id, cli, papel, ...(comando === null ? {} : { prompt_inicial: comando }) });
+        const auto = automaticas.get(papel);
+        const cliEfetiva = auto?.cli ?? cli;
+        const comando = indice === 0 ? (deps.comandoInicial?.({ origem: pedido.origem, pedido: pedido.pedido, cli: cliEfetiva, titulo }) ?? null) : null;
+        const aberto = await panes.abrirPane({
+          missao_id: mission.id,
+          cli: cliEfetiva,
+          papel,
+          ...(auto === undefined ? {} : { modelo: auto.modelo, esforco: auto.esforco, conta_id: auto.conta_id }),
+          ...(comando === null ? {} : { prompt_inicial: comando }),
+        });
+        if (auto !== undefined) {
+          try {
+            deps.aoRotearPane?.(aberto.pane.id, auto);
+          } catch (e) {
+            aviso(`rota do Pane ${aberto.pane.id} não gravada: ${e instanceof Error ? e.message : String(e)}`);
+          }
+        }
       } catch (e) {
         aviso(`Pane ${papel}/${cli} da Missão ${mission.id} não abriu: ${e instanceof Error ? e.message : String(e)}`);
       }

@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "slug": "onboarding-projeto",
+  "nome": "Onboarding de Projeto",
+  "descricao": "Prepara o repositório para o método: convenções, perfil de legado e índice de memória.",
+  "escopo": "desenvolvimento",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 4,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "onboarding-projeto",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "cartografo",
+      "papel": "scout",
+      "rotulo": "Cartógrafo",
+      "descricao": "Mapeia o repositório e entrega a base para as convenções e o perfil.",
+      "prompt": "membros/cartografo.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "convencoes",
+      "papel": "executor",
+      "rotulo": "Convenções",
+      "descricao": "Dispara o levantamento das convenções reais do repositório.",
+      "prompt": "membros/convencoes.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done",
+        "stackx-detectar"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "perfil-de-legado",
+      "papel": "executor",
+      "rotulo": "Perfil de legado",
+      "descricao": "Dispara o perfil de legado e, se pedido, o índice de memória.",
+      "prompt": "membros/perfil-de-legado.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done",
+        "legadox-perfil",
+        "memox-indexar"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor",
+      "papel": "reviewer",
+      "rotulo": "Revisor",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/revisor.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

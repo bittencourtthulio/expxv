@@ -88,6 +88,18 @@ if (daemon.status !== 0) {
 }
 console.log(`daemon de PTY empacotado: ${daemon.stdout.trim()}`);
 
+// voz local (D-544): worker e addon nativo fora do asar, catálogo e amostras em Resources/voz, nenhum modelo no pacote, o addon carrega
+const voz = spawnSync(executavel, [join(raiz, "scripts", "fixtures", "pacote-voz.cjs"), recursos], {
+  env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },
+  timeout: 60_000,
+  encoding: "utf8",
+});
+if (voz.status !== 0) {
+  console.error(`voz local empacotada falhou: ${voz.stderr || voz.stdout}`);
+  process.exit(1);
+}
+console.log(`voz local empacotada: ${voz.stdout.trim()}`);
+
 // conteúdo do asar: ícone da bandeja, fonte local, ausência de peso morto, tamanho e maiores itens
 const arquivosAsar = listarAsar(asar);
 const icone = arquivosAsar.find((a) => a.caminho === "/build/icone-32.png");

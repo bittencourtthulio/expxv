@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "slug": "observabilidade",
+  "nome": "Observabilidade",
+  "descricao": "Instrumenta logs, métricas e traces e escreve alertas e painéis como arquivos versionados.",
+  "escopo": "devops",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 5,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "observabilidade",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "explorador-de-fluxos",
+      "papel": "scout",
+      "rotulo": "Explorador de fluxos",
+      "descricao": "Mapeia fluxos críticos e a instrumentação que já existe.",
+      "prompt": "membros/explorador-de-fluxos.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "haiku",
+        "esforco": "baixo",
+        "faixa": "rapido"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "engenheiro-de-instrumentacao",
+      "papel": "executor",
+      "rotulo": "Engenheiro de instrumentação",
+      "descricao": "Adiciona logs estruturados, métricas e traces nos fluxos críticos.",
+      "prompt": "membros/engenheiro-de-instrumentacao.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7"
+      ],
+      "hooks": [],
+      "max_instancias": 2,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "engenheiro-de-alertas",
+      "papel": "executor",
+      "rotulo": "Engenheiro de alertas",
+      "descricao": "Escreve regras de alerta e painéis como arquivos versionados.",
+      "prompt": "membros/engenheiro-de-alertas.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor",
+      "papel": "reviewer",
+      "rotulo": "Revisor",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/revisor.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

@@ -1,0 +1,445 @@
+{
+ "aviso": "Todos os valores são FALSOS (gerados por montagem); nada aqui é credencial real.",
+ "positivos": [
+  {
+   "texto": "usei a chave sk-WoqqI0kYwqsA4cQWCwSki6iG4yk2IAMm6s0Q2YiK no teste",
+   "segredo": "sk-WoqqI0kYwqsA4cQWCwSki6iG4yk2IAMm6s0Q2YiK"
+  },
+  {
+   "texto": "usei a chave sk-TAW0Kuqysw8GGuewq0uUGKQEiQ0q2iwuco4O04oY4 no teste",
+   "segredo": "sk-TAW0Kuqysw8GGuewq0uUGKQEiQ0q2iwuco4O04oY4"
+  },
+  {
+   "texto": "usei a chave sk-SKkWskIsUYcCY0OikEw0uoeGYI8kQwOE4AoIOEQOEO no teste",
+   "segredo": "sk-SKkWskIsUYcCY0OikEw0uoeGYI8kQwOE4AoIOEQOEO"
+  },
+  {
+   "texto": "usei a chave sk-PUQcmSgCWm6M04i4kKcAeiWCoM4KgCUGsQSCKSgU4KG no teste",
+   "segredo": "sk-PUQcmSgCWm6M04i4kKcAeiWCoM4KgCUGsQSCKSgU4KG"
+  },
+  {
+   "texto": "ANTHROPIC sk-ant-api03-C2mCOOwScMgOMg6C8GOUoy4okymMY0qc4ieUW0kW80686yG0ocUSsmmCUKiu fim",
+   "segredo": "sk-ant-api03-C2mCOOwScMgOMg6C8GOUoy4okymMY0qc4ieUW0kW80686yG0ocUSsmmCUKiu"
+  },
+  {
+   "texto": "ANTHROPIC sk-ant-api03-zcQick0ySO2WoAe4sGYaMIY2iSWwm2yyws8KGSk0WYS2y2kkusEc2AmKU086 fim",
+   "segredo": "sk-ant-api03-zcQick0ySO2WoAe4sGYaMIY2iSWwm2yyws8KGSk0WYS2y2kkusEc2AmKU086"
+  },
+  {
+   "texto": "ANTHROPIC sk-ant-api03-yog8uCYgWaA6asQkggKqcQkO6SECqM0cicgiQiQsSWw2Coy6SMeKa6mE6Gu6 fim",
+   "segredo": "sk-ant-api03-yog8uCYgWaA6asQkggKqcQkO6SECqM0cicgiQiQsSWw2Coy6SMeKa6mE6Gu6"
+  },
+  {
+   "texto": "aws AKIAMEQUEIYI2MQIA6UE ok",
+   "segredo": "AKIAMEQUEIYI2MQIA6UE"
+  },
+  {
+   "texto": "aws AKIABUAIAQ2IMQUAMY6U ok",
+   "segredo": "AKIABUAIAQ2IMQUAMY6U"
+  },
+  {
+   "texto": "aws AKIAKUEUUYIAUQQUA2M2 ok",
+   "segredo": "AKIAKUEUUYIAUQQUA2M2"
+  },
+  {
+   "texto": "sessão ASIACUYAUU6EUEYE2Y2E",
+   "segredo": "ASIACUYAUU6EUEYE2Y2E"
+  },
+  {
+   "texto": "token ghp_D28gaKSYMiQm04yW0UKGOwSIyiu0OiSEeQAg no log",
+   "segredo": "ghp_D28gaKSYMiQm04yW0UKGOwSIyiu0OiSEeQAg"
+  },
+  {
+   "texto": "token gho_EaKWic0soM6oYgMCC2wmWI0acyUQcCIIoqmI no log",
+   "segredo": "gho_EaKWic0soM6oYgMCC2wmWI0acyUQcCIIoqmI"
+  },
+  {
+   "texto": "token ghu_sUmawA4A884iuaaIuI8CsQQcacY66Egsi00o no log",
+   "segredo": "ghu_sUmawA4A884iuaaIuI8CsQQcacY66Egsi00o"
+  },
+  {
+   "texto": "token ghs_wAsWU4Um44GuICc0wECeuIw2oAiGYw2YnyKE no log",
+   "segredo": "ghs_wAsWU4Um44GuICc0wECeuIw2oAiGYw2YnyKE"
+  },
+  {
+   "texto": "token ghr_zmZKeKasIKSykgCImi404WaCQ2U2CqUOgqAo no log",
+   "segredo": "ghr_zmZKeKasIKSykgCImi404WaCQ2U2CqUOgqAo"
+  },
+  {
+   "texto": "github_pat_WSCmKmGYgoccm8ocGySoIyqOgmOueMgiw4YaGMcA_C02gouOKuW84CyieOuci usado",
+   "segredo": "github_pat_WSCmKmGYgoccm8ocGySoIyqOgmOueMgiw4YaGMcA"
+  },
+  {
+   "texto": "github_pat_VqUC2EOYA6QAkqKg4aCsyGIsKCKuYQC0EKW4G3YY_Bcs6AC4yg8yAWu84m8MS usado",
+   "segredo": "github_pat_VqUC2EOYA6QAkqKg4aCsyGIsKCKuYQC0EKW4G3YY"
+  },
+  {
+   "texto": "slack xoxb-600206662660-02uYQkMKWmwA9wCoa4m4G6Sq ok",
+   "segredo": "xoxb-600206662660"
+  },
+  {
+   "texto": "slack xoxa-600206662660-02uYQkMKWmwA9wCoa4m4G6Sq ok",
+   "segredo": "xoxa-600206662660"
+  },
+  {
+   "texto": "slack xoxp-600206662660-02uYQkMKWmwA9wCoa4m4G6Sq ok",
+   "segredo": "xoxp-600206662660"
+  },
+  {
+   "texto": "slack xoxr-600206662660-02uYQkMKWmwA9wCoa4m4G6Sq ok",
+   "segredo": "xoxr-600206662660"
+  },
+  {
+   "texto": "slack xoxs-600206662660-02uYQkMKWmwA9wCoa4m4G6Sq ok",
+   "segredo": "xoxs-600206662660"
+  },
+  {
+   "texto": "google AIzaYaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa fim",
+   "segredo": "AIzaYaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "google AIzaFaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa fim",
+   "segredo": "AIzaFaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "curl -H \"Authorization: Bearer V6uubiCkw.rZgXfRYXb1kDSAd2CYFh\" https://x",
+   "segredo": "V6uubiCkw.rZgXfRYXb1kDSAd2CYFh"
+  },
+  {
+   "texto": "curl -H \"Authorization: Bearer wu2QgYmvPv5-i390Kt__UFMKiF2rSAe\" https://x",
+   "segredo": "wu2QgYmvPv5-i390Kt__UFMKiF2rSAe"
+  },
+  {
+   "texto": "curl -H \"Authorization: Bearer -VK.84HVZX1caLZmqnBXr5oS.wLrYrXp\" https://x",
+   "segredo": "-VK.84HVZX1caLZmqnBXr5oS.wLrYrXp"
+  },
+  {
+   "texto": "curl -H \"Authorization: Bearer PGUp8KQ8Lm8g6.q4vjuF8N-33.FYorfs8\" https://x",
+   "segredo": "PGUp8KQ8Lm8g6.q4vjuF8N-33.FYorfs8"
+  },
+  {
+   "texto": "header bearer c6qC2mMkQCGOWAgaYoqk solto",
+   "segredo": "c6qC2mMkQCGOWAgaYoqk"
+  },
+  {
+   "texto": "jwt eyJES2MkASSA8AEi6aaGi8o.eyJkCw4Sc86cUkOkUKe24sqkEs4ImiS26.6aaa4aaaaaaaaaaa4aaaaaaaaaaaaaaaaaaaaaaa fim",
+   "segredo": "eyJES2MkASSA8AEi6aaGi8o.eyJkCw4Sc86cUkOkUKe24sqkEs4ImiS26.6aaa4aaaaaaaaaaa4aaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "jwt eyJB8amKEW8K6cSiEAWKOgK.eyJhKgQ6uA0mU0OaMAwMwwU6YoYKmKqse.Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaaa fim",
+   "segredo": "eyJB8amKEW8K6cSiEAWKOgK.eyJhKgQ6uA0mU0OaMAwMwwU6YoYKmKqse.Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaaa"
+  },
+  {
+   "texto": "jwt eyJAeWiWA4O6QUKeoOOiCKs.eyJgQWkOAGw48uYgsMEqkUQw6KSI6uuEU.uaaaaaaaaa4aaaaaaa4aaaaaaaaaaaaaaaaaaaaa fim",
+   "segredo": "eyJAeWiWA4O6QUKeoOOiCKs.eyJgQWkOAGw48uYgsMEqkUQw6KSI6uuEU.uaaaaaaaaa4aaaaaaa4aaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "chave:\n-----BEGIN RSA PRIVATE KEY-----\n0aaaaaaaaaaaaaaa4Gaaaaaaaaaaaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ncaaaaaaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaaa4aaaaaaaaaaaaaaaaaaaaaaaaa\n-----END RSA PRIVATE KEY-----\ndepois",
+   "segredo": "0aaaaaaaaaaaaaaa4Gaaaaaaaaaaaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "chave:\n-----BEGIN EC PRIVATE KEY-----\nhaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nvaaaaaaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n-----END EC PRIVATE KEY-----\ndepois",
+   "segredo": "haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "chave:\n-----BEGIN OPENSSH PRIVATE KEY-----\nOaaaaaaaaaaaaaaaa4aaaaaaaaaaaaaaa4aaaaa4aaaaaaaaaaaaaaaa4aaaaaaa\n2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaaaa\n-----END OPENSSH PRIVATE KEY-----\ndepois",
+   "segredo": "Oaaaaaaaaaaaaaaaa4aaaaaaaaaaaaaaa4aaaaa4aaaaaaaaaaaaaaaa4aaaaaaa"
+  },
+  {
+   "texto": "chave:\n-----BEGIN PRIVATE KEY-----\naaaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\noaaaaaaaaaaa5aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n-----END PRIVATE KEY-----\ndepois",
+   "segredo": "aaaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "texto": "truncada\n-----BEGIN RSA PRIVATE KEY-----\nTWaaaaaaa4Gaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaaaaaaaaaaaaaa4aaaaa\nsem fim",
+   "segredo": "TWaaaaaaa4Gaaaaaaaaaaaaaaaaaaaaaaaa4aaaaaaaaaaaaaaaaaa4aaaaa"
+  },
+  {
+   "texto": "url postgres://usuario:1UYEYWcgyS6g62@db.local:5432/app pronta",
+   "segredo": "1UYEYWcgyS6g62"
+  },
+  {
+   "texto": "url postgresql://usuario:XeSMwkaK6u6yoI@x.y:5432/d pronta",
+   "segredo": "XeSMwkaK6u6yoI"
+  },
+  {
+   "texto": "url mysql://usuario:8kGWu0ck8kCSYM@h:3306/d pronta",
+   "segredo": "8kGWu0ck8kCSYM"
+  },
+  {
+   "texto": "url mongodb://usuario:4GAsmYQCES2qKK@c.mongo.net/db pronta",
+   "segredo": "4GAsmYQCES2qKK"
+  },
+  {
+   "texto": "url redis://usuario:8kGWu0ck8kCSYM@r:6379/0 pronta",
+   "segredo": "8kGWu0ck8kCSYM"
+  },
+  {
+   "texto": "url https://usuario:8kGWu0ck8kCSYM@api.exemplo.com/v1 pronta",
+   "segredo": "8kGWu0ck8kCSYM"
+  },
+  {
+   "texto": "url amqp://usuario:90EGeAUqmGccQI@mq:5672 pronta",
+   "segredo": "90EGeAUqmGccQI"
+  },
+  {
+   "texto": "redis://:daeQyeOuSQuEqa@cache:6379",
+   "segredo": "daeQyeOuSQuEqa"
+  },
+  {
+   "texto": "API_KEY=vLymMQs8Wi",
+   "segredo": "vLymMQs8Wi"
+  },
+  {
+   "texto": "SECRET_KEY=vIIOwMWYuw",
+   "segredo": "vIIOwMWYuw"
+  },
+  {
+   "texto": "GITHUB_TOKEN=vHUieK0mYm",
+   "segredo": "vHUieK0mYm"
+  },
+  {
+   "texto": "DB_PASSWORD=vE4K2qO0Kc",
+   "segredo": "vE4K2qO0Kc"
+  },
+  {
+   "texto": "PASSWD=vDgcKss4Cq",
+   "segredo": "vDgcKss4Cq"
+  },
+  {
+   "texto": "SENHA=vAqEugiCyG",
+   "segredo": "vAqEugiCyG"
+  },
+  {
+   "texto": "AWS_SECRET_ACCESS_KEY=vzC6g4qkia",
+   "segredo": "vzC6g4qkia"
+  },
+  {
+   "texto": "AUTH_TOKEN=vwIKS8G8Qa",
+   "segredo": "vwIKS8G8Qa"
+  },
+  {
+   "texto": "CREDENTIALS=vvY2IY2kG4",
+   "segredo": "vvY2IY2kG4"
+  },
+  {
+   "texto": "openai_api_key=vs4Gk0mG4O",
+   "segredo": "vs4Gk0mG4O"
+  },
+  {
+   "texto": "apiKey=vrckW2Co8m",
+   "segredo": "vrckW2Co8m"
+  },
+  {
+   "texto": "accessToken=voqAOMyIii",
+   "segredo": "voqAOMyIii"
+  },
+  {
+   "texto": "app_secret=vnw8eEKYk2",
+   "segredo": "vnw8eEKYk2"
+  },
+  {
+   "texto": "SENHA_BANCO=vkIK0Oo2wk",
+   "segredo": "vkIK0Oo2wk"
+  },
+  {
+   "texto": "STRIPE_SECRET=vjSaS44q66",
+   "segredo": "vjSaS44q66"
+  },
+  {
+   "texto": "password=vg4wM6UwO0",
+   "segredo": "vg4wM6UwO0"
+  },
+  {
+   "texto": "token=vf6s0kwGei",
+   "segredo": "vf6s0kwGei"
+  },
+  {
+   "texto": "API_KEY=xyz",
+   "segredo": "xyz"
+  },
+  {
+   "texto": "export TOKEN=\"TAW0Kuqysw8GGuewq0\"",
+   "segredo": "TAW0Kuqysw8GGuewq0"
+  },
+  {
+   "texto": "password: SKkWskIsUYcC",
+   "segredo": "SKkWskIsUYcC"
+  },
+  {
+   "texto": "senha: \"PUQcmSgCWm\" ok",
+   "segredo": "PUQcmSgCWm"
+  },
+  {
+   "texto": "{\"api_key\": \"OYC8yQgY8owoeIUKos6ieG\"}",
+   "segredo": "OYC8yQgY8owoeIUKos6ieG"
+  },
+  {
+   "texto": "DATABASE_PASSWORD = LeKqQWSo4O26Wk8",
+   "segredo": "LeKqQWSo4O26Wk8"
+  },
+  {
+   "texto": "MY_AUTH=KkwEgyWOU4UUkmG;",
+   "segredo": "KkwEgyWOU4UUkmG"
+  },
+  {
+   "texto": "valor solto t8kUsSs6QsuSceQSwq0yEKike6AGWYoa0DGW sem nome",
+   "segredo": "t8kUsSs6QsuSceQSwq0yEKike6AGWYoa0DGW"
+  },
+  {
+   "texto": "valor solto siIS2ouOQ6k42eWOY6qgKkSaA0eoeKkcCuQaUOcM sem nome",
+   "segredo": "siIS2ouOQ6k42eWOY6qgKkSaA0eoeKkcCuQaUOcM"
+  },
+  {
+   "texto": "valor solto pu8MUy0Uy4eyuokWoKWuwuEgkSqoouu4IW0I4iqOOwew sem nome",
+   "segredo": "pu8MUy0Uy4eyuokWoKWuwuEgkSqoouu4IW0I4iqOOwew"
+  },
+  {
+   "texto": "valor solto oEEkU4Ycgoo4Yy02Ek86mkKsMuYiaoKMws6CSwIQke8WyuqC sem nome",
+   "segredo": "oEEkU4Ycgoo4Yy02Ek86mkKsMuYiaoKMws6CSwIQke8WyuqC"
+  },
+  {
+   "texto": "blob MiQ4uMMEkwAW6G8w2cso8QCs2yKmmaKoSgQEaq4y0MSQoWESoYYfu0aac4AQ+JsiKyiGSMug4QM2OMc6E== fim",
+   "segredo": "MiQ4uMMEkwAW6G8w2cso8QCs2yKmmaKoSgQEaq4y0MSQoWESoYYfu0aac4AQ"
+  }
+ ],
+ "negativos": [
+  {
+   "texto": "Decidimos usar SQLite para a memória local porque é simples e rápido."
+  },
+  {
+   "texto": "commit 3f2a9c1d8e7b6a5f4e3d2c1b0a9f8e7d6c5b4a39 corrige o bug"
+  },
+  {
+   "texto": "sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "texto": "SHA maiúsculo E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  {
+   "texto": "id 550e8400-e29b-41d4-a716-446655440000 do pane"
+  },
+  {
+   "texto": "caminho src/nucleo/memoria/escrita.ts linha 42"
+  },
+  {
+   "texto": "abra /Users/fulano/projeto/src/main/main.ts para ver"
+  },
+  {
+   "texto": "A autora do relatório escreveu o texto; o author field está vazio."
+  },
+  {
+   "texto": "o teclado (keyboard) não responde ao atalho"
+  },
+  {
+   "texto": "o macaco (monkey) pulou; turkey: 3 itens"
+  },
+  {
+   "texto": "tokens: 4000 no limite e max_tokens: 2000"
+  },
+  {
+   "texto": "a função authenticate() chama authorize()"
+  },
+  {
+   "texto": "autenticação por OAuth fica na tela de contas"
+  },
+  {
+   "texto": "use a variável de ambiente e nunca grave o valor"
+  },
+  {
+   "texto": "Lista: 1. ler 2. escrever 3. testar"
+  },
+  {
+   "texto": "https://exemplo.com/docs/api?page=2 é a documentação"
+  },
+  {
+   "texto": "https://github.com/org/repo/pull/123"
+  },
+  {
+   "texto": "git@github.com:org/repo.git"
+  },
+  {
+   "texto": "npm run verificar passou com 1234 testes"
+  },
+  {
+   "texto": "Erro: ENOENT: no such file or directory, open 'x.json'"
+  },
+  {
+   "texto": "versão 1.2.3-beta.4+build.5"
+  },
+  {
+   "texto": "data 2026-09-30T12:34:56.789Z"
+  },
+  {
+   "texto": "hash curto abc123def e sufixo a1b2c3"
+  },
+  {
+   "texto": "nome longo ThisIsAVeryLongIdentifierNameWithoutAnyDigitsAtAllInIt"
+  },
+  {
+   "texto": "snake_case_muito_longo_sem_digitos_nem_segredo_algum_aqui_dentro"
+  },
+  {
+   "texto": "texto em português com acentuação: coração, ação, memória, decisão"
+  },
+  {
+   "texto": "```ts\nconst x = 1;\n```"
+  },
+  {
+   "texto": "# Título\n\n- item um\n- item dois"
+  },
+  {
+   "texto": "a=1 b=2 c=3"
+  },
+  {
+   "texto": "key points: velocidade e leveza"
+  },
+  {
+   "texto": "o pacote @scope/nome-do-pacote@1.2.3 foi instalado"
+  },
+  {
+   "texto": "docker run -p 8080:80 imagem:latest"
+  },
+  {
+   "texto": "SELECT * FROM memoria_entrada WHERE id = 'mem_01'"
+  },
+  {
+   "texto": "ver docs/ade/fase-08-memoria.md seção Contratos"
+  },
+  {
+   "texto": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  },
+  {
+   "texto": "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+  },
+  {
+   "texto": "0123456789012345678901234567890123456789"
+  },
+  {
+   "texto": "Bearer token é o esquema de autorização usado"
+  },
+  {
+   "texto": "a senha é pedida na tela de login"
+  },
+  {
+   "texto": "o segredo do cofre fica no keychain do sistema"
+  },
+  {
+   "texto": "mem_01HZX3K9T5W2R8Y6V4N2M0P7QA"
+  },
+  {
+   "texto": "task T-08.07 entregue com handoff ok"
+  },
+  {
+   "texto": "PORT=3000 HOST=localhost"
+  },
+  {
+   "texto": "https://usuario@host.com/caminho"
+  },
+  {
+   "texto": "Marcador [REDACTED] já presente no texto"
+  },
+  {
+   "texto": ""
+  }
+ ]
+}

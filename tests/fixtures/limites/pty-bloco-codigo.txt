@@ -1,0 +1,7 @@
+Aqui está o trecho que trata o erro:
+
+```text
+Claude usage limit reached. Your limit will reset at 3pm
+```
+
+Isso é só um exemplo de log.

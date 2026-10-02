@@ -5,6 +5,7 @@ import { storeTema, useTema } from "../../estado/tema";
 import { ade } from "../../ade";
 import { storeWorkspaces } from "../../estado/workspaces";
 import { ATALHOS } from "./atalhos";
+import { textoDiagnosticoMemoria } from "../memoria/logica";
 
 interface P { store: StoreConfig }
 
@@ -156,6 +157,17 @@ export const SecaoNotificacoes = memo(function SecaoNotificacoes({ store }: P) {
   );
 });
 
+/** Anexa o bloco de metadados da memória (só números; nunca conteúdo). Falha ou sem projeto/canal: o diagnóstico segue sem o bloco. */
+async function acrescentarMemoria(base: string): Promise<string> {
+  const ws = storeWorkspaces.obter().atual?.id;
+  const api = ade()?.memoria;
+  if (ws === undefined || api === undefined || typeof api.estado !== "function") return base;
+  try {
+    const bloco = textoDiagnosticoMemoria(await api.estado(ws));
+    return bloco === "" ? base : `${base}\n\n${bloco}`;
+  } catch { return base; }
+}
+
 export const SecaoDiagnostico = memo(function SecaoDiagnostico() {
   const [texto, setTexto] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -163,7 +175,10 @@ export const SecaoDiagnostico = memo(function SecaoDiagnostico() {
 
   const gerar = async () => {
     setCopiado(false);
-    try { setTexto((await ade()?.terminais.diagnostico())?.texto ?? "Diagnóstico indisponível fora do aplicativo."); setErro(null); }
+    try {
+      const base = (await ade()?.terminais.diagnostico())?.texto ?? "Diagnóstico indisponível fora do aplicativo.";
+      setTexto(await acrescentarMemoria(base)); setErro(null);
+    }
     catch (e) { setErro(`Não foi possível gerar o diagnóstico: ${e instanceof Error ? e.message : String(e)}`); }
   };
   const copiar = async () => {

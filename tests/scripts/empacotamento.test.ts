@@ -96,7 +96,8 @@ describe("electron-builder.yml", () => {
         if (alvo.startsWith(".")) { const r = resolver(arq, alvo); if (r !== null) andar(r); } else if (!alvo.startsWith("node:") && !/^[a-z_]+$/.test(alvo)) dependenciasExternas.add(alvo);
       }
     };
-    for (const entrada of ["daemon/main-daemon.js", "main/mcp-worker.js", "nucleo/metodo/worker.js"]) andar(join(dist, entrada));
+    // o worker do mapa (Fase 17) só entra no fecho depois de compilado
+    for (const entrada of ["daemon/main-daemon.js", "main/mcp-worker.js", "nucleo/metodo/worker.js", "nucleo/mapa/worker-extracao.js", "nucleo/catalogo/worker.js", "main/conhecimento-worker.js"].filter((e) => existsSync(join(dist, e)))) andar(join(dist, entrada));
     const faltando = [...visto].map((a) => relative(RAIZ, a).split("\\").join("/")).filter((a) => !casa(a));
     expect(faltando).toEqual([]);
     // dependências de runtime desses scripts: precisam estar em asarUnpack (node_modules desempacotado)
@@ -105,6 +106,65 @@ describe("electron-builder.yml", () => {
       const nome = dep.startsWith("@") ? dep.split("/").slice(0, 2).join("/") : (dep.split("/")[0] as string);
       expect(unpack, `dependência ${nome} fora do asarUnpack`).toContain(nome);
     }
+  });
+});
+
+describe("tabela de equivalência do harness no pacote (Fase 9, T-09.11)", () => {
+  const cfg = yaml("electron-builder.yml");
+
+  it("`resources/harness/equivalencia.json` vai como extraResources (fora do asar) e existe em disco; `extraResources` aparece uma única vez", () => {
+    const extras: Array<{ from: string; to: string; filter?: string[] }> = cfg.extraResources;
+    const harness = extras.find((e) => e.from === "resources/harness");
+    expect(harness).toBeDefined();
+    expect(harness?.to).toBe("harness");
+    expect(harness?.filter).toEqual(["equivalencia.json"]);
+    expect(existsSync(join(RAIZ, "resources", "harness", "equivalencia.json"))).toBe(true);
+    expect(ler("electron-builder.yml").match(/^extraResources:/gm)).toHaveLength(1);
+  });
+
+  it("o JSON versionado é uma tabela válida (o harness carrega este arquivo no boot)", async () => {
+    const { carregarEquivalenciaPadrao } = await import("../../src/nucleo/harness/equivalencia");
+    const r = carregarEquivalenciaPadrao(ler("resources/harness/equivalencia.json"));
+    expect(r.origem).toBe("arquivo");
+    expect(r.avisos).toEqual([]);
+  });
+
+  it("o fecho do worker do MCP continua dentro do asarUnpack (tools do harness não puxam compartilhado/harness)", () => {
+    const worker = readFileSync(join(RAIZ, "src", "nucleo", "mcp", "tools", "harness.ts"), "utf8") + readFileSync(join(RAIZ, "src", "nucleo", "mcp", "tools", "limites.ts"), "utf8");
+    // só `import type` vindo de compartilhado/ (apagado na compilação); nenhum import de valor fora de mcp/
+    const imports = [...worker.matchAll(/^import (type )?[^;]*? from "([^"]+)";/gm)].filter((m) => m[1] === undefined).map((m) => m[2] as string);
+    expect(imports.filter((i) => i.startsWith("../../../"))).toEqual([]);
+  });
+});
+
+describe("mapa lógico do código no pacote (Fase 17, T-17.02)", () => {
+  const cfg = yaml("electron-builder.yml");
+
+  it("worker de extração, gramáticas WASM e web-tree-sitter ficam FORA do asar (worker_threads e Language.load leem por caminho real)", () => {
+    const unpack: string[] = cfg.asarUnpack;
+    expect(unpack).toContain("dist/nucleo/mapa/**/*"); // worker-extracao.js, extratores e gramaticas/*.wasm
+    expect(unpack).toContain("node_modules/web-tree-sitter/**/*");
+    const picomatch = requireLocal("picomatch") as (g: string[]) => (s: string) => boolean;
+    const casa = picomatch(unpack.filter((g) => g.startsWith("dist/")));
+    for (const f of ["dist/nucleo/mapa/worker-extracao.js", "dist/nucleo/mapa/extratores/typescript.js", "dist/nucleo/mapa/gramaticas/tree-sitter-typescript.wasm"]) expect(casa(f), f).toBe(true);
+  });
+
+  it("do web-tree-sitter só vai o necessário (sem a versão de depuração nem a cópia ESM); @vscode/tree-sitter-wasm é só de build", () => {
+    const f: string[] = cfg.files;
+    expect(f).toContain("!node_modules/web-tree-sitter/debug/**/*");
+    expect(f).toContain("!node_modules/web-tree-sitter/web-tree-sitter.js");
+    const pkg = JSON.parse(ler("package.json")) as { dependencies: Record<string, string>; devDependencies: Record<string, string> };
+    expect(pkg.dependencies["web-tree-sitter"]).toBe("0.27.0");
+    expect(pkg.devDependencies["@vscode/tree-sitter-wasm"]).toBe("0.3.1");
+  });
+
+  it("scripts/lib/ativos.mjs copia exatamente as gramáticas embarcadas para dist/nucleo/mapa/gramaticas", async () => {
+    const { ATIVOS } = (await import("../../scripts/lib/ativos.mjs")) as { ATIVOS: Array<{ de: string; para: string; nomes?: string[] }> };
+    const { GRAMATICAS_EMBARCADAS, arquivoWasm } = await import("../../src/nucleo/mapa/linguagens");
+    const a = ATIVOS.find((x) => x.para === "dist/nucleo/mapa/gramaticas");
+    expect(a).toBeDefined();
+    expect([...(a?.nomes ?? [])].sort()).toEqual(GRAMATICAS_EMBARCADAS.map(arquivoWasm).sort());
+    for (const n of a?.nomes ?? []) expect(existsSync(join(RAIZ, a!.de, n)), n).toBe(true);
   });
 });
 
@@ -167,10 +227,36 @@ describe("workflows versionados (nada é disparado: D-23)", () => {
 describe("auto-update desligado (D-24)", () => {
   const fontes = arquivosDe(join(RAIZ, "src"), [".ts", ".tsx"]);
 
-  it("nada em src/ usa electron-updater/autoUpdater; sem src/main/atualizacao.ts não há como consultar versão na rede", () => {
-    expect(existsSync(join(RAIZ, "src", "main", "atualizacao.ts"))).toBe(false);
-    const usam = fontes.filter((f) => /electron-updater|autoUpdater/.test(readFileSync(f, "utf8")));
-    expect(usam.map((f) => relative(RAIZ, f))).toEqual([]);
+  // Fase 21 (T-21.20, D-340): a regra deixa de ser "ninguém importa" e passa a ser de FRONTEIRA. O `electron-updater` só pode ser referenciado por UM arquivo
+  // (`backends/electron-updater.ts`), só por `import()` dinâmico, nunca por import estático, e `autoUpdater` não existe fora dele. O pacote padrão segue SEM a
+  // dependência (teste abaixo) e o perfil `com-atualizacao` é o único que a inclui (config-builder.test.ts).
+  const BACKEND_UPDATER = "src/nucleo/atualizador/backends/electron-updater.ts";
+  const TIPOS_UPDATER = "src/nucleo/atualizador/tipos-externos.d.ts"; // declaração ambiente opaca (o pacote não está instalado)
+  const rel = (f: string): string => relative(RAIZ, f).split("\\").join("/");
+  const fontesComDeclaracoes = fontes; // inclui os .d.ts
+
+  it("electron-updater: nenhum import estático em src/; import() dinâmico e `autoUpdater` só no backend isolado; sem src/main/atualizacao.ts não há fio de boot", () => {
+    expect(existsSync(join(RAIZ, "src", "main", "atualizacao.ts"))).toBe(false); // o fio fino (W3) só nasce junto da UI e do consentimento
+    const estatico = /\b(?:from\s+["']electron-updater["']|require\(\s*["']electron-updater["']\s*\)|import\s+["']electron-updater["'])/;
+    const dinamico = /\bimport\(\s*["']electron-updater["']\s*\)/;
+    const declaracao = /declare\s+module\s+["']electron-updater["']/;
+    const usaEstatico = fontesComDeclaracoes.filter((f) => estatico.test(readFileSync(f, "utf8"))).map(rel);
+    expect(usaEstatico).toEqual([]);
+    const usaDinamico = fontes.filter((f) => dinamico.test(readFileSync(f, "utf8"))).map(rel);
+    expect(usaDinamico).toEqual([BACKEND_UPDATER]);
+    const usaAutoUpdater = fontes.filter((f) => /\bautoUpdater\b/.test(readFileSync(f, "utf8"))).map(rel);
+    expect(usaAutoUpdater).toEqual([BACKEND_UPDATER]);
+    const declara = fontesComDeclaracoes.filter((f) => declaracao.test(readFileSync(f, "utf8"))).map(rel);
+    expect(declara).toEqual([TIPOS_UPDATER]);
+  });
+
+  it("a atualização nasce desligada no build (duas chaves) e o repositório de releases segue como placeholder enquanto o dono não decide (P-331)", () => {
+    const dist = JSON.parse(ler("build/distribuicao.json")) as { atualizacao: { habilitada: boolean; chaves_aceitas: string[]; feed: { host: string } } };
+    expect(dist.atualizacao.habilitada).toBe(false);
+    expect(dist.atualizacao.chaves_aceitas).toEqual([]);
+    expect(dist.atualizacao.feed.host).toMatch(/\.invalid$/);
+    const pkg = JSON.parse(ler("package.json")) as { dependencies?: Record<string, string>; optionalDependencies?: Record<string, string> };
+    expect(pkg.dependencies?.["electron-updater"]).toBeUndefined(); // dependência só entra com D-NN e custo medido (T-21.16)
   });
 
   it("enquanto ninguém importa o electron-updater, ele (e o que só ele puxa) fica fora do pacote", () => {
@@ -183,6 +269,9 @@ describe("auto-update desligado (D-24)", () => {
     const encontrados = fontes.filter((f) => rede.test(readFileSync(f, "utf8"))).map((f) => relative(RAIZ, f).split("\\").join("/")).sort();
     expect(encontrados).toEqual([
       "src/main/main.ts", // net.fetch(file://…): serve o renderer do scheme próprio
+      "src/nucleo/rede/cliente-http.ts", // Fase 9 (T-09.23): o ÚNICO módulo de saída de rede; exige consentimento por host antes de abrir socket
+      "src/nucleo/remoto-estendido/ws-cliente.ts", // Fase 22 (D-366): o ÚNICO `new WebSocket` do app (saída para o relay do dono; só wss://, só ligado com consentimento); provado por tests/scripts/relay-fronteira.test.ts
+      "src/nucleo/remoto/servidor.ts", // Fase 13 (D-NN): o ÚNICO módulo que ESCUTA (controle remoto, opt-in); só `createServer`, nunca cliente: provado por tests/scripts/servidor-remoto-fronteira.test.ts
       "src/nucleo/terminais/atividade/adaptadores/opencode.ts", // plugin que avisa o servidor de atividade em 127.0.0.1
     ]);
   });

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "niveis": [
+    {
+      "nivel": 1,
+      "nome": "Relâmpago",
+      "texto": "Rigor mínimo: faça só o que foi pedido, com o menor caminho. Ainda assim: um teste para o comportamento alterado, suíte afetada verde, nenhum segredo, nenhuma operação git destrutiva. Não amplie o escopo."
+    },
+    {
+      "nivel": 2,
+      "nome": "Leve",
+      "texto": "Rigor leve: plano de uma linha; teste de regressão ou de integração do que mudou; revise o próprio diff antes de entregar. Evite explorar além do necessário."
+    },
+    {
+      "nivel": 3,
+      "nome": "Padrão",
+      "texto": "Rigor padrão: dois testes por card (integração e funcional), escopo travado no contrato, relatório com evidência, handoff completo."
+    },
+    {
+      "nivel": 4,
+      "nome": "Rigoroso",
+      "texto": "Rigor alto: teste antes do código (veja-o falhar), subconjunto e suíte verdes, revisão independente obrigatória, registre alternativas descartadas e riscos, nenhum 'depois eu vejo'."
+    },
+    {
+      "nivel": 5,
+      "nome": "Total",
+      "texto": "Rigor total: tudo do nível anterior, mais casos de borda e consequências de segunda ordem, verificação cruzada por outro agente, evidência anexada a cada critério de aceite e nenhuma pendência escondida."
+    }
+  ]
+}

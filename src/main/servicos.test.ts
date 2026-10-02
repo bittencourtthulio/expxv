@@ -72,10 +72,11 @@ function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; autoriz
 }
 
 describe("registro dos canais", () => {
+  // Os canais do painel de workspaces (resumo*, encerrar_agente, revelar, copiar_caminho) e do modal "Adicionar workspace" (adicionar_*) têm registrador próprio e preguiçoso (src/main/ipc/workspaces-resumo.ts e workspaces-adicionar.ts, cobertos por seus testes).
   it("registra TODOS os canais workspaces:*, provedores:*, missoes:* e metodo:* do contrato", () => {
     const { registro } = montar();
-    const esperados = CANAIS_INVOKE.filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_)/.test(c));
-    expect(registro.registrados().filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_)/.test(c))).toEqual([...esperados].sort());
+    const esperados = CANAIS_INVOKE.filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_|resumo|encerrar_agente|revelar|copiar_caminho|adicionar_)/.test(c));
+    expect(registro.registrados().filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_|resumo|encerrar_agente|revelar|copiar_caminho|adicionar_)/.test(c))).toEqual([...esperados].sort());
   });
 
   it("onda 1: registrar não abre worker, watcher nem pede o gerenciador de sessões", () => {
@@ -158,10 +159,11 @@ describe("fluxo ponta a ponta pelos canais", () => {
     const conta = (await m.invocar("provedores:contas_criar", { provedor: "claude", rotulo: "Pessoal" })) as { id: string; config_dir_ref: string };
     expect(existsSync(join(m.dados, conta.config_dir_ref))).toBe(true);
     const lista = (await m.invocar("provedores:listar", { forcar: false })) as Array<{ ferramenta: { id: string }; contas: unknown[] }>;
-    expect(lista.find((p) => p.ferramenta.id === "claude")?.contas).toHaveLength(1);
+    // a "Conta padrão" (login existente da CLI) é criada sozinha ao listar, ao lado da conta isolada
+    expect(lista.find((p) => p.ferramenta.id === "claude")?.contas.map((c) => (c as { rotulo: string }).rotulo).sort()).toEqual(["Conta padrão", "Pessoal"]);
     const off = (await m.invocar("provedores:contas_habilitar", { conta_id: conta.id, habilitada: false })) as { habilitada: boolean };
     expect(off.habilitada).toBe(false);
-    expect(JSON.parse(((await m.invocar("provedores:diagnostico")) as { texto: string }).texto).contas.por_provedor.claude).toEqual({ total: 1, habilitadas: 0 });
+    expect(JSON.parse(((await m.invocar("provedores:diagnostico")) as { texto: string }).texto).contas.por_provedor.claude).toEqual({ total: 2, habilitadas: 1 });
   });
 
   it("método: metodo:estado indexa sob demanda; metodo:disparar abre o Pane com o comando", async () => {

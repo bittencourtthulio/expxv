@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<status>
+<target
+   path=".">
+<entry
+   path=".">
+<wc-status
+   props="modified"
+   item="normal"
+   revision="5">
+<commit
+   revision="5">
+<author>dev</author>
+<date>2026-10-01T03:28:11.079354Z</date>
+</commit>
+</wc-status>
+</entry>
+<entry
+   path="b.txt">
+<wc-status
+   props="none"
+   item="deleted"
+   revision="5">
+<commit
+   revision="2">
+<author>dev</author>
+<date>2026-10-01T03:28:08.098076Z</date>
+</commit>
+</wc-status>
+</entry>
+<entry
+   path="bin.dat">
+<wc-status
+   item="added"
+   revision="-1"
+   props="modified">
+</wc-status>
+</entry>
+<entry
+   path="src/f.ts">
+<wc-status
+   props="modified"
+   item="modified"
+   revision="5">
+<commit
+   revision="2">
+<author>dev</author>
+<date>2026-10-01T03:28:08.098076Z</date>
+</commit>
+</wc-status>
+</entry>
+<entry
+   path="unv.txt">
+<wc-status
+   item="unversioned"
+   props="none">
+</wc-status>
+</entry>
+</target>
+<changelist
+   name="minha">
+<entry
+   path="novo.txt">
+<wc-status
+   item="added"
+   revision="-1"
+   props="none">
+</wc-status>
+</entry>
+</changelist>
+</status>

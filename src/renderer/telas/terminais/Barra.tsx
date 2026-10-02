@@ -26,6 +26,11 @@ interface Props {
   aoAlternarFoco(): void;
   aoAbrirAjuda(): void;
   aoSairDoMouse(): void;
+  /** "Orquestrar" na criação: novos painéis abrem já orquestrando (ausente = o controle não aparece). */
+  orquestrarNovo?: boolean;
+  aoAlternarOrquestrarNovo?(): void;
+  /** controles extras discretos entre buscar e o contador (ex.: ditado por voz, Fase 11). */
+  acoesExtras?: ReactNode;
 }
 
 const MOD = EH_MAC ? "⌘" : "Ctrl+Shift+";
@@ -36,7 +41,7 @@ const Ico = ({ nome, titulo, aoClicar, desabilitado, pressionado }: { nome: Nome
 );
 
 /** A ÚNICA linha de controles da tela (≈ 28 px): abas, `+` (menu de CLI), dividir, buscar, "N aguardando", foco e ajuda. */
-export function Barra({ children, ferramentas, abrindo, aguardando, temPainel, podeDividir, oculta, emFoco, aoAbrir, aoDetectarDeNovo, aoDividir, aoBuscar, aoIrParaAguardando, aoAlternarFoco, aoAbrirAjuda, aoSairDoMouse }: Props): ReactElement {
+export function Barra({ children, ferramentas, abrindo, aguardando, temPainel, podeDividir, oculta, emFoco, aoAbrir, aoDetectarDeNovo, aoDividir, aoBuscar, aoIrParaAguardando, aoAlternarFoco, aoAbrirAjuda, aoSairDoMouse, acoesExtras, orquestrarNovo = false, aoAlternarOrquestrarNovo }: Props): ReactElement {
   const [aberto, setAberto] = useState(false);
   const raiz = useRef<HTMLDivElement>(null);
   const botao = useRef<HTMLButtonElement>(null);
@@ -102,10 +107,16 @@ export function Barra({ children, ferramentas, abrindo, aguardando, temPainel, p
           </div>
         ) : null}
       </div>
+      {aoAlternarOrquestrarNovo !== undefined ? (
+        <button type="button" role="switch" aria-checked={orquestrarNovo} className="terminais-icone terminais-chave" aria-label="Abrir novos painéis com Orquestrar neste painel" title="Orquestrar: novos painéis abrem já podendo abrir agentes como terminais na tela (pede permissão por projeto)" onClick={aoAlternarOrquestrarNovo}>
+          Orquestrar
+        </button>
+      ) : null}
       <div className="terminais-acoes">
         <Ico nome="dividirLado" titulo={`Dividir lado a lado (${MOD}D)`} desabilitado={!temPainel || !podeDividir} aoClicar={() => aoDividir("vertical")} />
         <Ico nome="dividirCima" titulo={`Dividir em cima e embaixo (${EH_MAC ? "⌘⇧D" : "Ctrl+Shift+Alt+D"})`} desabilitado={!temPainel || !podeDividir} aoClicar={() => aoDividir("horizontal")} />
         <Ico nome="busca" titulo={`Buscar no terminal (${EH_MAC ? "⌘F" : "Ctrl+Shift+F"})`} desabilitado={!temPainel} aoClicar={aoBuscar} />
+        {acoesExtras}
         {aguardando > 0 ? (
           <button type="button" className="terminais-aguardando" onClick={aoIrParaAguardando} title="Ir ao primeiro painel que espera você" aria-label={`${textoAguardando(aguardando)}. Ir ao primeiro painel.`}>
             <i aria-hidden="true">!</i>

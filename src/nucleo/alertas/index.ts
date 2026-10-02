@@ -1,0 +1,27 @@
+// API pública do núcleo de alertas (Fase 20). Sem Electron, sem rede: tudo por portas injetadas.
+export * from "./agendador";
+export * from "./alert-raise";
+export * from "./atraso";
+export * from "./canal";
+export * from "./catalogo";
+export * from "./digest";
+export * from "./emissor";
+export * from "./entregador";
+export * from "./fontes";
+export * from "./mensagem";
+export * from "./memoria";
+export * from "./metricas";
+export * from "./portas";
+export * from "./presets";
+export * from "./repo-modelos";
+export * from "./retencao";
+export * from "./regras";
+export * from "./servico";
+export * from "./servico-leitura";
+export * from "./silencio";
+export * from "./templates";
+export * from "./tempo";
+export * from "./texto";
+export { criarCanalSo } from "./canais/so";
+export { criarCanalToast } from "./canais/toast";
+export { criarCanalWebhook, CABECALHO_ASSINATURA, assinar } from "./canais/webhook";

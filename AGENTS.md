@@ -49,7 +49,10 @@ A ordem das fases e o que ficou para depois estão em `docs/ade/06-FASES.md`.
    falham quando estouram: corrige-se a causa, nunca o limite. Dependência nova só com custo medido
    (tamanho, startup, nativo) registrado em `01-DECISOES.md`.
 6. **Nada sai da máquina (D-23).** Sem `git push`, sem publicar, sem notarização com credencial real,
-   sem chamada paga, sem telemetria (D-25). Testes usam CLIs falsas e stubs locais. O auto-update está
+   sem chamada paga, sem telemetria (D-25). **Exceção consentida (D-540/D-542): o download do modelo de voz local** —
+   entra um modelo de um catálogo versionado (`resources/voz/modelos.json`: host, tamanho e sha256 fixos), só por clique
+   com consentimento por download, só por `src/nucleo/rede/cliente-http.ts`; **nenhum dado nosso sai** (áudio nunca vai a disco
+   nem à rede). Agentes e testes NUNCA baixam modelo real. Testes usam CLIs falsas e stubs locais. O auto-update está
    desligado (D-24): nenhum módulo de `src/` importa `electron-updater`, e um teste barra isso.
 7. **Sem commit sem pedido do dono.** O trabalho fica na árvore de trabalho da `main`. Quando houver
    commit, a automação do ADE nunca comita na branch padrão nem força push (D-36).
@@ -65,10 +68,23 @@ A ordem das fases e o que ficou para depois estão em `docs/ade/06-FASES.md`.
     fora; daemon com token `0600` no socket/pipe e protocolo versionado; token do MCP por Pane, HMAC,
     `tools/list` filtrado, só loopback. Painel livre abre a CLI com aprovações normais; modo automático
     só por opt-in do workspace (D-14); nunca o bypass total de sandbox do Codex.
+    **Workers de orquestração (D-640 a D-646, evolução do D-14; o orquestrador e o painel livre seguem o D-14):**
+    o worker abre com a política de aprovações do workspace: `perguntar`, `automatico_seguro` (padrão, por
+    allowlist e `deny` rígido, só com cwd em worktree e projeto confiável) ou `total` (bypass só no Claude,
+    em worktree, com a palavra `liberar tudo` digitada e o `deny` mantido). Fora do `total` nunca
+    `--dangerously-skip-permissions`, `bypassPermissions`, `--always-approve` nem o bypass do Codex; o pedido
+    de `pane_spawn` só abaixa o nível; D-21 nunca é afetada. Núcleo: `src/nucleo/orquestracao/aprovacao-worker.ts`.
 11. **O método Expx é lido, não escrito (D-04).** O ADE observa `docs/**` e `docs/eventos/*.jsonl` e
     digita `/expx:<nome> <argumento>` nos terminais (D-20). Nunca grava artefato de estado do método;
-    o que grava fica em `.expxv/` do repositório do usuário. Assinatura do prodx, aprovação de raio
-    ALTO, `mergex-revisar` e merge são sempre humanos (D-21).
+    o que grava fica em `.expxv/` do repositório do usuário. **Duas exceções explícitas, só por ação do
+    usuário:** `.expx/hooks.json` (D-221) e **instalar/reparar/atualizar a suíte ExpxDev** (D-470): só
+    o que o próprio `expxdev init|update` escreve (`.claude/`, `.expx/`, `.opencode/`), depois do clique
+    em "Instalar agora" num diálogo que explica a rede e os efeitos; nunca por tool MCP, nunca no boot,
+    nunca com `npx` no cwd do projeto (D-473), sempre com `--yes --skills` (D-477). "Módulos da suíte"
+    desligados (`.expxv/modulos.json`, D-480) valem só no app: o lock e as skills nunca são tocados. Assinatura do prodx, aprovação de raio
+    ALTO, `mergex-revisar` e merge são sempre humanos (D-21). **Terceira exceção, mínima, só por clique (D-692):**
+    "Ignorar neste computador" acrescenta as pastas da suíte em `.git/info/exclude` (arquivo local do git que nunca vai
+    ao remoto; nunca o `.gitignore`).
 12. **Caminhos relativos** em qualquer artefato gravado pelo app (relativos à raiz do workspace).
 13. **Janela segura:** `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`, permissões
     mínimas, navegação só para o scheme próprio; o resto vai a `shell.openExternal` (http/https) ou é negado.
@@ -123,6 +139,8 @@ em `STATUS.md` e seguir com a próxima task independente. Trabalho paralelo só 
   `#2563eb`; D-32 área de trabalho dos terminais maximizada (topo 40 px, rodapé 26 px); D-17 PT-BR.
 - **Método:** D-18 parser tolerante; D-19 Missão ↔ trabalho; D-20 disparo de comandos com argumento;
   D-21 avaliador em Pane separado; D-22 worktrees ad hoc.
+- **Suíte ExpxDev (pós-MVP):** D-470 exceção ao D-04 (instalar só por ação explícita); D-473 download com cwd
+  neutro + `--ignore-scripts`, nunca `npx` no projeto; D-477 `init --yes --skills`; D-480 a D-484 módulos por projeto (legadox desligado de fábrica).
 - **Processo:** D-23 sem commit, push nem CI disparado; D-24 auto-update desligado; D-25 sem telemetria;
   D-26 Windows só em unidade; D-27 Node 22 em tudo.
 - **Detalhes de implementação:** D-28 `window.ade`; D-29 preferências e tema fora do banco; D-30 preload sem

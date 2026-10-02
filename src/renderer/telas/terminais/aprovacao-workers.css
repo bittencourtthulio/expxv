@@ -1,0 +1,38 @@
+/* Aprovações dos workers (D-640). Só tokens do tema (claro e escuro); nenhum texto depende só de cor. */
+.apw { display: flex; flex-direction: column; gap: var(--espaco-3); }
+.apw-niveis { display: flex; flex-direction: column; gap: var(--espaco-2); }
+.apw-nivel { display: flex; gap: var(--espaco-3); align-items: flex-start; padding: var(--espaco-3); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: var(--fs-base); line-height: var(--entrelinha); cursor: pointer; }
+.apw-nivel input[type="radio"] { margin-top: var(--espaco-1); accent-color: var(--destaque); }
+.apw-nivel:focus-within { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.apw-nivel[data-marcado] { border-color: var(--destaque); background: color-mix(in srgb, var(--destaque) 8%, var(--painel)); }
+.apw-nivel[data-nivel="total"][data-marcado] { border-color: var(--alerta); background: color-mix(in srgb, var(--alerta) 8%, var(--painel)); }
+.apw-corpo { display: flex; flex-direction: column; gap: var(--espaco-1); min-width: 0; }
+.apw-corpo > strong { font-size: var(--fs-campo); }
+.apw-corpo > span { color: var(--texto-suave); }
+.apw-corpo b { color: var(--texto); font-weight: 600; }
+.apw-perigo { padding: var(--espaco-3); border: 1px solid var(--alerta); border-radius: var(--raio-pequeno); background: color-mix(in srgb, var(--alerta) 10%, var(--painel)); color: var(--texto); font-size: var(--fs-base); }
+.apw-perigo p { margin: 0 0 var(--espaco-2); }
+.apw-perigo strong { color: var(--alerta); }
+.apw-confirmar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2); }
+.apw-confirmar input[type="text"] { min-height: 36px; padding: var(--espaco-1) var(--espaco-3); border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: var(--fs-base) var(--mono); }
+.apw-confirmar input[aria-invalid="true"] { border-color: var(--alerta); }
+.apw-selos { display: flex; flex-wrap: wrap; gap: var(--espaco-2); margin: 0; padding: 0; list-style: none; font-size: var(--fs-rotulo); }
+.apw-selos li { padding: 1px var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 999px; color: var(--texto-suave); white-space: nowrap; }
+.apw-selos li[data-selo="garantido"] { border-color: var(--sucesso); color: var(--sucesso); }
+.apw-selos li[data-selo="parcial"] { border-color: var(--aviso); color: var(--aviso); }
+.apw-opcoes { display: flex; flex-direction: column; gap: var(--espaco-2); font-size: var(--fs-base); }
+.apw-opcoes label { display: flex; gap: var(--espaco-2); align-items: flex-start; color: var(--texto-suave); }
+.apw-dialogo { display: flex; flex-direction: column; gap: var(--espaco-3); max-height: 70vh; overflow: auto; }
+.apw-linha-projeto { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; margin-top: var(--espaco-2); }
+.apw-chip { padding: 1px var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 999px; color: var(--texto-suave); font-size: var(--fs-rotulo); white-space: nowrap; }
+.apw-chip[data-nivel="automatico_seguro"] { border-color: var(--sucesso); color: var(--sucesso); }
+.apw-chip[data-nivel="total"] { border-color: var(--alerta); color: var(--alerta); font-weight: 600; }
+.apw-chip[data-rebaixado] { border-style: dashed; }
+.apw-chip-cabecalho { font-size: var(--fonte-cabecalho-painel); padding: 0 var(--espaco-2); }
+.apw-secao .apw { margin-bottom: var(--espaco-3); }
+.apw-aguardando { display: inline-flex; gap: var(--espaco-2); align-items: center; padding: 0 var(--espaco-2); border: 1px solid var(--aviso); border-radius: 999px; color: var(--aviso); font-size: var(--fonte-cabecalho-painel); white-space: nowrap; }
+.apw-aguardando button { padding: 0 var(--espaco-2); border: 1px solid var(--aviso); border-radius: 999px; background: transparent; color: var(--aviso); font: inherit; cursor: pointer; }
+.apw-aguardando button:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.apw-rolagem { max-height: calc(100vh - 300px); overflow: auto; padding-right: var(--espaco-1); }
+.apw-aguardando { flex: none; }
+.apw-chip { flex: none; }

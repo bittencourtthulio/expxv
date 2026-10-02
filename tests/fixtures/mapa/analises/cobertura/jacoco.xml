@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report name="proj"><package name="com/acme/pedidos">
+  <sourcefile name="PedidoService.java"><line nr="3" mi="0" ci="2"/><counter type="INSTRUCTION" missed="9" covered="1"/><counter type="LINE" missed="2" covered="6"/></sourcefile>
+</package></report>

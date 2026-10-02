@@ -1,11 +1,13 @@
-// Canais `squads:*` e `agentes:*` (Fase 14, T-14.01). SÓ validadores nesta onda; os manipuladores chegam com as tasks
-// T-14.09 (serviço), T-14.10 (portabilidade), T-14.16/17 (execução) e T-14.21 (prompt) — ver a lista
-// `CANAIS_SQUADS_SEM_MANIPULADOR_AINDA` em squads.test.ts. Chave = nome do canal.
+// Canais `squads:*` e `agentes:*` (Fase 14): validadores estritos (T-14.01) e manipuladores (T-14.09 serviço, T-14.10 portabilidade,
+// T-14.16 execução, T-14.17 modo livre, T-14.21 prompt). Todos os canais têm manipulador; a lista
+// `CANAIS_SQUADS_SEM_MANIPULADOR_AINDA` em squads.test.ts está vazia e o teste falha se ela mentir.
 // O renderer nunca envia caminho absoluto, `cwd`, userData nem URL: identificadores são slugs/ids, e o texto do
 // prompt só atravessa por `agentes:prompt_*` (≤ 16 KiB, só variáveis do conjunto fechado).
+import type { CanaisInvoke } from "../../compartilhado/ipc";
 import { FAIXAS } from "../../compartilhado/harness";
 import { PORTOES_MISSAO } from "../../compartilhado/dominio";
 import {
+  ARQUIVOS_EXECUCAO,
   ESCOPOS_SQUAD,
   ESFORCOS_CONHECIDOS,
   LIMITES_SQUAD,
@@ -19,7 +21,14 @@ import {
   type NivelRigidez,
   type Squad,
 } from "../../compartilhado/squads";
+import { NaoEncontradoErro, ValorInvalidoErro } from "../../nucleo/dominio";
+import { ErroMcp } from "../../nucleo/mcp/erros";
+import { ErroDeSquad } from "../../nucleo/squads/erros";
+import { FormatoInvalidoError, VersaoMaiorError } from "../../nucleo/squads/formato";
+import { LojaError } from "../../nucleo/squads/loja";
+import type { LigacaoSquads } from "../squads";
 import { vIdWorkspace, vRotulo } from "./comum-dominio";
+import type { RegistroIpc } from "./registro";
 import { vBooleano, vEnum, vInteiro, vLista, vObjeto, vTexto, type Resultado, type Validador } from "./validar";
 import { vNulavel, vObjetoOpc, vSemCaminhoNemUrl, vTextoUsuario, type ValidadoresDaFamilia } from "./validar-harness";
 
@@ -42,7 +51,7 @@ export const vSlug = vTexto({ min: 1, max: LIMITES_SQUAD.slug_max, padrao: PADRA
 export const vAgentId = vTexto({ min: 3, max: LIMITES_SQUAD.agent_id_max, padrao: /^[a-z0-9][a-z0-9-]{0,39}\.[a-z0-9][a-z0-9-]{0,39}$/ });
 const vHash = vTexto({ min: 64, max: 64, padrao: /^[0-9a-f]{64}$/ });
 const vNomeSquad = vSemCaminhoNemUrl({ min: 1, max: 80 });
-const vCli = vTexto({ min: 1, max: 32, padrao: /^(?:auto|[a-z][a-z0-9-]{0,31})$/ });
+export const vCli = vTexto({ min: 1, max: 32, padrao: /^(?:auto|[a-z][a-z0-9-]{0,31})$/ });
 const vModelo: Validador<string> = refinar(vTexto({ min: 1, max: 100, padrao: /^[A-Za-z0-9][A-Za-z0-9._:/@-]{0,99}$/ }), (m) => (m.includes("..") || m.includes("//") ? "modelo inválido" : null));
 const vEsforco = vEnum(ESFORCOS_CONHECIDOS);
 const vFaixa = vEnum(FAIXAS);
@@ -55,6 +64,10 @@ const vListaUnica = (max: number): Validador<string[]> =>
   refinar(vLista(vNomePermitido, max), (l) => (new Set(l).size === l.length ? null : "itens repetidos"));
 const vIdPrevia = vTexto({ min: 8, max: 64, padrao: /^[A-Za-z0-9_-]{8,64}$/ });
 const vIdExecucao = vTexto({ min: 1, max: 64, padrao: /^sqx_[0-9A-Za-z]{10,40}$/ });
+/** Unidade da atualização de fábrica: slug de membro ou `@squad` (os campos da própria squad). */
+const vUnidadeDeFabrica = vTexto({ min: 1, max: LIMITES_SQUAD.slug_max, padrao: /^(?:@squad|[a-z0-9][a-z0-9-]{0,39})$/ });
+/** Nome de pasta da lixeira: `<slug>-<AAAAMMDDHHMMSS>-<hex>` (nunca caminho). */
+const vNomeDaLixeira = vTexto({ min: 1, max: 100, padrao: /^[a-z0-9][a-z0-9-]{0,99}$/ });
 const vObjetivo = refinar(vTextoUsuario(LIMITES_SQUAD.objetivo_max, 1), (t) => (t.trim() === "" ? "objetivo vazio" : null));
 
 /** Texto do prompt do membro: ≤ 16 KiB (bytes), sem NUL/controle (salvo \n \r \t) e só variáveis do conjunto fechado. */
@@ -143,7 +156,14 @@ export const VALIDADORES_SQUADS = {
   "squads:duplicar": vObjetoOpc({ slug: vSlug }, { novo_slug: vSlug, novo_nome: vNomeSquad }),
   "squads:apagar": refinar(vObjeto({ slug: vSlug, confirmar_slug: vSlug }), (e) => (e.slug === e.confirmar_slug ? null : "confirmar_slug diferente do slug")),
   "squads:fabrica_atualizacao": vSlugEntrada,
-  "squads:fabrica_aplicar": vObjeto({ slug: vSlug, membros: vLista(vSlug, LIMITES_SQUAD.membros_max) }),
+  "squads:fabrica_aplicar": refinar(
+    vObjetoOpc({ slug: vSlug, membros: vLista(vUnidadeDeFabrica, LIMITES_SQUAD.membros_max + 1) }, { sobrescrever_editados: vLista(vUnidadeDeFabrica, LIMITES_SQUAD.membros_max + 1) }),
+    (e) => (e.sobrescrever_editados !== undefined && !e.sobrescrever_editados.every((m) => e.membros.includes(m)) ? "sobrescrever_editados precisa estar em membros" : null),
+  ),
+  "squads:fabrica_diff": vObjeto({ slug: vSlug, membro: vUnidadeDeFabrica }),
+  "squads:lixeira_listar": vObjeto({}),
+  "squads:lixeira_restaurar": vObjeto({ nome: vNomeDaLixeira }),
+  "squads:execucao_arquivo": vObjeto({ execucao_id: vIdExecucao, arquivo: vEnum(ARQUIVOS_EXECUCAO) }),
   "squads:preflight": vObjeto({ slug: vSlug, workspace_id: vIdWorkspace }),
   "squads:enviar_prompt": vObjeto({
     workspace_id: vIdWorkspace,
@@ -185,3 +205,100 @@ export const VALIDADORES_SQUADS = {
 } satisfies ValidadoresDaFamilia<"squads:"> & ValidadoresDaFamilia<"agentes:">;
 
 export type CanalSquads = keyof typeof VALIDADORES_SQUADS;
+
+// ---------------------------------------------------------------- manipuladores (T-14.09, T-14.10, T-14.16, T-14.21)
+
+/**
+ * Erro que o renderer pode ver: os NOMINAIS (loja, execução, formato, domínio, MCP) passam com a mensagem; qualquer outra coisa
+ * (ex.: `ENOENT` com caminho absoluto) vira texto genérico, para nunca vazar caminho de máquina.
+ */
+export function sanearErroDeSquads(e: unknown): Error {
+  if (e instanceof LojaError || e instanceof ErroDeSquad || e instanceof ErroMcp || e instanceof FormatoInvalidoError || e instanceof VersaoMaiorError || e instanceof NaoEncontradoErro || e instanceof ValorInvalidoErro) return e;
+  return new Error("falha ao executar a operação de squads");
+}
+
+export type DependenciasManipuladoresSquads = Pick<LigacaoSquads, "servico" | "portabilidade" | "execucao" | "atualizarClis" | "abrirAgente">;
+
+/** Manipuladores puros (testáveis sem IPC). */
+export function criarManipuladoresSquads(l: DependenciasManipuladoresSquads) {
+  const { servico, portabilidade, execucao } = l;
+  const cuidar = async <T>(f: () => T | Promise<T>): Promise<T> => {
+    try {
+      return await f();
+    } catch (e) {
+      throw sanearErroDeSquads(e);
+    }
+  };
+  return {
+    "squads:listar": (p: CanaisInvoke["squads:listar"]["entrada"]) => cuidar(() => servico.listar(p)),
+    "squads:obter": (p: { slug: string }) => cuidar(() => servico.obter(p.slug)),
+    "squads:gravar": (p: CanaisInvoke["squads:gravar"]["entrada"]) => cuidar(() => servico.gravar(p)),
+    "squads:validar": (p: CanaisInvoke["squads:validar"]["entrada"]) =>
+      cuidar(async () => {
+        if (p.workspace_id !== null) await l.atualizarClis();
+        return servico.validar(p.squad, p.workspace_id);
+      }),
+    "squads:duplicar": (p: CanaisInvoke["squads:duplicar"]["entrada"]) => cuidar(() => servico.duplicar(p)),
+    "squads:apagar": (p: CanaisInvoke["squads:apagar"]["entrada"]) => cuidar(() => servico.apagar(p)),
+    "squads:fabrica_atualizacao": (p: { slug: string }) => cuidar(() => servico.fabricaAtualizacao(p.slug)),
+    "squads:fabrica_aplicar": (p: CanaisInvoke["squads:fabrica_aplicar"]["entrada"]) => cuidar(() => servico.fabricaAplicar(p)),
+    "squads:fabrica_diff": (p: CanaisInvoke["squads:fabrica_diff"]["entrada"]) => cuidar(() => servico.fabricaDiff(p)),
+    "squads:lixeira_listar": () => cuidar(() => servico.listarLixeira()),
+    "squads:lixeira_restaurar": (p: CanaisInvoke["squads:lixeira_restaurar"]["entrada"]) => cuidar(() => servico.restaurarDaLixeira(p.nome)),
+    "squads:execucao_arquivo": (p: CanaisInvoke["squads:execucao_arquivo"]["entrada"]) => cuidar(() => execucao.lerArquivo(p)),
+    "squads:preflight": (p: CanaisInvoke["squads:preflight"]["entrada"]) => cuidar(() => execucao.preflight(p)),
+    "squads:enviar_prompt": (p: CanaisInvoke["squads:enviar_prompt"]["entrada"]) => cuidar(() => execucao.enviarPrompt(p)),
+    "squads:execucoes_listar": (p: CanaisInvoke["squads:execucoes_listar"]["entrada"]) => cuidar(() => execucao.listarExecucoes(p)),
+    "squads:exportar": (p: CanaisInvoke["squads:exportar"]["entrada"]) => cuidar(() => portabilidade.exportar(p)),
+    "squads:importar_previa": (p: CanaisInvoke["squads:importar_previa"]["entrada"]) => cuidar(() => portabilidade.importarPrevia(p)),
+    "squads:importar_confirmar": (p: CanaisInvoke["squads:importar_confirmar"]["entrada"]) => cuidar(() => portabilidade.importarConfirmar(p)),
+    "agentes:listar": (p: { squad?: string }) => cuidar(() => servico.listarAgentes(p.squad)),
+    "agentes:prompt_ler": (p: { agent_id: string }) => cuidar(() => servico.lerPrompt(p.agent_id)),
+    "agentes:prompt_gravar": (p: CanaisInvoke["agentes:prompt_gravar"]["entrada"]) => cuidar(() => servico.gravarPrompt(p)),
+    "agentes:prompt_previa": (p: CanaisInvoke["agentes:prompt_previa"]["entrada"]) => cuidar(() => servico.previaPrompt(p)),
+    "agentes:prompt_restaurar": (p: { agent_id: string }) => cuidar(() => servico.restaurarPrompt(p.agent_id)),
+    "agentes:perfil_opcoes": (p: { cli: string }) =>
+      cuidar(async () => {
+        await l.atualizarClis();
+        return servico.perfilOpcoes(p.cli);
+      }),
+    "agentes:abrir_pane": (p: CanaisInvoke["agentes:abrir_pane"]["entrada"]) => cuidar(() => l.abrirAgente(p)),
+  };
+}
+
+export interface DependenciasIpcSquads {
+  registro: RegistroIpc;
+  ligacao: DependenciasManipuladoresSquads;
+}
+
+/** Registra os 25 canais (um manipulador por canal). */
+export function registrarIpcSquads(d: DependenciasIpcSquads): void {
+  const m = criarManipuladoresSquads(d.ligacao);
+  const V = VALIDADORES_SQUADS;
+  const r = d.registro;
+  r.invoke("squads:listar", V["squads:listar"], (e) => m["squads:listar"](e));
+  r.invoke("squads:obter", V["squads:obter"], (e) => m["squads:obter"](e));
+  r.invoke("squads:gravar", V["squads:gravar"], (e) => m["squads:gravar"](e));
+  r.invoke("squads:validar", V["squads:validar"], (e) => m["squads:validar"](e));
+  r.invoke("squads:duplicar", V["squads:duplicar"], (e) => m["squads:duplicar"](e));
+  r.invoke("squads:apagar", V["squads:apagar"], (e) => m["squads:apagar"](e));
+  r.invoke("squads:fabrica_atualizacao", V["squads:fabrica_atualizacao"], (e) => m["squads:fabrica_atualizacao"](e));
+  r.invoke("squads:fabrica_aplicar", V["squads:fabrica_aplicar"], (e) => m["squads:fabrica_aplicar"](e));
+  r.invoke("squads:fabrica_diff", V["squads:fabrica_diff"], (e) => m["squads:fabrica_diff"](e));
+  r.invoke("squads:lixeira_listar", V["squads:lixeira_listar"], () => m["squads:lixeira_listar"]());
+  r.invoke("squads:lixeira_restaurar", V["squads:lixeira_restaurar"], (e) => m["squads:lixeira_restaurar"](e));
+  r.invoke("squads:execucao_arquivo", V["squads:execucao_arquivo"], (e) => m["squads:execucao_arquivo"](e));
+  r.invoke("squads:preflight", V["squads:preflight"], (e) => m["squads:preflight"](e));
+  r.invoke("squads:enviar_prompt", V["squads:enviar_prompt"], (e) => m["squads:enviar_prompt"](e));
+  r.invoke("squads:execucoes_listar", V["squads:execucoes_listar"], (e) => m["squads:execucoes_listar"](e));
+  r.invoke("squads:exportar", V["squads:exportar"], (e) => m["squads:exportar"](e));
+  r.invoke("squads:importar_previa", V["squads:importar_previa"], (e) => m["squads:importar_previa"](e));
+  r.invoke("squads:importar_confirmar", V["squads:importar_confirmar"], (e) => m["squads:importar_confirmar"](e));
+  r.invoke("agentes:listar", V["agentes:listar"], (e) => m["agentes:listar"](e));
+  r.invoke("agentes:prompt_ler", V["agentes:prompt_ler"], (e) => m["agentes:prompt_ler"](e));
+  r.invoke("agentes:prompt_gravar", V["agentes:prompt_gravar"], (e) => m["agentes:prompt_gravar"](e));
+  r.invoke("agentes:prompt_previa", V["agentes:prompt_previa"], (e) => m["agentes:prompt_previa"](e));
+  r.invoke("agentes:prompt_restaurar", V["agentes:prompt_restaurar"], (e) => m["agentes:prompt_restaurar"](e));
+  r.invoke("agentes:perfil_opcoes", V["agentes:perfil_opcoes"], (e) => m["agentes:perfil_opcoes"](e));
+  r.invoke("agentes:abrir_pane", V["agentes:abrir_pane"], (e) => m["agentes:abrir_pane"](e));
+}

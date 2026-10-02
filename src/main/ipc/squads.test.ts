@@ -4,33 +4,38 @@ import type { Membro, Squad } from "../../compartilhado/squads";
 import { VALIDADORES_SQUADS, vPromptTexto } from "./squads";
 
 /**
- * Canais `squads:*`/`agentes:*` com validador estrito mas SEM manipulador nesta onda, com a task que o implementa
- * (cada onda remove daqui os que passar a registrar; o teste abaixo falha se a lista mentir).
+ * Canais `squads:*`/`agentes:*` com validador estrito mas SEM manipulador, com a task que o implementa (cada onda remove daqui os
+ * que passar a registrar; o teste abaixo falha se a lista mentir). Onda 3: só o modo livre (T-14.17) ficou de fora.
  */
-export const CANAIS_SQUADS_SEM_MANIPULADOR_AINDA: Readonly<Record<string, string>> = {
-  "squads:listar": "T-14.09",
-  "squads:obter": "T-14.09",
-  "squads:gravar": "T-14.09",
-  "squads:validar": "T-14.09",
-  "squads:duplicar": "T-14.09",
-  "squads:apagar": "T-14.09",
-  "squads:fabrica_atualizacao": "T-14.09",
-  "squads:fabrica_aplicar": "T-14.09",
-  "squads:preflight": "T-14.16",
-  "squads:enviar_prompt": "T-14.16",
-  "squads:execucoes_listar": "T-14.16",
-  "squads:exportar": "T-14.10",
-  "squads:importar_previa": "T-14.10",
-  "squads:importar_confirmar": "T-14.10",
-  "agentes:listar": "T-14.09",
-  "agentes:prompt_ler": "T-14.21",
-  "agentes:prompt_gravar": "T-14.21",
-  "agentes:prompt_previa": "T-14.21",
-  "agentes:prompt_restaurar": "T-14.21",
-  "agentes:perfil_opcoes": "T-14.05",
-  "agentes:abrir_pane": "T-14.17",
-};
-const CANAIS_COM_MANIPULADOR: readonly string[] = [];
+export const CANAIS_SQUADS_SEM_MANIPULADOR_AINDA: Readonly<Record<string, string>> = {};
+/** Registrados por `registrarIpcSquads` (conferido contra o registro real em squads-manipuladores.test.ts). */
+const CANAIS_COM_MANIPULADOR: readonly string[] = [
+  "squads:listar",
+  "squads:obter",
+  "squads:gravar",
+  "squads:validar",
+  "squads:duplicar",
+  "squads:apagar",
+  "squads:fabrica_atualizacao",
+  "squads:fabrica_aplicar",
+  "squads:fabrica_diff",
+  "squads:lixeira_listar",
+  "squads:lixeira_restaurar",
+  "squads:execucao_arquivo",
+  "squads:preflight",
+  "squads:enviar_prompt",
+  "squads:execucoes_listar",
+  "squads:exportar",
+  "squads:importar_previa",
+  "squads:importar_confirmar",
+  "agentes:listar",
+  "agentes:prompt_ler",
+  "agentes:prompt_gravar",
+  "agentes:prompt_previa",
+  "agentes:prompt_restaurar",
+  "agentes:perfil_opcoes",
+  "agentes:abrir_pane",
+];
 
 type Entrada = Record<string, unknown>;
 const val = (canal: keyof typeof VALIDADORES_SQUADS, v: unknown) => (VALIDADORES_SQUADS[canal] as (x: unknown) => { ok: boolean; erro?: string })(v);
@@ -79,7 +84,7 @@ describe("contrato Fase 14: todo canal tem validador estrito", () => {
   it("cada canal squads:/agentes: do contrato tem validador e nenhum validador é órfão", () => {
     expect(Object.keys(VALIDADORES_SQUADS).sort()).toEqual(doContrato);
     for (const c of doContrato) expect(typeof (VALIDADORES_SQUADS as Record<string, unknown>)[c], c).toBe("function");
-    expect(doContrato).toHaveLength(21);
+    expect(doContrato).toHaveLength(25);
     expect(CANAIS_EVENTO).toContain("squads:evento");
   });
 
@@ -293,5 +298,34 @@ describe("validadores squads: execução, apagar, portabilidade e listagens", ()
     expect(val("agentes:abrir_pane", { workspace_id: WS, agent_id: "a.b" }).ok).toBe(true);
     expect(val("agentes:abrir_pane", { workspace_id: WS, agent_id: "a.b", objetivo: "x".repeat(4001) }).ok).toBe(false);
     expect(val("agentes:abrir_pane", { workspace_id: WS, agent_id: "a.b", cwd: "/x" }).ok).toBe(false);
+  });
+});
+
+describe("validadores squads: onda 6 (fábrica com diff, lixeira, arquivos da execução)", () => {
+  it("fábrica_aplicar aceita @squad e sobrescrever_editados só dentro de membros", () => {
+    expect(val("squads:fabrica_aplicar", { slug: "eq", membros: ["@squad", "impl"] }).ok).toBe(true);
+    expect(val("squads:fabrica_aplicar", { slug: "eq", membros: ["impl"], sobrescrever_editados: ["impl"] }).ok).toBe(true);
+    expect(val("squads:fabrica_aplicar", { slug: "eq", membros: ["impl"], sobrescrever_editados: ["rev"] }).ok).toBe(false);
+    expect(val("squads:fabrica_aplicar", { slug: "eq", membros: ["../x"] }).ok).toBe(false);
+    expect(val("squads:fabrica_aplicar", { slug: "eq", membros: [], extra: 1 }).ok).toBe(false);
+  });
+  it("fábrica_diff: membro é slug ou @squad, nunca caminho", () => {
+    expect(val("squads:fabrica_diff", { slug: "eq", membro: "@squad" }).ok).toBe(true);
+    expect(val("squads:fabrica_diff", { slug: "eq", membro: "impl" }).ok).toBe(true);
+    expect(val("squads:fabrica_diff", { slug: "eq", membro: "/etc/passwd" }).ok).toBe(false);
+    expect(val("squads:fabrica_diff", { slug: "eq", membro: "a/b" }).ok).toBe(false);
+  });
+  it("lixeira: listar sem campos; restaurar só com nome de pasta (sem separador nem ..)", () => {
+    expect(val("squads:lixeira_listar", {}).ok).toBe(true);
+    expect(val("squads:lixeira_listar", { x: 1 }).ok).toBe(false);
+    expect(val("squads:lixeira_restaurar", { nome: "eq-20261001120000-ab12" }).ok).toBe(true);
+    for (const nome of ["../eq", "a/b", "/abs", "..", "", "EQ", "eq\\x"]) expect(val("squads:lixeira_restaurar", { nome }).ok, nome).toBe(false);
+  });
+  it("execucao_arquivo: id de execução e arquivo do conjunto fechado (plano|resultado)", () => {
+    expect(val("squads:execucao_arquivo", { execucao_id: "sqx_0123456789AB", arquivo: "plano" }).ok).toBe(true);
+    expect(val("squads:execucao_arquivo", { execucao_id: "sqx_0123456789AB", arquivo: "resultado" }).ok).toBe(true);
+    expect(val("squads:execucao_arquivo", { execucao_id: "sqx_0123456789AB", arquivo: "../../.ssh/id_rsa" }).ok).toBe(false);
+    expect(val("squads:execucao_arquivo", { execucao_id: "x", arquivo: "plano" }).ok).toBe(false);
+    expect(val("squads:execucao_arquivo", { execucao_id: "sqx_0123456789AB", arquivo: "plano", caminho: "/etc" }).ok).toBe(false);
   });
 });

@@ -5,8 +5,9 @@
 import { isAbsolute, resolve } from "node:path";
 import { missaoTerminal } from "../dominio";
 import type { ModoMissao, Papel } from "../dominio";
+import { avaliarConsultaObrigatoria } from "../conhecimento/contexto/regra";
 import { conflito, violacaoDeRegra } from "../mcp/erros";
-import type { AgenteDoSquad, MissaoInfo, PaneInfo, Portao, ProvedorInfo } from "../mcp/portas";
+import type { AgenteDoSquad, MissaoInfo, PaneInfo, PortaRag, Portao, ProvedorInfo } from "../mcp/portas";
 import { dentroDaPastaDoProduto } from "./pasta";
 
 /** Decisões de configuração centralizadas (B-orquestração, notas transversais). */
@@ -128,8 +129,11 @@ export function verificarConclusao(e: { papel: Papel; missao: MissaoInfo | null;
   if (!e.revisor_ok) throw violacaoDeRegra("reviewer_required", "A Missão exige um handoff ok de um revisor.");
 }
 
-/** O piloto não fecha a si mesmo nem outro piloto. */
+/** Só o ORQUESTRADOR (piloto) dono do worker fecha o painel dele (D-520); ele não fecha a si mesmo nem outro piloto. O escopo da Missão já foi conferido pela tool. */
 export function verificarFechamento(e: { chamador: { pane_id: string; papel: Papel }; alvo: PaneInfo }): void {
+  if (PAPEIS_WORKER.includes(e.chamador.papel)) {
+    throw violacaoDeRegra("forbidden_role", "Só o orquestrador dono do worker pode fechar o painel dele.");
+  }
   if (e.alvo.eh_piloto || e.alvo.pane_id === e.chamador.pane_id) {
     throw violacaoDeRegra("forbidden_role", "O Pane do piloto não pode ser fechado por esta tool.");
   }
@@ -160,4 +164,54 @@ export function guardaDoPiloto(e: { raiz: string; cwd: string | null; ferramenta
   const base = e.cwd !== null && isAbsolute(e.cwd) ? e.cwd : e.raiz;
   const absoluto = isAbsolute(bruto) ? resolve(bruto) : resolve(base, bruto);
   return dentroDaPastaDoProduto(e.raiz, absoluto) ? { permitido: true, motivo: null } : negar();
+}
+
+/** `briefing-<task>.md` -> `<task>` (a task do card que o worker vai executar); `null` quando o caminho não segue o padrão. */
+export function taskDoBriefing(briefingPath: string | null): string | null {
+  if (briefingPath === null) return null;
+  const m = /(?:^|[\\/])briefing-([A-Za-z0-9][A-Za-z0-9._-]{0,127})\.md$/.exec(briefingPath);
+  return m === null ? null : (m[1] as string);
+}
+
+export interface EntradaConsultaRag {
+  /** `null`/ausente = RAG não ligado: sempre permite. */
+  rag: Pick<PortaRag, "ativo" | "politica" | "consultouRecentemente"> | null | undefined;
+  workspace_id: string;
+  mission_id: string | null;
+  /** `null` = qualquer task da Missão (a porta trata `""` assim). */
+  task_ref: string | null;
+  papel: Papel;
+}
+
+export interface VereditoRag {
+  acao: "permitir" | "avisar";
+  /** texto de uma linha para `avisar` (vai ao `avisar` das deps; nunca bloqueia). */
+  aviso?: string;
+}
+
+export const AVISO_CONSULTA_RAG =
+  "O worker vai implementar sem consulta ao conhecimento local nos últimos 30 minutos: oriente-o a chamar `rag_context` antes (ou ligue a injeção de contexto).";
+
+/**
+ * Consulta obrigatória (DEC-4 d): nos pontos `task aberta -> reivindicada` e `pane_spawn` de papel executor/explorador. `aviso` (padrão) devolve um aviso;
+ * `bloqueio` lança `rule_violation/rag_consult_required`. RAG desligado, fora ou lento NUNCA bloqueia; porta ausente = permitir. A injeção de contexto (camada b)
+ * registra a consulta, então o bloqueio só dispara com a injeção desligada (`contexto_chars` 0) E sem consulta do agente.
+ */
+export async function verificarConsultaRag(e: EntradaConsultaRag): Promise<VereditoRag> {
+  const permitir: VereditoRag = { acao: "permitir" };
+  if (e.rag === null || e.rag === undefined || e.mission_id === null) return permitir;
+  let ragAtivo: boolean;
+  let politica: Awaited<ReturnType<PortaRag["politica"]>>;
+  let consultou: boolean;
+  try {
+    ragAtivo = await e.rag.ativo(e.workspace_id);
+    if (!ragAtivo) return permitir;
+    politica = await e.rag.politica(e.workspace_id);
+    consultou = await e.rag.consultouRecentemente(e.mission_id, e.task_ref ?? "");
+  } catch {
+    return permitir; // fora/lento: nunca bloqueia
+  }
+  const v = avaliarConsultaObrigatoria({ modo: politica.consulta_obrigatoria, ragAtivo, ragDisponivel: true, consultouNaJanela: consultou, injecaoLigada: politica.contexto_chars > 0, papel: e.papel });
+  if (v.acao === "bloquear") throw violacaoDeRegra("rag_consult_required", "Consulte o conhecimento local (rag_context) antes de implementar.");
+  return v.acao === "avisar" ? { acao: "avisar", aviso: AVISO_CONSULTA_RAG } : permitir;
 }

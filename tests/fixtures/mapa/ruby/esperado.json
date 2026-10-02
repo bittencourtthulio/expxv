@@ -1,0 +1,79 @@
+{
+  "linguagem": "ruby",
+  "arquivos": {
+    "app/models/pedido.rb": {
+      "metricas": { "erros_parse": 0, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "Loja", "tipo": "classe", "assinatura": "module Loja" },
+        { "qualificado": "Loja.Pedido", "tipo": "classe", "doc": "Pedido da loja." },
+        { "qualificado": "Loja.Pedido.LIMITE", "tipo": "constante" },
+        { "qualificado": "Loja.Pedido.total", "tipo": "metodo", "visibilidade": "publica", "exportado": true, "complexidade": 6, "doc": "Calcula o total do pedido." },
+        { "qualificado": "Loja.Pedido.criar", "tipo": "metodo", "exportado": true },
+        { "qualificado": "Loja.Pedido.ajustar", "tipo": "metodo", "exportado": true },
+        { "qualificado": "Loja.Pedido.oculto", "tipo": "metodo", "visibilidade": "privada", "exportado": false },
+        { "qualificado": "Loja.Pedido.tambem_oculto", "tipo": "metodo", "visibilidade": "privada" },
+        { "qualificado": "Loja.Item", "tipo": "classe" },
+        { "qualificado": "utilitario", "tipo": "funcao", "exportado": true }
+      ],
+      "imports": [
+        { "especificador": "json", "tipo": "require", "nomes": [] },
+        { "especificador": "../services/calculo", "tipo": "estatico" },
+        { "especificador": "relatorio", "tipo": "require", "nomes": ["Relatorio"] }
+      ],
+      "herancas": [
+        { "classe": "Loja.Pedido", "base": "ApplicationRecord", "tipo": "herda" },
+        { "classe": "Loja.Pedido", "base": "Comparable", "tipo": "herda" },
+        { "classe": "Loja.Pedido", "base": "Forwardable", "tipo": "herda" }
+      ],
+      "chamadas": [
+        { "de": "Loja.Pedido.total", "alvo": "Calculo", "tipo": "instancia", "receptor": null },
+        { "de": "Loja.Pedido.total", "alvo": "run", "receptor": "?", "tipo": "chamada" },
+        { "de": "Loja.Pedido.total", "alvo": "ajustar", "receptor": null, "tipo": "chamada" },
+        { "de": "Loja.Pedido.total", "alvo": "Fatura", "receptor": "Loja", "tipo": "instancia" },
+        { "de": "Loja.Pedido.criar", "alvo": "new", "receptor": null, "tipo": "chamada" }
+      ],
+      "dados": [
+        { "tabela": "pedidos", "operacao": "desconhecida", "fonte": "activerecord", "confianca": "heuristica" },
+        { "tabela": "itens", "operacao": "le", "de": "Loja.Pedido.total", "confianca": "exata" },
+        { "tabela": "itens_loja", "operacao": "desconhecida", "fonte": "activerecord", "confianca": "exata" }
+      ],
+      "dinamicos": [{ "tipo": "chamada_computada" }, { "tipo": "eval" }],
+      "padroes": [{ "tipo": "throw" }, { "tipo": "env", "nome": "CHAVE_X" }, { "tipo": "catch_vazio" }],
+      "ausentes": { "chamadas": [{ "alvo": "send" }, { "alvo": "require" }, { "alvo": "include" }, { "alvo": "private" }], "herancas": [{ "base": "Pedido" }] }
+    },
+    "config/routes.rb": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /", "framework": "rails", "handler": "HomeController.index" },
+        { "tipo": "rota", "chave": "GET /saude", "handler": "HomeController.saude" },
+        { "tipo": "rota", "chave": "GET /pedidos", "handler": "PedidosController.index" },
+        { "tipo": "rota", "chave": "GET /pedidos/:id", "handler": "PedidosController.show" },
+        { "tipo": "rota", "chave": "POST /pedidos/:id/aprovar", "handler": "PedidosController.aprovar" },
+        { "tipo": "rota", "chave": "GET /admin/usuarios", "handler": "Admin.UsuariosController.index" },
+        { "tipo": "rota", "chave": "PATCH /admin/usuarios/:id", "handler": "Admin.UsuariosController.update" },
+        { "tipo": "rota", "chave": "POST /admin/lote", "handler": "Admin.LotesController.criar" }
+      ],
+      "ausentes": { "entradas": [{ "chave": "POST /pedidos" }, { "chave": "DELETE /admin/usuarios/:id" }, { "chave": "GET /pedidos/new" }] }
+    },
+    "app/jobs/envio_job.rb": {
+      "entradas": [
+        { "tipo": "job", "chave": "activejob:EnvioJob", "handler": "EnvioJob.perform" },
+        { "tipo": "job", "chave": "sidekiq:LimpezaWorker", "handler": "LimpezaWorker.perform" }
+      ],
+      "chamadas": [{ "de": "EnvioJob.perform", "alvo": "enviar", "receptor": "Mailer" }]
+    },
+    "db/migrate/20240101_cria_clientes.rb": {
+      "metricas": { "e_teste": false },
+      "dados": [
+        { "tabela": "clientes", "operacao": "define", "fonte": "migracao" },
+        { "tabela": "clientes", "operacao": "escreve", "confianca": "heuristica" }
+      ]
+    },
+    "lib/tasks/limpar.rake": {
+      "entradas": [
+        { "tipo": "cli", "chave": "rake:limpar", "framework": "rake" },
+        { "tipo": "rota", "chave": "GET /ola", "framework": "sinatra" },
+        { "tipo": "main", "chave": "main" }
+      ]
+    }
+  }
+}

@@ -15,11 +15,11 @@ import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { PRODUTO } from "../produto";
 import { DEFINICOES, TOOLS_MVP, type NomeTool } from "./catalogo";
-import { ErroMcp, corpoDeErro, naoAutorizado, violacaoDeRegra } from "./erros";
-import type { PortaGanchos } from "./portas";
+import { ErroMcp, argumentoInvalido, corpoDeErro, naoAutorizado, violacaoDeRegra } from "./erros";
+import type { PortaGanchos, PortaGateway } from "./portas";
 import type { ContextoTool, DepsTools } from "./tools/comum";
 import { IMPLEMENTACOES } from "./tools/index";
-import { criarEmissorDeTokens, type ClaimsToken, type EmissorDeTokens, type PedidoToken } from "./tokens";
+import { criarEmissorDeTokens, temAudiencia, type AudienciaToken, type ClaimsToken, type EmissorDeTokens, type PedidoToken } from "./tokens";
 
 export const LIMITE_CORPO_BYTES = 1024 * 1024;
 
@@ -96,6 +96,32 @@ function resultadoErro(erro: unknown): { isError: true; content: Array<{ type: "
   return { isError: true, content: [{ type: "text", text: JSON.stringify(corpoDeErro(erro)) }] };
 }
 
+/**
+ * Fase 7C: servidor MCP do gateway para UM Pane (stateless). `tools/list` e `tools/call` são delegados à porta do main; o token só entrega a identidade
+ * (`pane_id`). Erros viram `isError` com o corpo do contrato; nada de argumento/resultado é logado aqui.
+ */
+function montarServidorGateway(claims: ClaimsToken, porta: PortaGateway): Server {
+  const servidor = new Server({ name: `${PRODUTO.id}-gateway`, version: "1.0.0" }, { capabilities: { tools: {} } });
+  servidor.setRequestHandler(ListToolsRequestSchema, async () => {
+    try {
+      return { tools: (await porta.listar(claims.pane_id)).tools };
+    } catch {
+      return { tools: [] };
+    }
+  });
+  servidor.setRequestHandler(CallToolRequestSchema, async (req) => {
+    const args = req.params.arguments;
+    if (args !== undefined && (typeof args !== "object" || args === null || Array.isArray(args))) return resultadoErro(argumentoInvalido("Os argumentos devem ser um objeto."));
+    try {
+      const r = await porta.chamar(claims.pane_id, req.params.name, (args ?? {}) as Record<string, unknown>);
+      return { content: r.content.map((c) => ({ type: "text" as const, text: String(c.text) })), isError: r.isError };
+    } catch (erro) {
+      return resultadoErro(erro);
+    }
+  });
+  return servidor;
+}
+
 function montarServidorMcp(claims: ClaimsToken, deps: DepsTools): Server {
   const servidor = new Server({ name: `${PRODUTO.id}-mcp`, version: "1.0.0" }, { capabilities: { tools: {} } });
 
@@ -132,7 +158,9 @@ export async function iniciarServidorMcp(opcoes: OpcoesServidorMcp): Promise<Ser
     const caminho = (req.url ?? "").split("?")[0] ?? "";
     const ehMcp = caminho === "/mcp";
     const ehGancho = /^\/hooks\/[a-z][a-z0-9-]{0,39}$/.test(caminho);
-    if (!ehMcp && !ehGancho) {
+    const ehLoja = caminho === "/loja/segredos";
+    const ehGateway = caminho === "/gateway";
+    if (!ehMcp && !ehGancho && !ehLoja && !ehGateway) {
       responderJson(res, 404, { code: "not_found", message: "Rota desconhecida." });
       return;
     }
@@ -145,6 +173,12 @@ export async function iniciarServidorMcp(opcoes: OpcoesServidorMcp): Promise<Ser
     const m = /^Bearer\s+(\S+)$/i.exec(cabecalho);
     const claims = m === null ? null : emissor.verificar(m[1] as string);
     if (claims === null) {
+      responderJson(res, 401, naoAutorizado().corpo(), { "www-authenticate": "Bearer" });
+      return;
+    }
+    // 2b) audiência (Fase 7C, R-1): cada rota exige a SUA; o token geral do Pane (ambiente do agente) não lê segredo nem usa o gateway
+    const exigida: AudienciaToken = ehLoja ? "loja-launcher" : ehGateway ? "gateway" : ehGancho ? "hooks" : "mcp";
+    if (!temAudiencia(claims, exigida)) {
       responderJson(res, 401, naoAutorizado().corpo(), { "www-authenticate": "Bearer" });
       return;
     }
@@ -161,6 +195,41 @@ export async function iniciarServidorMcp(opcoes: OpcoesServidorMcp): Promise<Ser
       corpo = bruto.length === 0 ? {} : JSON.parse(bruto.toString("utf8"));
     } catch {
       responderJson(res, 400, { code: "invalid_argument", message: "JSON inválido." });
+      return;
+    }
+
+    if (ehGateway) {
+      const porta = opcoes.deps.gateway;
+      if (porta === undefined) {
+        responderJson(res, 404, { code: "not_found", message: "Gateway desativado." });
+        return;
+      }
+      const servidorGw = montarServidorGateway(claims, porta);
+      const transporteGw = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true } as unknown as ConstructorParameters<typeof StreamableHTTPServerTransport>[0]);
+      res.on("close", () => {
+        void transporteGw.close();
+        void servidorGw.close();
+      });
+      await servidorGw.connect(transporteGw as unknown as Transport);
+      await transporteGw.handleRequest(req, res, corpo);
+      return;
+    }
+
+    if (ehLoja) {
+      // Fase 7B (D-132): segredos de um servidor da Loja para o lançador `mcp-run`. A identidade é do token; o corpo só diz QUAL servidor.
+      // Nada do corpo nem da resposta é logado; `cache-control: no-store` vale para toda resposta (responderJson).
+      const porta = opcoes.deps.loja;
+      if (porta === undefined) {
+        responderJson(res, 404, { code: "not_found", message: "Loja desativada." });
+        return;
+      }
+      const servidor = typeof corpo === "object" && corpo !== null && !Array.isArray(corpo) ? (corpo as Record<string, unknown>)["servidor"] : undefined;
+      try {
+        const r = await porta.segredos(claims.pane_id, servidor);
+        responderJson(res, r.status, r.corpo);
+      } catch {
+        responderJson(res, 500, { code: "unavailable", message: "Falha ao resolver os segredos." });
+      }
       return;
     }
 

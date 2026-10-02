@@ -105,16 +105,16 @@ export function orquestrador(o: OrqSpec): string {
   );
 }
 
-function tasksMd(trabalho: string, sprint: string, tasks: Obj[]): string {
+export function tasksMd(trabalho: string, sprint: string, tasks: Obj[]): string {
   return md({ expx_schema: 1, expx_tool: "sprintx", kind: "tasks", trabalho_id: trabalho, sprint_id: sprint, atualizado_em: "2026-09-28", tasks }, `# Tasks — ${sprint}\n`);
 }
-function fasesMd(trabalho: string, sprint: string, fases: Obj[]): string {
+export function fasesMd(trabalho: string, sprint: string, fases: Obj[]): string {
   return md(
     { expx_schema: 1, expx_tool: "sprintx", kind: "fases", trabalho_id: trabalho, sprint_id: sprint, atualizado_em: "2026-09-28", fases },
     `# Fases — ${sprint}\n\n\`\`\`mermaid\nflowchart LR\n  T_01_01 --> T_01_02\n\`\`\`\n`,
   );
 }
-function sprintMd(trabalho: string, sprint: string, o: Obj = {}): string {
+export function sprintMd(trabalho: string, sprint: string, o: Obj = {}): string {
   return md(
     { expx_schema: 1, expx_tool: "sprintx", kind: "sprint", trabalho_id: trabalho, sprint_id: sprint, titulo: `Sprint ${sprint}`, status: "em_andamento", criterio_saida: "a suite inteira passa com 0 failed", fases: [], riscos: [], atualizado_em: "2026-09-28", ...o },
     `# Sprint\n`,

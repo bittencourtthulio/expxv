@@ -68,8 +68,11 @@ class Visitante {
   private readonly modulos = new Set<string>();
   private readonly exportadosLocais = new Set<string>();
   private temDefault = false;
+  private readonly ambiente: boolean;
 
-  constructor(private readonly ctx: ContextoExtracao) {}
+  constructor(private readonly ctx: ContextoExtracao) {
+    this.ambiente = /\.d\.[cm]?ts$/.test(ctx.caminho);
+  }
 
   executar(): ResultadoExtrator {
     const raiz = this.ctx.raiz;
@@ -348,6 +351,10 @@ class Visitante {
       case "function_declaration":
       case "generator_function_declaration":
         this.declaracaoFuncao(no, q);
+        return;
+      case "function_signature":
+        // assinaturas de sobrecarga não viram símbolo (a implementação já é um); em arquivos de declaração (.d.ts) são a única definição
+        if (this.ambiente || no.parent?.type === "ambient_declaration" || no.parent?.parent?.type === "ambient_declaration") this.declaracaoFuncao(no, q);
         return;
       case "class_declaration":
       case "abstract_class_declaration":
@@ -824,7 +831,7 @@ class Visitante {
         s.complexidade = 1 + nq.contador.n;
         continue;
       }
-      if (ehConst && !q.dentroFuncao && q.classe === null && valor !== null && (exp !== null || ehValorLiteral(valor))) {
+      if (!q.dentroFuncao && q.classe === null && (valor !== null || this.ambiente) && (exp !== null || (ehConst && valor !== null && ehValorLiteral(valor)))) {
         this.criarSimbolo({
           prefixo: q.prefixo,
           nome,

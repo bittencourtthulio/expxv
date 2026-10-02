@@ -1,0 +1,16 @@
+[project]
+name = "demo"
+dependencies = ["requests>=2.0", "Flask_Cors"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+demo = "demo.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = { version = "^4.2" }
+
+[tool.poetry.group.test.dependencies]
+factory-boy = "^3"

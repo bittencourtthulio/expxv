@@ -14,7 +14,12 @@
     "src/compartilhado/**/*.ts",
     "src/nucleo/produto.ts",
     "src/nucleo/dominio/**/*.ts",
-    "src/nucleo/metodo/tipos.ts"
+    "src/nucleo/metodo/tipos.ts",
+    "src/nucleo/vcs/tipos.ts",
+    "src/nucleo/forge/forge.ts",
+    "src/nucleo/executar/maquina.ts",
+    "src/nucleo/executar/modelo.ts",
+    "src/nucleo/executar/saida.ts"
   ],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }

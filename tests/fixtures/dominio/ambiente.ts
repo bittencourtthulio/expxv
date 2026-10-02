@@ -73,23 +73,35 @@ export function detectorFalso(ferramentas: FerramentaDetectada[] = [ferramenta("
   };
 }
 
-export interface SessaoFalsa { id: string; cwd: string; pedido: Record<string, unknown>; ambiente: Record<string, string>; escritas: string[]; estado: "iniciando" | "executando" | "encerrada" }
+export interface SessaoFalsa { id: string; cwd: string; pedido: Record<string, unknown>; ambiente: Record<string, string>; escritas: string[]; estado: "iniciando" | "executando" | "encerrada"; permissao?: string }
 
 /** Gerenciador de sessões falso: registra cwd/ambiente de cada `abrir` e deixa o teste emitir eventos. */
 export function sessoesFalsas(opcoes: { vivasNaRecuperacao?: string[] } = {}) {
   const sessoes = new Map<string, SessaoFalsa>();
   const assinantes = new Set<(e: EventoTerminal) => void>();
   let n = 0;
+  const fechadasPelaApp: Array<{ id: string; solicitado: boolean }> = [];
   const api = {
     sessoes,
-    abrir: (pedido: unknown, o?: { cwd?: string; ambiente?: Record<string, string> }) => {
+    abrir: (pedido: unknown, o?: { cwd?: string; ambiente?: Record<string, string>; permissao?: string }) => {
       const id = `sessao_${++n}`;
-      sessoes.set(id, { id, cwd: o?.cwd ?? "/sem-cwd", pedido: pedido as Record<string, unknown>, ambiente: o?.ambiente ?? {}, escritas: [], estado: "executando" });
+      sessoes.set(id, { id, cwd: o?.cwd ?? "/sem-cwd", pedido: pedido as Record<string, unknown>, ambiente: o?.ambiente ?? {}, escritas: [], estado: "executando", ...(o?.permissao === undefined ? {} : { permissao: o.permissao }) });
       return { versao: 1 as const, sessao_id: id, estado: "iniciando" as const };
     },
     escrever: (id: string, dados: string) => { const s = sessoes.get(id); if (!s || s.estado !== "executando") return false; s.escritas.push(dados); return true; },
     encerrar: (id: string) => { const s = sessoes.get(id); if (s) s.estado = "encerrada"; return s !== undefined; },
     descartar: (id: string) => sessoes.delete(id),
+    /** Fechamento pedido PELO APP (orquestrador, dono, auto): some da lista na hora e avisa o renderer (`fechada`). Registra o motivo para o teste conferir. */
+    fechadasPelaApp,
+    fecharPelaApp: (id: string) => {
+      const s = sessoes.get(id);
+      if (!s) return false;
+      s.estado = "encerrada";
+      fechadasPelaApp.push({ id, solicitado: true });
+      for (const fn of assinantes) fn({ versao: 1, sequencia: 9_999, sessao_id: id, tipo: "fechada" } as unknown as EventoTerminal);
+      sessoes.delete(id);
+      return true;
+    },
     obter: (id: string) => { const s = sessoes.get(id); return s ? { sessao_id: id, ferramenta_id: "claude", executavel_id: "exe", estado: s.estado, atividade: null, workspace_id: null, cwd: s.cwd } : undefined; },
     recuperar: async () => {
       for (const id of opcoes.vivasNaRecuperacao ?? []) if (!sessoes.has(id)) sessoes.set(id, { id, cwd: "/recuperada", pedido: {}, ambiente: {}, escritas: [], estado: "executando" });

@@ -1,0 +1,131 @@
+{
+  "linguagem": "csharp",
+  "arquivos": {
+    "Controllers/PedidosController.cs": {
+      "metricas": { "erros_parse": 0, "complexidade_max": 5, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "Loja.Web.PedidosController", "nome": "PedidosController", "tipo": "classe", "exportado": true, "doc": "Controller de pedidos." },
+        { "qualificado": "Loja.Web.PedidosController.ctor", "tipo": "metodo", "visibilidade": "publica" },
+        { "qualificado": "Loja.Web.PedidosController.Get", "tipo": "metodo", "visibilidade": "publica", "exportado": true, "complexidade": 5, "doc": "Busca um pedido.", "decoradores": ["[HttpGet(\"…\")]"] },
+        { "qualificado": "Loja.Web.PedidosController.Remover", "tipo": "metodo", "visibilidade": "privada", "exportado": false },
+        { "qualificado": "Loja.Web.PedidosController.Auditar", "tipo": "metodo", "visibilidade": "privada" },
+        { "qualificado": "Loja.Web.IPedidos", "tipo": "interface", "exportado": true },
+        { "qualificado": "Loja.Web.IPedidos.Criar", "tipo": "metodo", "visibilidade": "publica" }
+      ],
+      "imports": [
+        { "especificador": "System", "tipo": "estatico", "nomes": [] },
+        { "especificador": "System.Math", "nomes": ["static"] },
+        { "especificador": "Loja.Data.PedidoRepository", "nomes": ["*=Repo"] },
+        { "especificador": "Loja.Domain", "nomes": [] }
+      ],
+      "herancas": [
+        { "classe": "Loja.Web.PedidosController", "base": "ControllerBase", "tipo": "herda" },
+        { "classe": "Loja.Web.PedidosController", "base": "IPedidos", "tipo": "implementa" },
+        { "classe": "Loja.Web.IPedidos", "base": "IDisposable", "tipo": "implementa" }
+      ],
+      "chamadas": [
+        { "de": "Loja.Web.PedidosController.Get", "alvo": "Executar", "receptor": "_servico", "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Get", "alvo": "Servico", "tipo": "instancia" },
+        { "de": "Loja.Web.PedidosController.Get", "alvo": "Run", "receptor": "Helper", "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Get", "alvo": "Auditar", "receptor": "this", "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Get", "alvo": "Init", "receptor": "base", "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Get", "alvo": "Ok", "receptor": null, "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Auditar", "alvo": "Obter", "receptor": "_repo", "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Auditar", "alvo": "Valor", "receptor": "?", "tipo": "chamada" },
+        { "de": "Loja.Web.PedidosController.Criar", "alvo": "InvalidOperationException", "tipo": "instancia" },
+        { "de": "Loja.Web.PedidosController.ctor", "alvo": "Repo", "tipo": "referencia" },
+        { "de": "Loja.Web.PedidosController.ctor", "alvo": "IServico", "tipo": "referencia" }
+      ],
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /api/pedidos/:id", "framework": "aspnet", "handler": "Loja.Web.PedidosController.Get", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /api/pedidos", "handler": "Loja.Web.PedidosController.Criar" },
+        { "tipo": "rota", "chave": "GET /legado/:x?", "handler": "Loja.Web.PedidosController.Absoluta" }
+      ],
+      "padroes": [{ "tipo": "throw" }],
+      "ausentes": {
+        "entradas": [{ "chave": "GET /nao" }, { "chave": "DELETE /api/pedidos/remover/:id" }, { "chave": "GET /api/pedidos/falso" }],
+        "chamadas": [{ "alvo": "HttpGet" }]
+      }
+    },
+    "Program.cs": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [{ "qualificado": "Loja.Program.Main", "tipo": "metodo", "visibilidade": "publica" }],
+      "imports": [{ "especificador": "Loja.Data", "nomes": [] }],
+      "herancas": [
+        { "classe": "Loja.Program", "base": "IProgram", "tipo": "implementa" },
+        { "classe": "Servico", "base": "IServico", "tipo": "implementa" },
+        { "classe": "Repo", "base": "IRepo", "tipo": "implementa" }
+      ],
+      "chamadas": [
+        { "de": "Loja.Program.Main", "alvo": "AddScoped", "receptor": "builder.Services", "tipo": "chamada" },
+        { "de": "Loja.Program.Main", "alvo": "Cache", "tipo": "referencia" }
+      ],
+      "entradas": [
+        { "tipo": "main", "chave": "main", "framework": "dotnet", "handler": "Loja.Program.Main" },
+        { "tipo": "rota", "chave": "GET /ping", "framework": "aspnet-minimal", "handler": null },
+        { "tipo": "rota", "chave": "POST /pedidos", "handler": "PedidosHandler.Criar" },
+        { "tipo": "rota", "chave": "GET /ola/:nome", "handler": null }
+      ],
+      "padroes": [{ "tipo": "env", "nome": "CONEXAO_DB" }],
+      "dados": [
+        { "tabela": "pedidos", "operacao": "escreve", "fonte": "sql", "confianca": "exata" },
+        { "tabela": "clientes", "operacao": "le" },
+        { "tabela": "enderecos", "operacao": "le" }
+      ],
+      "ausentes": {
+        "dados": [{ "tabela": "list" }, { "tabela": "an" }],
+        "padroes": [{ "tipo": "env", "nome": "valor" }]
+      }
+    },
+    "Data/AppDb.cs": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "Loja.Data.AppDb", "tipo": "classe" },
+        { "qualificado": "Loja.Data.AppDb.OnModelCreating", "tipo": "metodo", "visibilidade": "protegida" },
+        { "qualificado": "Loja.Data.Item", "tipo": "classe" }
+      ],
+      "herancas": [{ "classe": "Loja.Data.AppDb", "base": "DbContext", "tipo": "herda" }],
+      "dados": [
+        { "tabela": "pedidos", "operacao": "define", "fonte": "efcore", "confianca": "heuristica", "de": "Loja.Data.AppDb" },
+        { "tabela": "tb_clientes", "operacao": "define", "fonte": "efcore", "confianca": "exata" },
+        { "tabela": "tb_itens", "operacao": "define", "fonte": "efcore", "confianca": "exata", "de": "Loja.Data.Item" }
+      ],
+      "ausentes": { "dados": [{ "tabela": "_naomapeado" }, { "tabela": "clientes" }] }
+    },
+    "Workers/Sync.cs": {
+      "metricas": { "erros_parse": 0 },
+      "entradas": [
+        { "tipo": "job", "chave": "hosted:Loja.Workers.Sync", "framework": "dotnet", "handler": "Loja.Workers.Sync.ExecuteAsync" },
+        { "tipo": "job", "chave": "hosted:Loja.Workers.Boot", "handler": "Loja.Workers.Boot.StartAsync" },
+        { "tipo": "handler", "chave": "function:ProcessarFila", "framework": "azure-functions", "handler": "Loja.Workers.Funcoes.Processar" }
+      ],
+      "herancas": [
+        { "classe": "Loja.Workers.Sync", "base": "BackgroundService", "tipo": "herda" },
+        { "classe": "Loja.Workers.Boot", "base": "IHostedService", "tipo": "implementa" }
+      ]
+    },
+    "Legado.cs": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "Velho.P", "tipo": "struct" },
+        { "qualificado": "Velho.R", "tipo": "classe" },
+        { "qualificado": "Velho.E", "tipo": "enum" },
+        { "qualificado": "Velho.Externa", "tipo": "classe", "exportado": false, "visibilidade": "pacote" },
+        { "qualificado": "Velho.Externa.Aninhada", "tipo": "classe", "visibilidade": "privada" },
+        { "qualificado": "Velho.Externa.Aninhada.M", "tipo": "metodo", "visibilidade": "privada" },
+        { "qualificado": "Velho.Externa.Refletir.Local", "tipo": "funcao" }
+      ],
+      "herancas": [
+        { "classe": "Velho.R", "base": "Base", "tipo": "herda" },
+        { "classe": "Velho.R", "base": "IFoo", "tipo": "implementa" }
+      ],
+      "chamadas": [
+        { "de": "Velho.Externa.Refletir", "alvo": "Log", "receptor": null, "tipo": "chamada" },
+        { "de": "Velho.Externa.Refletir", "alvo": "Outra", "tipo": "referencia" }
+      ],
+      "dinamicos": [{ "tipo": "reflexao" }],
+      "padroes": [{ "tipo": "catch_vazio" }],
+      "dados": [{ "tabela": "usuarios", "operacao": "le", "fonte": "sql", "confianca": "heuristica" }]
+    }
+  }
+}

@@ -1,0 +1,82 @@
+/* Commit e push / Enviar PR: botões discretos do cabeçalho (40 px preservados, mesma medida de 26 px do Executar) e diálogo calmo. Só tokens; sem cor literal. */
+.topo-publicar { position: relative; display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; min-width: 0; flex: none; }
+.topo-pub-botao { gap: 5px; position: relative; white-space: nowrap; }
+.topo-pub-botao .icone { width: 13px; height: 13px; color: var(--texto-suave); flex: none; }
+.topo-pub-botao[data-acao="commit_push"]:not([data-desabilitado]) .icone { color: var(--destaque-texto); }
+.topo-pub-botao[data-acao="pr"]:not([data-desabilitado]) .icone { color: var(--destaque-texto); }
+.topo-pub-botao[data-desabilitado] { opacity: 0.55; cursor: default; }
+.topo-pub-botao[data-desabilitado]:hover { color: var(--texto-suave); background: var(--superficie); }
+.topo-pub-botao:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.topo-pub-badge { font: 11px var(--mono); line-height: 1; color: var(--texto-suave); padding: 2px 5px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda); }
+
+/* cabeçalho estreito: só o ícone (o tooltip e o nome acessível seguem completos); o badge vira um pontinho numérico no canto */
+@container (max-width: 1500px) {
+  .topo-pub-rotulo { display: none; }
+  .topo-pub-botao { width: 26px; padding: 0; justify-content: center; }
+  .topo-pub-badge { display: none; }
+  /* a contagem vira um pontinho no canto (o número completo fica no tooltip e no nome acessível) */
+  .topo-pub-botao[data-com-contagem]:not([data-desabilitado])::after { content: ""; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--destaque); }
+}
+
+.pub-anuncio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* faixa discreta depois da entrega */
+.pub-faixa {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; display: inline-flex; align-items: center; gap: 8px; max-width: min(460px, 60vw); padding: 5px 6px 5px 10px;
+  border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); color: var(--texto); font-size: 12px; box-shadow: 8px 8px 24px var(--sombra);
+}
+.pub-faixa .icone { width: 13px; height: 13px; color: var(--destaque-texto); flex: none; }
+.pub-faixa span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (prefers-reduced-motion: no-preference) { .pub-faixa { animation: pub-entrar 140ms ease-out; } }
+@keyframes pub-entrar { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+
+/* diálogo: escala "conforto" (.dialogo); uma ação primária; sem caixas pesadas */
+.pub-form { display: flex; flex-direction: column; gap: var(--gap-campos); }
+.pub-resumo { display: flex; flex-direction: column; gap: var(--espaco-2); padding: var(--espaco-3); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.pub-form .pub-resumo p { margin: 0; }
+.pub-rota { margin: 0; color: var(--texto); font-size: var(--fs-base); overflow-wrap: anywhere; }
+.pub-rota small { color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.pub-rota code, .pub-arquivos code, .pub-sensiveis code, .pub-nota code { font: var(--fs-pequeno) var(--mono); }
+.pub-contagem { margin: 0; color: var(--texto-suave); font-size: var(--fs-pequeno); }
+.pub-mais-linhas { color: var(--sucesso); font-family: var(--mono); }
+.pub-menos-linhas { color: var(--alerta); font-family: var(--mono); }
+.pub-arquivos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 190px; overflow: auto; }
+.pub-arquivos li { display: flex; align-items: baseline; gap: var(--espaco-2); color: var(--texto); overflow-wrap: anywhere; }
+.pub-situacao { flex: none; width: 1.4em; text-align: center; font: 600 var(--fs-micro) var(--mono); color: var(--texto-suave); border: 1px solid var(--borda); border-radius: 4px; }
+.pub-e-mais { color: var(--texto-discreto); font-size: var(--fs-pequeno); padding-left: calc(1.4em + var(--espaco-2)); }
+.pub-sensiveis { padding: var(--espaco-3); border: 1px solid var(--alerta); border-left-width: 3px; border-radius: var(--raio-pequeno); background: color-mix(in srgb, var(--alerta) 8%, var(--painel)); color: var(--texto); font-size: var(--fs-pequeno); }
+.pub-sensiveis strong { color: var(--alerta); }
+.pub-sensiveis ul { margin: var(--espaco-2) 0 0; padding-left: 1.2em; }
+.pub-grupo { display: flex; flex-direction: column; gap: var(--espaco-2); margin: 0; padding: 0; border: 0; min-width: 0; }
+.pub-grupo legend { padding: 0; margin-bottom: var(--rotulo-respiro); color: var(--texto); font-size: var(--fs-rotulo); font-weight: 600; }
+.pub-radios { display: flex; flex-wrap: wrap; gap: var(--espaco-2) var(--espaco-4); }
+.pub-resumo:focus { outline: none; }
+.pub-resumo:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+.pub-opcao { display: flex; align-items: center; gap: var(--espaco-2); color: var(--texto); font-size: var(--fs-base); }
+.pub-opcao small, .pub-rotulo small { color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.pub-rotulo { display: flex; flex-direction: column; gap: var(--rotulo-respiro); color: var(--texto); font-size: var(--fs-rotulo); font-weight: 600; min-width: 0; flex: 1; }
+.pub-rotulo code { font: var(--fs-pequeno) var(--mono); font-weight: 400; }
+.pub-linha { display: flex; gap: var(--gap-campos); flex-wrap: wrap; }
+.pub-campo { width: 100%; box-sizing: border-box; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: var(--fs-campo) var(--fonte); font-weight: 400; }
+.pub-campo[aria-invalid="true"] { border-color: var(--alerta); }
+.pub-campo:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+textarea.pub-campo { resize: vertical; }
+.pub-erro, .pub-erro-campo { color: var(--alerta); font-size: var(--fs-pequeno); margin: 0; }
+.pub-aviso { color: var(--aviso); font-size: var(--fs-pequeno); }
+.pub-nota { margin: 0; color: var(--texto-discreto); font-size: var(--fs-pequeno); line-height: var(--entrelinha); }
+.pub-ocupado { padding: var(--espaco-3); border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); background: color-mix(in srgb, var(--aviso) 8%, var(--painel)); }
+.pub-ocupado p { margin: 0; color: var(--texto); }
+
+/* o grupo esquerdo nunca espreme o Executar nem estes botões: quem cede espaço é o seletor de workspace (que já corta o texto com reticências) */
+.topo-esquerda > .topo-exec { flex: none; }
+.topo-esquerda > .seletor-ws { min-width: 0; flex: 0 1 auto; }
+
+/* pastas da suíte ExpxDev não rastreadas (D-692) e diálogo "Atualizar" (D-693): só tokens */
+.pub-suite { display: flex; flex-direction: column; gap: var(--espaco-2); padding: var(--espaco-3); border: 1px solid var(--borda); border-left: 3px solid var(--destaque); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.pub-suite p { margin: 0; }
+.pub-suite-titulo { color: var(--texto); font-size: var(--fs-base); }
+.pub-suite-titulo span { color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.pub-suite-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--espaco-1, 4px) var(--espaco-3); }
+.pub-suite-lista code { font: var(--fs-pequeno) var(--mono); }
+.pub-suite-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-3); }
+.topo-pub-botao[data-acao="atualizar"]:not([data-desabilitado]) .icone { color: var(--destaque-texto); }

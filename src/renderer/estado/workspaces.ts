@@ -3,7 +3,8 @@ import type { ApiAde } from "../../compartilhado/ipc";
 import type { EstadoWorkspaces, Permissao, Workspace, WorktreeInfo } from "../../compartilhado/dominio";
 import { ade } from "../ade";
 
-type Api = ApiAde["workspaces"];
+/** O store só usa estas; o painel de workspaces tem a própria fatia (resumo/ativar/encerrar/revelar). */
+type Api = Pick<ApiAde["workspaces"], "estado" | "abrir" | "definirAtual" | "remover" | "definirPermissao" | "worktrees" | "assinar">;
 
 export interface EstadoWs {
   atual: Workspace | null;

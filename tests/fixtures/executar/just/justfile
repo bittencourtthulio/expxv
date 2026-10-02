@@ -1,0 +1,5 @@
+dev:
+  cargo watch
+
+build:
+  cargo build

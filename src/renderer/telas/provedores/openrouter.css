@@ -1,0 +1,26 @@
+/* Seção OpenRouter da tela Provedores (T-09.33): uma linha de controles, linhas de 24 px (D-32). */
+.or-secao { margin-top: var(--espaco-3); padding: var(--espaco-2) var(--espaco-3); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); font-size: var(--fs-pequeno); }
+.or-barra { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--alvo-minimo); flex-wrap: wrap; }
+.or-barra strong { font-size: var(--fs-rotulo); }
+.or-barra input[type="search"], .or-barra input[type="text"], .or-barra input[type="password"], .or-linha input, .or-linha select { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--superficie); color: var(--texto); font: var(--fs-pequeno) var(--fonte); }
+.or-barra input[type="password"] { width: 16em; font-family: var(--mono); }
+.or-barra [aria-invalid="true"] { border-color: var(--alerta); }
+.or-nota { margin: var(--espaco-1) 0; color: var(--texto-suave); font-size: var(--fs-pequeno); }
+.or-erro { margin: var(--espaco-1) 0; padding: var(--espaco-1) var(--espaco-2); border: 1px solid var(--alerta); border-radius: 6px; color: var(--alerta); font-size: var(--fs-pequeno); }
+.or-ok { margin: var(--espaco-1) 0; color: var(--texto-suave); font-size: var(--fs-pequeno); }
+.or-conta { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--alvo-minimo); flex-wrap: wrap; border-bottom: 1px solid var(--borda); }
+.or-mascara { font-family: var(--mono); letter-spacing: 0.04em; color: var(--texto-discreto); }
+.or-lista { height: 240px; margin-top: var(--espaco-1); border: 1px solid var(--borda); border-radius: 4px; }
+.or-linha { display: grid; grid-template-columns: 2.2em minmax(10em, 2fr) 5em 11em 8.5em 4.5em minmax(6em, 1fr) 130px; gap: var(--espaco-2); align-items: center; height: 100%; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); }
+.or-linha > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* grade de modelos colapsa em telas menores: ≤730 px contexto e tipos somem do grid (o campo de tipos volta ao ampliar a janela) */
+@media (max-width: 1000px) { .or-linha { grid-template-columns: 2.2em minmax(8em, 2fr) 4.5em 9em 7.5em 4em minmax(5em, 1fr) 110px; } }
+@media (max-width: 730px) {
+  .or-linha { grid-template-columns: 2.2em minmax(6em, 2fr) 9em 7.5em 4em 110px; }
+  .or-linha > :nth-child(3), .or-linha > :nth-child(7), .or-cab > :nth-child(3), .or-cab > :nth-child(7) { display: none; }
+}
+.or-cab { color: var(--texto-discreto); border-bottom: 1px solid var(--borda); height: var(--alvo-minimo); padding: 0 var(--espaco-2); }
+.or-linha input[type="number"] { width: 100%; }
+.or-clis { margin: var(--espaco-1) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--espaco-1); }
+.or-clis li { display: flex; gap: var(--espaco-2); align-items: center; min-height: 22px; flex-wrap: wrap; }
+.or-secao button:focus-visible, .or-secao input:focus-visible, .or-secao select:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }

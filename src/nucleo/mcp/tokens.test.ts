@@ -1,8 +1,9 @@
+import { createHmac } from "node:crypto";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { carregarRevogados, carregarSegredoPersistente, criarEmissorDeTokens, criarGravadorRevogados, TTL_PADRAO_MS } from "./tokens";
+import { AUDIENCIAS_PADRAO, carregarRevogados, carregarSegredoPersistente, criarEmissorDeTokens, criarGravadorRevogados, temAudiencia, TTL_PADRAO_MS } from "./tokens";
 
 const base = { workspace_id: "ws_1", mission_id: "mis_1", pane_id: "pane_1", role: "piloto" as const, mode: "agentico" as const };
 
@@ -42,6 +43,18 @@ describe("tokens de Pane", () => {
     const novo = e.emitir(base);
     expect(e.verificar(velho)).toBeNull();
     expect(e.verificar(novo)?.pane_id).toBe("pane_1");
+  });
+
+  it("piloto_edita_politica (opt-in do workspace) só acrescenta harness_set ao piloto agêntico; nunca a worker, squad ou livre", () => {
+    const e = criarEmissorDeTokens();
+    const lista = (extra: Record<string, unknown>) => e.verificar(e.emitir({ ...base, ...extra } as never))?.tools_allow ?? [];
+    expect(lista({ role: "piloto", mode: "agentico" })).not.toContain("harness_set");
+    expect(lista({ role: "piloto", mode: "agentico", piloto_edita_politica: true })).toContain("harness_set");
+    expect(lista({ role: "piloto", mode: "agentico", piloto_edita_politica: false })).not.toContain("harness_set");
+    expect(lista({ role: "piloto", mode: "squad", piloto_edita_politica: true })).not.toContain("harness_set");
+    expect(lista({ role: "executor", mode: "agentico", piloto_edita_politica: true })).toEqual(["handoff_submit"]);
+    // o opt-in também não escapa da interseção de `tools_allow`
+    expect(lista({ role: "piloto", mode: "agentico", piloto_edita_politica: true, tools_allow: ["pane_list"] })).toEqual(["pane_list"]);
   });
 
   it("tools_allow só restringe, nunca amplia", () => {
@@ -120,5 +133,43 @@ describe("tokens que sobrevivem a reinício", () => {
     await g.aguardar();
     const segredo = await carregarSegredoPersistente(dir);
     expect((await readFile(join(dir, "mcp-revogados.json"), "utf8")).includes(segredo.toString("base64"))).toBe(false);
+  });
+});
+
+describe("audiência do token (Fase 7C, R-1)", () => {
+  it("sem `aud` vale como mcp+hooks: nunca gateway nem lançador", () => {
+    const e = criarEmissorDeTokens();
+    const c = e.verificar(e.emitir(base))!;
+    expect(c.aud).toBeUndefined();
+    expect(AUDIENCIAS_PADRAO).toEqual(["mcp", "hooks"]);
+    expect(temAudiencia(c, "mcp")).toBe(true);
+    expect(temAudiencia(c, "hooks")).toBe(true);
+    expect(temAudiencia(c, "gateway")).toBe(false);
+    expect(temAudiencia(c, "loja-launcher")).toBe(false);
+  });
+  it("`aud` explícito vale só para o que declara; duplicatas somem", () => {
+    const e = criarEmissorDeTokens();
+    const c = e.verificar(e.emitir({ ...base, aud: ["gateway", "gateway"], tools_allow: [] }))!;
+    expect(c.aud).toEqual(["gateway"]);
+    expect(temAudiencia(c, "gateway")).toBe(true);
+    expect(temAudiencia(c, "mcp")).toBe(false);
+    expect(temAudiencia(c, "loja-launcher")).toBe(false);
+    expect(c.tools_allow).toEqual([]);
+  });
+  it("audiência desconhecida ou mal-formada no corpo (token adulterado de outro emissor) é recusada", () => {
+    const segredo = Buffer.alloc(32, 7);
+    const e = criarEmissorDeTokens({ segredo });
+    const t = e.emitir({ ...base, aud: ["gateway"] });
+    const [corpo] = t.split(".") as [string, string];
+    const claims = JSON.parse(Buffer.from(corpo, "base64url").toString()) as Record<string, unknown>;
+    const reassinar = (x: unknown): string => {
+      const novo = Buffer.from(JSON.stringify(x)).toString("base64url");
+      // mesma chave: simula claims inválidas assinadas pelo próprio app (nunca deve aceitar)
+      const h = createHmac("sha256", segredo).update(novo).digest().toString("base64url");
+      return `${novo}.${h}`;
+    };
+    expect(e.verificar(reassinar({ ...claims, aud: ["root"] }))).toBeNull();
+    expect(e.verificar(reassinar({ ...claims, aud: "gateway" }))).toBeNull();
+    expect(e.verificar(reassinar({ ...claims, aud: ["mcp", "hooks", "gateway", "loja-launcher", "mcp"] }))).toBeNull();
   });
 });

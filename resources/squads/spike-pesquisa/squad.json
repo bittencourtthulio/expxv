@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "slug": "spike-pesquisa",
+  "nome": "Spike e Pesquisa Técnica",
+  "descricao": "Compara alternativas técnicas com fontes e trade-offs e entrega uma recomendação de uma página.",
+  "escopo": "pesquisa",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 4,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "spike-pesquisa",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "pesquisador",
+      "papel": "scout",
+      "rotulo": "Pesquisador",
+      "descricao": "Levanta alternativas com fontes, prós, contras e riscos.",
+      "prompt": "membros/pesquisador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7"
+      ],
+      "hooks": [],
+      "max_instancias": 2,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "sintetizador",
+      "papel": "executor",
+      "rotulo": "Sintetizador",
+      "descricao": "Consolida as pesquisas em uma recomendação de uma página.",
+      "prompt": "membros/sintetizador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "verificador-de-fontes",
+      "papel": "reviewer",
+      "rotulo": "Verificador de fontes",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/verificador-de-fontes.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

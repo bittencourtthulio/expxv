@@ -1,11 +1,14 @@
 import "./provedores.css";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import type { ApiAde } from "../../../compartilhado/ipc";
 import { EstadoVazio } from "../../componentes/EstadoVazio";
 import { Pagina } from "../../componentes/Pagina";
 import { storeProvedores, useProvedores, type StoreProvedores } from "../../estado/provedores";
 import { CartaoProvedor } from "./Conta";
 
-export function TelaProvedores({ store = storeProvedores }: { store?: StoreProvedores }) {
+const SecaoOpenRouter = lazy(() => import("./OpenRouter"));
+
+export function TelaProvedores({ store = storeProvedores, openrouter }: { store?: StoreProvedores; openrouter?: ApiAde["openrouter"] | undefined }) {
   const { lista, carregando, erro } = useProvedores(store);
   const [diagnostico, setDiagnostico] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -18,7 +21,7 @@ export function TelaProvedores({ store = storeProvedores }: { store?: StoreProve
   };
 
   return (
-    <Pagina titulo="CLIs e contas" subtitulo="CLIs detectadas nesta máquina e suas contas.">
+    <Pagina modo="leitura" largura="larga" titulo="CLIs e contas" subtitulo="CLIs detectadas nesta máquina e suas contas.">
       <div className="barra-acoes">
         <button type="button" className="botao" disabled={carregando} onClick={() => void store.carregar(true)}>{carregando ? "Atualizando…" : "Atualizar"}</button>
         <button type="button" className="botao" onClick={() => void gerar()}>Diagnóstico</button>
@@ -39,6 +42,7 @@ export function TelaProvedores({ store = storeProvedores }: { store?: StoreProve
           ))}
         </ul>
       )}
+      <Suspense fallback={<div aria-busy="true" />}><SecaoOpenRouter {...(openrouter !== undefined ? { api: openrouter } : {})} /></Suspense>
     </Pagina>
   );
 }

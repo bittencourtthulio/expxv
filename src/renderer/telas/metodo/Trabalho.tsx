@@ -1,6 +1,6 @@
 import { lazy, Suspense, useId, useState } from "react";
 import type { Fase, Trabalho as DadosTrabalho } from "../../../nucleo/metodo/tipos";
-import { ListaAbas, idAba, idPainel } from "../../componentes/ListaAbas";
+import { SubNavegacao, type ItemSubNav } from "../../componentes/SubNavegacao";
 import { VirtualLista } from "../../componentes/VirtualLista";
 import { AcoesMetodo } from "./AcoesMetodo";
 import { Quadro } from "./Quadro";
@@ -13,8 +13,8 @@ import { ROTULO_STATUS_TASK, ROTULO_STATUS_TRABALHO, formatarDuracao, rotuloEsta
 const Grafo = lazy(() => import("./Grafo"));
 
 type Aba = "plano" | "quadro" | "grafo" | "rastro";
-const ABAS: readonly { id: Aba; rotulo: string }[] = [
-  { id: "plano", rotulo: "Plano" }, { id: "quadro", rotulo: "Quadro" }, { id: "grafo", rotulo: "Grafo" }, { id: "rastro", rotulo: "Rastro" },
+const ABAS: readonly ItemSubNav<Aba>[] = [
+  { id: "plano", rotulo: "Plano", icone: "catalogo" }, { id: "quadro", rotulo: "Quadro", icone: "missoes" }, { id: "grafo", rotulo: "Grafo", icone: "grafo" }, { id: "rastro", rotulo: "Rastro", icone: "desfazer" },
 ];
 
 function FaseItem({ fase }: { fase: Fase }) {
@@ -96,13 +96,12 @@ export function Trabalho({ workspaceId, trabalho }: { workspaceId: string; traba
         <Sinaleira sinaleira={trabalho.sinaleira} />
       </header>
       <AcoesMetodo workspaceId={workspaceId} trabalho={trabalho} />
-      <ListaAbas base={base} rotulo="Visões do trabalho" className="met-abas" abas={ABAS} ativa={aba} aoMudar={setAba} />
-      <div role="tabpanel" id={idPainel(base)} aria-labelledby={idAba(base, aba)} className="met-painel">
+      <SubNavegacao base={base} rotulo="Visões do trabalho" className="subnav-aninhada" classePainel="met-painel" itens={ABAS} ativo={aba} onMudar={setAba}>
         {aba === "plano" ? <Plano t={trabalho} /> : null}
         {aba === "quadro" ? <Quadro trabalho={trabalho} /> : null}
         {aba === "grafo" ? <Suspense fallback={<p className="met-suave">Carregando o grafo…</p>}><Grafo trabalho={trabalho} /></Suspense> : null}
         {aba === "rastro" ? <Rastro workspaceId={workspaceId} trabalhoId={trabalho.id} /> : null}
-      </div>
+      </SubNavegacao>
     </div>
   );
 }

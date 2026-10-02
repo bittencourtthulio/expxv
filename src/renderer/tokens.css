@@ -37,11 +37,19 @@
   --destaque-texto: #7fb0ff;
   --sobre-destaque: #ffffff;
   --destaque-2: #38bdf8;
-  --alerta: #ff7b9c;
+  --alerta: #ff6b5e;
   --aviso: #f6c177;
   --sucesso: #7fd6a4;
   --sombra: rgba(0, 0, 0, 0.5);
+  --grafico-1: #5aa2ff;
+  --grafico-2: #f6c177;
+  --grafico-3: #7fd6a4;
+  --grafico-4: #ff8a6b;
+  --grafico-5: #b99aff;
+  --grafico-6: #38d0d0;
   --degrade: linear-gradient(135deg, var(--destaque), var(--destaque-2));
+  --bichinho-tinta: var(--fundo);
+  --bichinho-papel: var(--texto);
 }
 
 :root[data-theme="claro"] {
@@ -59,9 +67,35 @@
   --destaque-texto: #1d4ed8;
   --sobre-destaque: #ffffff;
   --destaque-2: #0284c7;
-  --alerta: #c2254f;
+  --alerta: #b42318;
   --aviso: #8a5a00;
   --sucesso: #1d7a48;
   --sombra: rgba(20, 28, 24, 0.22);
+  --grafico-1: #1d5fd1;
+  --grafico-2: #a35f00;
+  --grafico-3: #1b7f47;
+  --grafico-4: #c2410c;
+  --grafico-5: #6f3fcf;
+  --grafico-6: #0c7f7f;
   --degrade: linear-gradient(135deg, var(--destaque), var(--destaque-2));
+  --bichinho-tinta: var(--texto);
+  --bichinho-papel: var(--painel);
+}
+
+/* Bichinho do workspace (D-467): tom de pelagem de cada espécie, SEMPRE derivado dos tokens do tema (muda junto com claro/escuro e com a cor de destaque). */
+:root {
+  --bichinho-caranguejo: color-mix(in srgb, var(--alerta) 82%, var(--aviso));
+  --bichinho-piton: color-mix(in srgb, var(--sucesso) 90%, var(--grafico-6));
+  --bichinho-esquilo: color-mix(in srgb, var(--destaque-2) 70%, var(--grafico-3));
+  --bichinho-raposa: color-mix(in srgb, var(--aviso) 78%, var(--alerta));
+  --bichinho-camaleao: color-mix(in srgb, var(--sucesso) 55%, var(--destaque));
+  --bichinho-lontra: color-mix(in srgb, var(--grafico-6) 40%, var(--texto-suave));
+  --bichinho-tucano: color-mix(in srgb, var(--grafico-5) 85%, var(--texto-suave));
+  --bichinho-elefante: color-mix(in srgb, color-mix(in srgb, var(--destaque) 60%, var(--grafico-5)) 62%, var(--texto-suave));
+  --bichinho-ourico: color-mix(in srgb, var(--grafico-4) 60%, var(--texto-suave));
+  --bichinho-coruja: color-mix(in srgb, var(--grafico-5) 55%, var(--aviso));
+  --bichinho-polvo: color-mix(in srgb, var(--grafico-6) 80%, var(--destaque));
+  --bichinho-gato: color-mix(in srgb, var(--texto-suave) 78%, var(--destaque));
+  --bichinho-sapo: color-mix(in srgb, var(--sucesso) 52%, var(--aviso));
+  --bichinho-urso: color-mix(in srgb, color-mix(in srgb, var(--aviso) 70%, var(--alerta)) 55%, var(--texto-suave));
 }

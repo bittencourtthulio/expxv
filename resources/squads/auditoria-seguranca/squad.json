@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "slug": "auditoria-seguranca",
+  "nome": "Auditoria de Segurança",
+  "descricao": "Audita segurança em modo somente leitura, com achados por severidade e evidência.",
+  "escopo": "seguranca",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 4,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "auditoria-seguranca",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "topo"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": "seguro"
+    },
+    {
+      "slug": "modelador-de-ameacas",
+      "papel": "scout",
+      "rotulo": "Modelador de ameaças",
+      "descricao": "Levanta superfícies de ataque, fronteiras de confiança e ameaças prováveis.",
+      "prompt": "membros/modelador-de-ameacas.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "topo"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": "seguro"
+    },
+    {
+      "slug": "cacador-de-vulnerabilidades",
+      "papel": "scout",
+      "rotulo": "Caçador de vulnerabilidades",
+      "descricao": "Procura vulnerabilidades no código e na configuração, só por leitura.",
+      "prompt": "membros/cacador-de-vulnerabilidades.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 2,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": "seguro"
+    },
+    {
+      "slug": "verificador",
+      "papel": "reviewer",
+      "rotulo": "Verificador",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/verificador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": "seguro"
+    }
+  ]
+}

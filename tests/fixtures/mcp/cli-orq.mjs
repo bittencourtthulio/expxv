@@ -7,7 +7,10 @@
 // Diretiva do piloto: { esperar?: arquivo, chamadas?: [{tool,args,briefing?:{caminho,texto},ate_ok?:bool}], esperar_wake?: bool,
 //                       adulterar?: bool, guarda?: [caminhos] }
 //   `ate_ok`: repete a chamada (a cada 250 ms, até 60 s) enquanto falhar, registrando cada tentativa.
-// Diretiva do worker (no briefing): { worker: "handoff"|"sem-handoff"|"ocioso", resumo?, status?, tentar_spawn?, esperar?: arquivo }
+// Diretiva do worker (no briefing): { worker: "handoff"|"handoff-vivo"|"sair"|"sem-handoff"|"ocioso"|"falhar", resumo?, status?, tentar_spawn?, esperar?: arquivo, codigo? }
+//   `handoff-vivo`: escreve uma linha, entrega o handoff e PERMANECE VIVA esperando entrada (CLI interativa que não encerra sozinha: o app é quem a encerra, D-520).
+//   `sair`: escreve uma linha e sai com 0, sem handoff.
+//   `falhar`: o processo morre sozinho com `codigo` (padrão 2) depois de escrever uma linha (D-520: falha que ninguém pediu).
 //   `esperar`: o worker só entrega o handoff depois que o arquivo (relativo ao cwd) existir.
 import { spawn } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -208,7 +211,20 @@ async function worker() {
     log("spawn_do_worker", { ...r });
   }
   if (diretiva.esperar) await esperarArquivo(diretiva.esperar, 180_000);
-  if (diretiva.worker === "handoff") {
+  if (diretiva.worker === "falhar") {
+    process.stdout.write("Error: ECONNRESET (falha simulada)\n");
+    await espera(400);
+    log("falhou", { codigo: diretiva.codigo ?? 2 });
+    process.exit(diretiva.codigo ?? 2);
+  }
+  if (diretiva.worker === "sair") {
+    process.stdout.write("Agente: 1 linha, " + new Date().toTimeString().slice(0, 5) + "\n");
+    await espera(300);
+    log("saiu", { codigo: 0 });
+    process.exit(0);
+  }
+  if (diretiva.worker === "handoff" || diretiva.worker === "handoff-vivo") {
+    process.stdout.write("Agente: 1 linha, " + new Date().toTimeString().slice(0, 5) + "\n");
     const relatorio = ".expxv/relatorios/" + taskId + ".md";
     gravar(relatorio, "# Relatório\n\nResultado: " + (diretiva.resumo ?? "ok") + "\n");
     const t0 = Date.now();
@@ -217,7 +233,7 @@ async function worker() {
     // o matcher do PostToolUse do settings é o nome da tool como a CLI a enxerga (mcp__<servidor>__handoff_submit)
     const nomeDaTool = gruposDe("PostToolUse")[0]?.matcher ?? "";
     await rodarGanchos("PostToolUse", { hook_event_name: "PostToolUse", tool_name: nomeDaTool }, nomeDaTool);
-    await tentarEncerrar();
+    if (diretiva.worker === "handoff") await tentarEncerrar();
   } else if (diretiva.worker === "sem-handoff") {
     await tentarEncerrar();
   }

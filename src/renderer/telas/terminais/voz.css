@@ -1,0 +1,19 @@
+/* Voz (Fase 11): o botão cabe nos 22 px da linha única (D-32); nada muda de tamanho ao gravar. */
+.voz-raiz { position: relative; display: inline-flex; flex: none; }
+.voz-botao { position: relative; overflow: visible; }
+.voz-botao[data-estado="gravando"] { background: var(--destaque); color: var(--sobre-destaque); border-color: var(--destaque); }
+.voz-botao[data-estado="gravando"]::before { content: ""; position: absolute; inset: -3px; border-radius: 8px; border: 2px solid var(--destaque); opacity: 0.55; animation: voz-anel 1.2s ease-out infinite; pointer-events: none; }
+.voz-botao[data-estado="erro"] { border-color: var(--alerta); color: var(--alerta); }
+.voz-erro-sinal { font-weight: 700; font-size: 13px; line-height: 1; }
+.voz-giro { animation: voz-gira 0.9s linear infinite; }
+.voz-nivel { position: absolute; left: 3px; right: 3px; bottom: 1px; height: 2px; border-radius: 1px; background: currentColor; transform-origin: left center; transition: transform 60ms linear; }
+.voz-toast { position: absolute; top: calc(100% + 4px); right: 0; z-index: 8; max-width: 320px; padding: 2px 8px; border: 1px solid var(--borda); border-radius: 5px; background: var(--painel); color: var(--texto); font-size: 12px; line-height: 18px; white-space: nowrap; pointer-events: none; }
+.voz-toast:empty { display: none; }
+.voz-dialogo { max-width: 460px; }
+@keyframes voz-anel { from { transform: scale(0.9); opacity: 0.6; } to { transform: scale(1.25); opacity: 0; } }
+@keyframes voz-gira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .voz-botao[data-estado="gravando"]::before { animation: none; opacity: 0.35; }
+  .voz-giro { animation: none; }
+  .voz-nivel { transition: none; }
+}

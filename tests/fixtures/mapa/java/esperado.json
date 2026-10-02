@@ -1,0 +1,111 @@
+{
+  "linguagem": "java",
+  "arquivos": {
+    "src/main/java/br/app/web/PedidoController.java": {
+      "metricas": { "complexidade_max": 7, "erros_parse": 0, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "PedidoController", "tipo": "classe", "exportado": true, "doc": "Controller de pedidos.", "decoradores": ["@RestController", "@RequestMapping(\"…\")"] },
+        { "qualificado": "PedidoController.buscar", "tipo": "metodo", "visibilidade": "publica", "complexidade": 3, "assinatura": "public Pedido buscar(@PathVariable Long id)" },
+        { "qualificado": "PedidoController.criar", "tipo": "metodo", "complexidade": 3 },
+        { "qualificado": "PedidoController.legado", "tipo": "metodo", "visibilidade": "pacote", "exportado": false },
+        { "qualificado": "PedidoController.auxiliar", "tipo": "metodo", "visibilidade": "privada", "exportado": false, "complexidade": 7 },
+        { "qualificado": "PedidoController.main", "tipo": "metodo" }
+      ],
+      "imports": [
+        { "especificador": "br.app.dominio.Pedido", "tipo": "estatico", "nomes": [] },
+        { "especificador": "br.app.util.Formato", "nomes": ["formatar"] },
+        { "especificador": "java.util", "nomes": ["*"] },
+        { "especificador": "org.springframework.web.bind.annotation", "nomes": ["*"] }
+      ],
+      "chamadas": [
+        { "de": "PedidoController.buscar", "alvo": "buscar", "receptor": "service", "tipo": "chamada" },
+        { "de": "PedidoController.buscar", "alvo": "IllegalArgumentException", "tipo": "instancia" },
+        { "de": "PedidoController.criar", "alvo": "salvar", "receptor": "service" },
+        { "de": "PedidoController.legado", "alvo": "formatar", "receptor": null },
+        { "de": "PedidoController.legado", "alvo": "forName", "receptor": "Class" },
+        { "de": "PedidoController.main", "alvo": "run", "receptor": "SpringApplication" }
+      ],
+      "herancas": [
+        { "classe": "PedidoController", "base": "BaseController", "tipo": "herda" },
+        { "classe": "PedidoController", "base": "Auditavel", "tipo": "implementa" },
+        { "classe": "PedidoController", "base": "Serializable", "tipo": "implementa" }
+      ],
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /pedidos/:id", "framework": "spring", "handler": "PedidoController.buscar", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /pedidos", "handler": "PedidoController.criar" },
+        { "tipo": "rota", "chave": "DELETE /pedidos/legado", "handler": "PedidoController.legado" },
+        { "tipo": "main", "chave": "main", "framework": "java", "handler": "PedidoController.main" }
+      ],
+      "padroes": [
+        { "tipo": "throw", "linha": 22 },
+        { "tipo": "catch_vazio", "linha": 31 },
+        { "tipo": "env", "nome": "URL_BASE" }
+      ],
+      "dinamicos": [
+        { "tipo": "reflexao", "linha": 16 },
+        { "tipo": "reflexao", "linha": 40 },
+        { "tipo": "reflexao", "linha": 41 },
+        { "tipo": "reflexao", "linha": 42 }
+      ],
+      "ausentes": {
+        "entradas": [{ "handler": "PedidoController.auxiliar" }, { "chave": "ALL /pedidos" }],
+        "dados": [{ "fonte": "sql" }]
+      }
+    },
+    "src/main/java/br/app/dominio/Pedido.java": {
+      "simbolos": [
+        { "qualificado": "Pedido", "tipo": "classe", "exportado": true },
+        { "qualificado": "Pedido.ok", "tipo": "metodo" },
+        { "qualificado": "Pedido.Estado", "tipo": "enum", "exportado": true },
+        { "qualificado": "Pedido.Visitante", "tipo": "interface" },
+        { "qualificado": "Pedido.Visitante.visitar", "tipo": "metodo", "visibilidade": "publica", "assinatura": "void visitar(Pedido p)" }
+      ],
+      "dados": [{ "tabela": "pedidos", "operacao": "define", "confianca": "exata", "fonte": "jpa" }]
+    },
+    "src/main/java/br/app/dominio/ItemPedido.java": {
+      "dados": [{ "tabela": "itempedido", "operacao": "define", "confianca": "heuristica", "fonte": "jpa" }]
+    },
+    "src/main/java/br/app/dominio/Tipos.java": {
+      "simbolos": [
+        { "qualificado": "Ponto", "tipo": "classe", "assinatura": "public record Ponto(int x, int y)" },
+        { "qualificado": "Cor", "tipo": "enum", "exportado": false, "visibilidade": "pacote" },
+        { "qualificado": "Marca", "tipo": "interface" }
+      ]
+    },
+    "src/main/java/br/app/infra/PedidoRepository.java": {
+      "herancas": [{ "classe": "PedidoRepository", "base": "JpaRepository", "tipo": "herda" }],
+      "dados": [
+        { "tabela": "pedido", "operacao": "desconhecida", "confianca": "heuristica", "fonte": "jpa-repository" },
+        { "tabela": "pedidos", "operacao": "le", "de": "PedidoRepository.porId", "confianca": "heuristica", "fonte": "sql" },
+        { "tabela": "clientes", "de": "PedidoRepository.nativa", "confianca": "exata" },
+        { "tabela": "enderecos", "de": "PedidoRepository.nativa", "confianca": "exata" }
+      ]
+    },
+    "src/main/java/br/app/infra/Jobs.java": {
+      "entradas": [
+        { "tipo": "job", "chave": "cron:0 0 * * * *", "framework": "spring", "handler": "Jobs.limpar" },
+        { "tipo": "fila", "chave": "kafka:pedidos", "handler": "Jobs.ouvir" },
+        { "tipo": "evento", "chave": "event:Object", "handler": "Jobs.evento" }
+      ],
+      "dados": [
+        { "tabela": "sessoes", "operacao": "escreve", "de": "Jobs.limpar", "confianca": "exata" },
+        { "tabela": "auditoria", "operacao": "le", "de": "Jobs.limpar" }
+      ],
+      "ausentes": { "dados": [{ "tabela": "list" }, { "tabela": "items" }, { "tabela": "cart" }] }
+    },
+    "src/main/java/br/app/infra/Servlet.java": {
+      "entradas": [{ "tipo": "rota", "chave": "GET servlet:Servlet", "framework": "servlet", "handler": "Servlet.doGet" }],
+      "ausentes": { "entradas": [{ "handler": "Servlet.doutro" }] }
+    },
+    "src/main/java/br/app/infra/Jax.java": {
+      "entradas": [{ "tipo": "rota", "chave": "GET /jax/:id", "framework": "jaxrs", "handler": "Jax.um" }]
+    },
+    "src/main/java/br/app/infra/Quebrado.java": {
+      "simbolos": [{ "qualificado": "Quebrado.ok" }, { "qualificado": "Quebrado.depois" }]
+    },
+    "src/test/java/br/app/PedidoTest.java": {
+      "metricas": { "e_teste": true },
+      "simbolos": [{ "qualificado": "PedidoTest.testa", "decoradores": ["@Test"] }]
+    }
+  }
+}

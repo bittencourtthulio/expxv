@@ -165,3 +165,9 @@ sistema é construído completo e a validação real fica para quando o item exi
 - **Fase 21 · Distribuição e atualização** (auto-update com canais, assinatura/notarização, instaladores macOS/Windows, CI completo, renomeação do produto, `better-sqlite3` opcional).
 - **Fase 22 · Acesso remoto estendido** (relay cego, PWA móvel, VPS opcional em Docker; **estudo de ameaças primeiro**).
 - **Fase 23 · Overdrive experimental** (canvas único para 32–64 painéis, só habilita com benchmark verde).
+
+## Fase 13 — riscos residuais do controle remoto (R1–R5, AMEACAS-REMOTO.md §7) · decidido pelo coordenador em 2026-10-01 (piloto automático)
+- **R1–R5 aceitos com padrões seguros:** controle remoto nasce desligado; dispositivo pareado começa em `leitura`; `mensagem_direta` e `aprovar_gate` só por escolha explícita e `aprovar_gate` continua exigindo o desktop (D-21); modo `loopback` por padrão, nenhum bind em `0.0.0.0`/IP público.
+- **R1 (cliente web):** nenhum cliente web é entregue até haver decisão do dono; só o cliente de referência em Node nos testes.
+- **R2 (criptografia própria, sem auditoria externa):** a funcionalidade é rotulada **experimental** na UI com aviso claro e reconhecimento obrigatório ao ligar; recomendação de revisão externa antes de uso fora de rede doméstica. Pendência do dono: contratar/aprovar a revisão externa.
+- **R3–R5:** aceitos como descritos (janela de 120 s, SAS no desktop, revogação ≤ 1 s, túnel do usuário fora do nosso controle).

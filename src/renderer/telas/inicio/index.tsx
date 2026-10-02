@@ -5,7 +5,10 @@ import { EstadoVazio } from "../../componentes/EstadoVazio";
 import { Pagina } from "../../componentes/Pagina";
 import type { TelaId } from "../../casca/telas";
 import { pedirTela } from "../../estado/navegacao";
+import { storeAdicionarWorkspace } from "../../estado/adicionar-workspace";
 import { storeMetodo } from "../../estado/metodo";
+import { CartaoPrsInicio } from "../versionamento/CartaoPrsInicio";
+import { CartaoAlertasInicio } from "../alertas/CartaoAlertasInicio";
 import { storeInicio, useInicio, type ItemInicio, type PassoPrimeiroUso, type StoreInicio } from "../../estado/inicio";
 
 const PASSOS: readonly { id: PassoPrimeiroUso; rotulo: string; destino: TelaId; acao: string }[] = [
@@ -39,9 +42,11 @@ export interface PropsInicio {
   /** liga as assinaturas do método enquanto a tela existe; devolve o desligar. */
   iniciar?: () => () => void;
   aoNavegar?: (id: TelaId) => void;
+  /** "Abrir projeto" do primeiro uso: abre o modal "Adicionar workspace" (pasta, clonar, novo). */
+  aoAdicionarWorkspace?: () => void;
 }
 
-export function TelaInicio({ store = storeInicio, iniciar = () => storeMetodo.iniciar(), aoNavegar = pedirTela }: PropsInicio) {
+export function TelaInicio({ store = storeInicio, iniciar = () => storeMetodo.iniciar(), aoNavegar = pedirTela, aoAdicionarWorkspace = () => storeAdicionarWorkspace.abrir("pasta") }: PropsInicio) {
   const d = useInicio(store);
   useEffect(() => iniciar(), [iniciar]);
 
@@ -50,7 +55,7 @@ export function TelaInicio({ store = storeInicio, iniciar = () => storeMetodo.in
     const idx = PASSOS.findIndex((p) => p.id === d.proximoPasso);
     const passo = PASSOS[idx]!;
     return (
-      <Pagina titulo="Hoje" subtitulo={subtitulo}>
+      <Pagina modo="leitura" largura="larga" centralizar titulo="Hoje" subtitulo={subtitulo}>
         <EstadoVazio icone="inicio" titulo="Vamos começar" texto="Três passos e você já orquestra seus agentes.">
           <ol className="ini-passos" aria-label="Primeiros passos">
             {PASSOS.map((p, i) => (
@@ -61,19 +66,21 @@ export function TelaInicio({ store = storeInicio, iniciar = () => storeMetodo.in
               </li>
             ))}
           </ol>
-          <button type="button" className="botao botao-primario" onClick={() => aoNavegar(passo.destino)}>{passo.acao}</button>
+          <button type="button" className="botao botao-primario" onClick={() => (passo.id === "projeto" ? aoAdicionarWorkspace() : aoNavegar(passo.destino))}>{passo.acao}</button>
         </EstadoVazio>
       </Pagina>
     );
   }
 
   return (
-    <Pagina titulo="Hoje" subtitulo={subtitulo}>
+    <Pagina modo="leitura" largura="larga" centralizar titulo="Hoje" subtitulo={subtitulo}>
       <div className="ini-grade" aria-busy={d.carregando || undefined}>
         <Cartao titulo="Aguardam você" itens={d.aguardando} vazio="Nada esperando por você." aoAbrir={aoNavegar} />
         <Cartao titulo="Missões ativas" itens={d.missoes} vazio="Nenhuma missão em andamento." aoAbrir={aoNavegar} />
         <Cartao titulo="Bloqueios abertos" itens={d.bloqueios} vazio={d.carregando ? "Lendo o projeto…" : "Nenhum bloqueio aberto."} aoAbrir={aoNavegar} />
         <Cartao titulo="Últimos eventos do método" itens={d.eventos} vazio={d.carregando ? "Lendo o projeto…" : "Sem atividade recente."} aoAbrir={aoNavegar} />
+        <CartaoPrsInicio />
+        <CartaoAlertasInicio />
       </div>
     </Pagina>
   );

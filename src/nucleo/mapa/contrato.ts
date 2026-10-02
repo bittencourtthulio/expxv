@@ -77,6 +77,8 @@ export interface Vizinho {
 export interface OpcoesBusca {
   tipos?: readonly TipoNo[];
   limite?: number;
+  /** Também busca por trecho do nome/id (varredura, mais lenta). Sem isto só cai nela se o prefixo não achar nada. */
+  trecho?: boolean;
 }
 
 export interface OpcoesAnalise {

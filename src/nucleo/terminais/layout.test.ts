@@ -118,3 +118,36 @@ describe("restaurarLayout (tolerante)", () => {
     expect(bom).toEqual(copia);
   });
 });
+
+describe("D-570: proporção das divisões e modo foco por workspace", () => {
+  const comProporcao: LayoutTerminais = { versao: 2, fixadas: [], ativa: "sessao_a", abas: [{ arvore: { tipo: "divisao", orientacao: "vertical", proporcao: 0.7, primeiro: T("sessao_a"), segundo: T("sessao_b") } }], expandido: "sessao_b", foco_unico: true };
+  it("a proporção sobrevive a validar, gravar e ler (antes era descartada); fora de 5–95% é descartada", () => {
+    const r = validarLayout(comProporcao);
+    expect(r.ok && r.layout).toEqual(comProporcao);
+    const ruim = validarLayout({ ...comProporcao, abas: [{ arvore: { tipo: "divisao", orientacao: "vertical", proporcao: 4, primeiro: T("sessao_a"), segundo: T("sessao_b") } }] });
+    expect(ruim.ok && (ruim.layout.abas[0]!.arvore as { proporcao?: number }).proporcao).toBeUndefined();
+  });
+  it("expandido só vale se a sessão existe no layout; foco_unico só como true; layout sem eles não ganha campos", () => {
+    const r = validarLayout({ ...comProporcao, expandido: "sessao_que_nao_existe", foco_unico: "sim" });
+    expect(r.ok && r.layout.expandido).toBeUndefined();
+    expect(r.ok && r.layout.foco_unico).toBeUndefined();
+    const simples = validarLayout(bom);
+    expect(simples.ok && "expandido" in simples.layout).toBe(false);
+  });
+  it("restaurar poda o expandido junto com a sessão e mantém a proporção", () => {
+    const r = restaurarLayout(comProporcao, ["sessao_a", "sessao_b"]);
+    expect(r.expandido).toBe("sessao_b");
+    expect((r.abas[0]!.arvore as { proporcao?: number }).proporcao).toBe(0.7);
+    const sem = restaurarLayout(comProporcao, ["sessao_a"]);
+    expect(sem.expandido).toBeUndefined();
+    expect(sem.foco_unico).toBe(true);
+  });
+  it("cada workspace tem o seu arquivo de layout (nada se mistura)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "lay-ws-"));
+    criarArmazemLayout(dir, "ws_A").gravar(comProporcao);
+    criarArmazemLayout(dir, "ws_B").gravar(bom);
+    expect(criarArmazemLayout(dir, "ws_A").ler()).toEqual(comProporcao);
+    expect(criarArmazemLayout(dir, "ws_B").ler()).toEqual(bom);
+    expect(criarArmazemLayout(dir, null).ler()).toBeNull();
+  });
+});

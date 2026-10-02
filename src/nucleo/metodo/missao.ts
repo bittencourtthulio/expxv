@@ -9,11 +9,15 @@ import { relative, resolve } from "node:path";
 import type { ComandoSugerido, GestoMetodo, PedidoDispararComando, ResultadoDisparo } from "../../compartilhado/dominio";
 import type { FerramentaDetectada } from "../../compartilhado/terminais";
 import type { Repositorios } from "../banco/repos";
+import { gravarNaPastaDoProduto } from "../orquestracao/pasta";
+import { PRODUTO } from "../produto";
 import { ErroDominio, type Mission, type OrigemMissao, type Workspace } from "../dominio";
 import { slugificar } from "../git";
 import type { ComandoInicialEntrada, ServicoMissoes } from "../missoes/servico";
 import { PaneNaoAceitaComandoErro, type ServicoPanes } from "../missoes/panes";
 import { avaliarPaneDestino, comandoSugerido, gestoExigeAvaliador, harnessDaCli, type TrabalhoParaComando } from "./comandos";
+import { bloquearComandoDeModuloDesligado } from "../suite/modulos";
+import { CATALOGO_TERMINAIS } from "../terminais/catalogo";
 import { lerLockDoProjeto } from "./instalacao";
 import type { IndiceProjeto, Trabalho } from "./tipos";
 
@@ -141,7 +145,31 @@ export interface DependenciasMetodoMissao {
   detector: { detectar(): Promise<FerramentaDetectada[]> };
   /** Índices do método por raiz absoluta (o main mantém; teste injeta). */
   indices: (workspaceId: string) => Promise<IndicesPorRaiz>;
+  /**
+   * Fase 15: contexto prévio do RAG para o texto do gesto ("" = nada). Opcional: sem a porta (RAG desligado/fora) o disparo é o de antes.
+   * O disparo espera no máximo `ESPERA_CONTEXTO_MS`; falha, lentidão ou vazio nunca bloqueiam.
+   */
+  contextoPrevio?: (workspaceId: string, texto: string, arquivos: string[]) => Promise<string>;
+  /**
+   * Módulos da suíte desligados no workspace (D-480): comando de módulo desligado sai vazio com o motivo "ligue em Método › Módulos da suíte". Opcional: sem a porta, nada muda.
+   * SÍNCRONO e barato (um arquivo pequeno).
+   */
+  modulosDesligados?: (workspaceId: string) => ReadonlySet<string>;
+  /**
+   * D-620: depois de abrir o Pane, espera até este tempo (ms) para ver se a CLI morreu na largada (não instalada, sem login, cwd inválido) e então devolve `falhou` com a causa
+   * em vez de "enviado". Padrão 0 (sem espera; teste injeta). O main passa `ESPERA_CONFIRMACAO_ENTREGA_MS`.
+   */
+  confirmarEntregaMs?: number;
 }
+
+/** Janela em que o disparo observa a CLI recém-aberta antes de afirmar "entregue" (curta: a UI espera esta resposta). */
+export const ESPERA_CONFIRMACAO_ENTREGA_MS = 700;
+const PASSO_CONFIRMACAO_MS = 40;
+
+/** Teto de espera do contexto prévio no disparo (mesmo orçamento do despachante do Maestro). */
+export const ESPERA_CONTEXTO_MS = 150;
+/** Gestos cujo argumento é texto livre do pedido (os demais levam um id de trabalho e não ganham contexto). */
+const GESTOS_COM_CONTEXTO: readonly GestoMetodo[] = ["nova_feature", "nova_ocorrencia", "pedido_cru", "projeto"];
 
 export interface PedidoComandoSugerido {
   workspace_id: string;
@@ -168,6 +196,10 @@ const ATIVAS = ["intake", "planejando", "executando", "revisando"] as const;
 
 export function criarServicoMetodoMissao(deps: DependenciasMetodoMissao): ServicoMetodoMissao {
   const { repos } = deps;
+  const SEM_DESLIGADOS: ReadonlySet<string> = new Set();
+  const desligadosDe = (workspaceId: string): ReadonlySet<string> => {
+    try { return deps.modulosDesligados?.(workspaceId) ?? SEM_DESLIGADOS; } catch { return SEM_DESLIGADOS; }
+  };
 
   const missoesDoWorkspace = (workspaceId: string): Mission[] => {
     const todas: Mission[] = [];
@@ -189,7 +221,40 @@ export function criarServicoMetodoMissao(deps: DependenciasMetodoMissao): Servic
     return ordem.find(instalada) ?? null;
   }
 
-  const recusa = (motivo: string | null): ResultadoDisparo => ({ ok: false, pane_id: null, comando: null, motivo });
+  /** Grava o contexto do RAG na pasta do produto (`contexto/`) e devolve o argumento apontando para o arquivo (uma linha só); sem contexto, o argumento original. */
+  async function argumentoComContexto(ws: Workspace, gesto: GestoMetodo, argumento: string | null): Promise<string | null> {
+    const texto = (argumento ?? "").trim();
+    if (deps.contextoPrevio === undefined || texto === "" || !GESTOS_COM_CONTEXTO.includes(gesto)) return argumento;
+    let relogio: NodeJS.Timeout | undefined;
+    try {
+      const limite = new Promise<string>((ok) => {
+        relogio = setTimeout(() => ok(""), ESPERA_CONTEXTO_MS);
+        relogio.unref?.();
+      });
+      const md = await Promise.race([deps.contextoPrevio(ws.id, texto, []), limite]);
+      if (typeof md !== "string" || md.trim() === "") return argumento;
+      const rel = `${PRODUTO.pastaNoProjeto}/contexto/${Date.now().toString(36)}-${gesto}.md`;
+      await gravarNaPastaDoProduto(ws.raiz, rel, md);
+      return `${texto} — Contexto prévio: ${rel}`;
+    } catch {
+      return argumento;
+    } finally {
+      if (relogio !== undefined) clearTimeout(relogio);
+    }
+  }
+
+  /** Observa o Pane recém-aberto por até `confirmarEntregaMs`: devolve o motivo (ou "") se a CLI já encerrou, `null` se segue viva. */
+  async function cliSaiuNaLargada(paneId: string): Promise<string | null> {
+    const limite = Date.now() + (deps.confirmarEntregaMs ?? 0);
+    for (;;) {
+      const pane = repos.pane.obter(paneId);
+      if (pane === undefined || pane.estado === "encerrado") return pane?.encerrado_motivo == null || pane.encerrado_motivo === "processo_encerrado" ? "" : pane.encerrado_motivo;
+      if (Date.now() >= limite) return null;
+      await new Promise<void>((ok) => setTimeout(ok, PASSO_CONFIRMACAO_MS));
+    }
+  }
+
+  const recusa = (motivo: string | null): ResultadoDisparo => ({ ok: false, pane_id: null, comando: null, motivo, estado: "falhou", entrega: null });
 
   return {
     async sincronizarLigacoes(workspaceId) {
@@ -238,7 +303,7 @@ export function criarServicoMetodoMissao(deps: DependenciasMetodoMissao): Servic
       }
       const { lock } = await lerLockDoProjeto(ws.raiz);
       const harness = lock.harness.includes("claude") || !lock.harness.includes("opencode") ? "claude" : "opencode";
-      return comandoSugerido(p.gesto, achado === null ? null : paraComando(achado.trabalho), harness, p.argumento);
+      return bloquearComandoDeModuloDesligado(comandoSugerido(p.gesto, achado === null ? null : paraComando(achado.trabalho), harness, p.argumento), desligadosDe(ws.id));
     },
 
     async disparar(p) {
@@ -253,15 +318,20 @@ export function criarServicoMetodoMissao(deps: DependenciasMetodoMissao): Servic
       const cli = paneAlvo === undefined ? await cliPadrao(ws) : paneAlvo.cli;
       if (cli === null) return recusa("Nenhuma CLI compatível com os comandos do método está instalada: instale o Claude Code ou OpenCode.");
 
-      const sugestao = comandoSugerido(p.gesto, achado === null ? null : paraComando(achado.trabalho), cli, p.argumento);
-      if (sugestao.comando === "") return recusa(sugestao.motivo_bloqueio);
+      const desligados = desligadosDe(ws.id);
+      const sugestaoBase = bloquearComandoDeModuloDesligado(comandoSugerido(p.gesto, achado === null ? null : paraComando(achado.trabalho), cli, p.argumento), desligados);
+      if (sugestaoBase.comando === "") return recusa(sugestaoBase.motivo_bloqueio);
+      // Fase 15: contexto prévio do RAG anexado ao argumento (só se o comando com ele continuar válido; senão, o original)
+      const comContexto = await argumentoComContexto(ws, p.gesto, p.argumento);
+      const reforcado = comContexto === p.argumento ? sugestaoBase : bloquearComandoDeModuloDesligado(comandoSugerido(p.gesto, achado === null ? null : paraComando(achado.trabalho), cli, comContexto), desligados);
+      const sugestao = reforcado.comando === "" ? sugestaoBase : reforcado;
 
       try {
         if (paneAlvo !== undefined) {
           const aval = avaliarPaneDestino(p.gesto, paneAlvo);
           if (!aval.ok) return recusa(aval.motivo);
           await deps.panes.enviarComando(paneAlvo.id, sugestao.comando);
-          return { ok: true, pane_id: paneAlvo.id, comando: sugestao.comando, motivo: null };
+          return { ok: true, pane_id: paneAlvo.id, comando: sugestao.comando, motivo: null, sessao_id: paneAlvo.sessao_pty_id ?? null, estado: "entregue", entrega: "escrita" };
         }
         const missao = achado === null ? undefined : missoesDoWorkspace(ws.id).find((m) => m.trabalho_id === achado.trabalho.id && (ATIVAS as readonly string[]).includes(m.estado));
         // cwd = worktree do trabalho; só precisa forçar quando a Missão não conhece o worktree que a skill criou
@@ -273,7 +343,11 @@ export function criarServicoMetodoMissao(deps: DependenciasMetodoMissao): Servic
           prompt_inicial: sugestao.comando,
           ...(cwd === undefined ? {} : { cwd }),
         });
-        return { ok: true, pane_id: aberto.pane.id, comando: sugestao.comando, motivo: null };
+        const saiu = await cliSaiuNaLargada(aberto.pane.id);
+        if (saiu !== null) {
+          return { ok: false, pane_id: aberto.pane.id, comando: sugestao.comando, motivo: `A CLI ${(CATALOGO_TERMINAIS.find((f) => f.id === cli)?.nome ?? cli)} saiu antes de receber o comando${saiu === "" ? "" : ` (${saiu})`}. Confirme que ela está instalada e autenticada: abra o terminal deste workspace, rode a CLI uma vez e tente de novo.`, sessao_id: aberto.sessao_id, estado: "falhou", entrega: null };
+        }
+        return { ok: true, pane_id: aberto.pane.id, comando: sugestao.comando, motivo: null, sessao_id: aberto.sessao_id, estado: "entregue", entrega: "prompt_inicial" };
       } catch (erro) {
         if (erro instanceof PaneNaoAceitaComandoErro || erro instanceof ErroDominio) return recusa(erro.message);
         throw erro;

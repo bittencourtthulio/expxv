@@ -1,0 +1,60 @@
+/* Sub-navegação lateral das telas (docs/ade/04-UI-UX.md, "Sub-navegação lateral"). Só tokens; escala de conforto com fallback. */
+.subnav { display: grid; grid-template-columns: var(--subnav-largura, 208px) minmax(0, 1fr); flex: 1; width: 100%; height: 100%; min-height: 0; min-width: 0; }
+/* Discreta: sem fundo, sem linha-guia e colada perto da margem; só um marcador azul curto mostra onde você está. */
+.subnav-lateral { align-self: stretch; height: 100%; min-height: 0; display: flex; flex-direction: column; box-sizing: border-box; background: transparent; }
+.subnav-lista { flex: 0 1 auto; position: sticky; top: 0; max-height: 100%; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin: var(--espaco-2, 8px) var(--espaco-2, 8px) var(--espaco-2, 8px) 0; padding: 2px 0; }
+.subnav-secao { display: flex; flex-direction: column; gap: 2px; }
+.subnav-secao + .subnav-secao { margin-top: var(--espaco-3, 12px); }
+.subnav-titulo { padding: var(--espaco-1, 4px) var(--espaco-3, 12px); color: var(--texto-discreto); font-size: var(--fs-pequeno, 12px); font-weight: 600; letter-spacing: 0.01em; }
+.subnav-item { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: var(--subnav-item-altura, 32px); padding: 0 var(--espaco-3, 12px) 0 var(--espaco-3, 12px); border: 0; border-radius: var(--raio-pequeno, 6px); background: transparent; color: var(--texto-discreto); font: var(--fs-base, 13px) var(--fonte); text-align: left; cursor: pointer; transition: color 0.12s ease; }
+.subnav-item::before { content: ""; position: absolute; left: 0; top: 50%; width: 3px; height: 0; border-radius: 2px; background: var(--destaque); transform: translateY(-50%); transition: height 0.12s ease; }
+.subnav-item:hover { color: var(--texto); }
+.subnav-item[aria-selected="true"] { color: var(--texto); font-weight: 600; }
+.subnav-item[aria-selected="true"]::before { height: 16px; }
+.subnav-item:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.subnav-icone { flex: none; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--fs-pequeno, 11.5px); font-weight: 700; opacity: 0.75; }
+.subnav-icone svg { width: 16px; height: 16px; }
+.subnav-item[aria-selected="true"] .subnav-icone { color: var(--destaque-texto); opacity: 1; }
+.subnav-rotulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.subnav-selo { flex: none; min-width: 16px; padding: 0; background: transparent; color: var(--texto-discreto); font: var(--fs-pequeno, 11.5px) var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.subnav-item[aria-selected="true"] .subnav-selo { color: var(--destaque-texto); }
+.subnav-coluna { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
+.subnav-painel { flex: 1; min-width: 0; min-height: 0; overflow: auto; padding: var(--espaco-1, 4px) var(--espaco-2, 8px) var(--espaco-2, 8px); }
+/* barras e faixas passadas em `barra` ficam acima do painel, com a mesma margem lateral */
+.subnav-coluna > :not(.subnav-painel) { margin: var(--espaco-1, 4px) var(--espaco-2, 8px) 0; }
+.subnav-painel[data-sem-pad], .subnav-painel.sem-pad { padding: 0; }
+.subnav-painel:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.subnav-icone[data-inicial]::before { content: attr(data-inicial); }
+
+/* variante aninhada (sub-seções dentro de um painel já navegado por outra sub-sidebar) */
+.subnav.subnav-aninhada { --subnav-largura: 164px; }
+/* telas com `Pagina`: a sub-sidebar preenche a altura restante da página e fica perto da margem esquerda */
+.pagina:has(> .subnav) { display: flex; flex-direction: column; padding-inline-start: var(--espaco-1, 4px); }
+.pagina > .subnav { flex: 1; min-height: 0; }
+
+/* < 900 px (04-UI-UX.md, "Sub-navegação lateral"): só ícones — devolve ~150 px de área útil à tela;
+   o rótulo segue no `title` do item e o selo vira bolinha sobre o ícone (cor nunca é o único sinal) */
+@media (max-width: 899px) {
+  .subnav { --subnav-largura: 56px; }
+  .subnav-rotulo, .subnav-titulo { display: none; }
+  .subnav-item { justify-content: center; gap: 0; padding: 0; }
+  .subnav-selo { position: absolute; top: 1px; right: 6px; min-width: 12px; font-size: var(--fs-pequeno, 11.5px); color: var(--destaque-texto); }
+}
+
+/* < 720 px: lista no topo como fallback, sem perder função (rótulos voltam) */
+@media (max-width: 719px) {
+  .subnav { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .subnav { --subnav-largura: 100%; }
+  .subnav-lateral { position: static; height: auto; }
+  .subnav-rotulo { display: revert; }
+  .subnav-titulo { display: revert; }
+  .subnav-item { justify-content: flex-start; gap: 10px; padding: 0 var(--espaco-3, 12px); }
+  .subnav-selo { position: static; font-size: var(--fs-pequeno, 11.5px); color: var(--texto-discreto); }
+  .subnav-lista { flex-direction: row; overflow-x: auto; overflow-y: hidden; margin: var(--espaco-1, 4px) var(--espaco-2, 8px) 0; padding: 0; border-bottom: 1px solid var(--borda); }
+  .subnav-item::before { left: 8px; right: 8px; top: auto; bottom: 0; width: auto; height: 0; transform: none; }
+  .subnav-item[aria-selected="true"]::before { height: 2px; }
+  .subnav-secao { flex-direction: row; }
+  .subnav-secao + .subnav-secao { margin-top: 0; }
+  .subnav .subnav-item { width: auto; }
+  .subnav-coluna { height: auto; }
+}

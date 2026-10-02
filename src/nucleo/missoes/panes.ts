@@ -44,9 +44,11 @@ export class PaneNaoAceitaComandoErro extends ErroDominio {
 
 /** O que o serviço usa do gerenciador de sessões (o real cumpre; teste injeta um falso). */
 export interface SessoesDePanes {
-  abrir(pedido: PedidoAbrirSessao, opcoes: { cwd: string; ambiente?: Record<string, string> }): RespostaAbrirSessao;
+  abrir(pedido: PedidoAbrirSessao, opcoes: { cwd: string; ambiente?: Record<string, string>; permissao?: "seguro" | "equilibrado" | "automatico" }): RespostaAbrirSessao;
   escrever(id: string, dados: string): boolean;
   encerrar(id: string): boolean;
+  /** D-520: o app fecha a sessão de propósito (painel sai da grade na hora; SIGINT → SIGTERM → SIGKILL; descarte no fim). Ausente = só `encerrar`. */
+  fecharPelaApp?(id: string): boolean;
   obter(id: string): { estado: string } | undefined;
   recuperar(): Promise<unknown>;
   assinar(fn: (evento: EventoTerminal) => void): () => void;
@@ -70,12 +72,23 @@ export interface PedidoAbrirPane {
   cwd?: string;
   /** Só do main: dados opacos entregues ao preparador de lançamento (ex.: o card de um worker). */
   contexto?: Readonly<Record<string, unknown>>;
+  /** Só do main (agente livre, Fase 14): ambiente extra da sessão. Nunca vem do renderer. */
+  ambiente?: Readonly<Record<string, string>>;
+  /** Só do main (agente livre, Fase 14): permissão efetiva do Pane; só restringe o teto do workspace. */
+  permissao?: "seguro" | "equilibrado" | "automatico";
 }
 
 /** O que um preparador soma ao lançamento de um Pane (argumentos e ambiente da sessão). */
 export interface PreparoDaSessao {
   argumentos: string[];
   ambiente: Record<string, string>;
+  /** permissão efetiva do Pane (agente de squad); ausente = a do workspace. Só restringe: nunca amplia o teto do workspace. */
+  permissao?: "seguro" | "equilibrado" | "automatico";
+  /**
+   * `true` só quando os `argumentos` JÁ carregam o prompt inicial (piloto/worker da orquestração). Sem isto (Pane livre com MCP/settings) o `prompt_inicial` do pedido segue para a
+   * sessão: antes, qualquer preparo o descartava e o comando do método nunca chegava à CLI (Pane aberto e vazio).
+   */
+  prompt_embutido?: true;
 }
 
 export interface EntradaPreparoDePane {
@@ -91,9 +104,16 @@ export interface EntradaPreparoDePane {
 /**
  * Gancho do main (orquestração): roda DEPOIS de o Pane existir (há `pane.id` para o token) e ANTES de a
  * sessão abrir. `null` = lançamento comum. Quando devolve um preparo, os argumentos dele substituem o
- * `prompt_inicial` do pedido (o preparador já o embute no argv) e o ambiente é somado ao da conta.
+ * `prompt_inicial` do pedido (só se o preparo declarar `prompt_embutido`; senão o prompt segue para a sessão) e o ambiente é somado ao da conta.
  */
 export type PreparadorDePane = (e: EntradaPreparoDePane) => Promise<PreparoDaSessao | null>;
+
+export interface OpcoesRespawn {
+  contexto?: Readonly<Record<string, unknown>>;
+  prompt_inicial?: string | null;
+  /** argumentos da CLI antes dos demais (ex.: `--resume <conversa>` na retomada nativa). Só do main. */
+  argumentos?: readonly string[];
+}
 
 export interface PaneAberto {
   pane: Pane;
@@ -126,8 +146,13 @@ export interface ServicoPanes {
   ligar(): Promise<void>;
   exigirCli(cli: string): Promise<FerramentaDetectada>;
   abrirPane(pedido: PedidoAbrirPane): Promise<PaneAberto>;
-  encerrarPane(paneId: string, motivo: string): Promise<Pane>;
-  respawn(paneId: string): Promise<PaneAberto>;
+  /** `fechar_painel` (D-520): além de encerrar o Pane, o painel some da grade na hora e o processo termina com prazos (nunca "Sessão encerrada" pendurada). */
+  encerrarPane(paneId: string, motivo: string, opcoes?: { fechar_painel?: boolean }): Promise<Pane>;
+  /**
+   * Reabre um Pane encerrado como filho (`respawn_de`). `opcoes` (só do main, Fase 8): `contexto` (ex.: `{ brief }`, entregue ao preparador)
+   * e `prompt_inicial` (Pane livre sem preparador). Nada disto é persistido: argv e prompt nunca vão ao banco.
+   */
+  respawn(paneId: string, opcoes?: OpcoesRespawn): Promise<PaneAberto>;
   /**
    * `terminais.descartar`: marca o Pane da sessão como encerrado (motivo 'descartado'), numa transação do repositório,
    * e avisa (o `aoMudar` coalescido faz a Orquestração revogar o token MCP). `null` se a sessão não tem Pane ativo.
@@ -138,6 +163,11 @@ export interface ServicoPanes {
   rotulo(pane: Pane): string;
   /** Liga (ou remove, com `null`) o preparador de lançamento. Só o main chama. */
   definirPreparador(preparador: PreparadorDePane | null): void;
+  /**
+   * Complemento independente do preparador (ex.: statusline de limites): soma argumentos/ambiente ao lançamento de QUALQUER
+   * Pane, sem tomar o lugar do `prompt_inicial` (só o preparador principal o embute no argv).
+   */
+  definirComplemento(complemento: PreparadorDePane | null): void;
 }
 
 const ATIVIDADE_PARA_ESTADO = { trabalhando: "trabalhando", aguardando: "aguardando", pronto: "pronto" } as const;
@@ -157,6 +187,7 @@ export function criarServicoPanes(deps: DependenciasPanes): ServicoPanes {
   const entradaEm = new Map<string, number>();
   let ligacao: Promise<void> | null = null;
   let preparador: PreparadorDePane | null = null;
+  let complemento: PreparadorDePane | null = null;
 
   const avisar = (p: Pane): void => deps.aoMudar?.({ workspace_id: p.workspace_id, mission_id: p.mission_id });
 
@@ -242,20 +273,27 @@ export function criarServicoPanes(deps: DependenciasPanes): ServicoPanes {
 
     let resposta: RespostaAbrirSessao;
     try {
-      const preparo = preparador === null ? null : await preparador({ pane: criado, pedido: p, missao, workspace: ws, cwd, ferramenta });
+      const entradaPreparo = { pane: criado, pedido: p, missao, workspace: ws, cwd, ferramenta };
+      const preparo = preparador === null ? null : await preparador(entradaPreparo);
+      let extra: PreparoDaSessao | null = null;
+      try {
+        extra = complemento === null ? null : await complemento(entradaPreparo);
+      } catch {
+        extra = null; // o complemento nunca impede o Pane de abrir
+      }
       const pedido: PedidoAbrirSessao = {
         versao: 1,
         ferramenta_id: ferramenta.id,
         executavel_id: ferramenta.executavel_id as string,
-        argumentos: [...(p.argumentos ?? []), ...argumentosDeModelo(ferramenta.id, p.modelo), ...(preparo?.argumentos ?? [])],
+        argumentos: [...(p.argumentos ?? []), ...argumentosDeModelo(ferramenta.id, p.modelo), ...(preparo?.argumentos ?? []), ...(extra?.argumentos ?? [])],
         colunas: p.colunas ?? 120,
         linhas: p.linhas ?? 32,
         workspace_id: ws.id,
-        ...(p.prompt_inicial === undefined || preparo !== null ? {} : { prompt_inicial: p.prompt_inicial }),
+        ...(p.prompt_inicial === undefined || preparo?.prompt_embutido === true ? {} : { prompt_inicial: p.prompt_inicial }),
       };
       const g = await deps.sessoes();
       // sem `await` entre `abrir` e o mapa: o primeiro evento da sessão já acha o Pane
-      resposta = g.abrir(pedido, { cwd, ambiente: preparo === null ? ambiente : { ...ambiente, ...preparo.ambiente } });
+      resposta = g.abrir(pedido, { cwd, ambiente: { ...ambiente, ...(p.ambiente ?? {}), ...(preparo?.ambiente ?? {}), ...(extra?.ambiente ?? {}) }, ...((preparo?.permissao ?? p.permissao) === undefined ? {} : { permissao: (preparo?.permissao ?? p.permissao) as "seguro" | "equilibrado" | "automatico" }) });
       porSessao.set(resposta.sessao_id, criado.id);
     } catch (erro) {
       avisar(repos.pane.encerrar(criado.id, "falha_ao_abrir"));
@@ -267,13 +305,16 @@ export function criarServicoPanes(deps: DependenciasPanes): ServicoPanes {
     return { pane, sessao_id: resposta.sessao_id };
   }
 
-  async function encerrarPane(paneId: string, motivo: string): Promise<Pane> {
+  async function encerrarPane(paneId: string, motivo: string, opcoes?: { fechar_painel?: boolean }): Promise<Pane> {
     const antes = repos.pane.exigir(paneId);
     const pane = repos.pane.encerrar(paneId, motivo);
     entradaEm.delete(paneId);
-    if (antes.estado !== "encerrado" && antes.sessao_pty_id !== null) {
+    // `fechar_painel` também vale para o Pane que já terminou (CLI saiu sozinha): a sessão ainda na grade como "encerrada" sai de lá
+    if (antes.sessao_pty_id !== null && (antes.estado !== "encerrado" || opcoes?.fechar_painel === true)) {
       try {
-        (await deps.sessoes()).encerrar(antes.sessao_pty_id);
+        const g = await deps.sessoes();
+        if (opcoes?.fechar_painel === true && g.fecharPelaApp !== undefined) g.fecharPelaApp(antes.sessao_pty_id);
+        else g.encerrar(antes.sessao_pty_id);
       } catch {
         // a sessão já não existe: o Pane está encerrado de qualquer forma
       }
@@ -293,7 +334,7 @@ export function criarServicoPanes(deps: DependenciasPanes): ServicoPanes {
     return encerrado;
   }
 
-  async function respawn(paneId: string): Promise<PaneAberto> {
+  async function respawn(paneId: string, opcoes?: OpcoesRespawn): Promise<PaneAberto> {
     const antigo = repos.pane.exigir(paneId);
     if (antigo.estado !== "encerrado") throw new PaneAtivoErro(paneId);
     const ws = deps.workspaces.exigir(antigo.workspace_id);
@@ -308,6 +349,9 @@ export function criarServicoPanes(deps: DependenciasPanes): ServicoPanes {
       conta_id: antigo.conta_id,
       respawn_de: antigo.id,
       ...(herdado !== undefined && existsSync(herdado) ? { cwd: herdado } : {}),
+      ...(opcoes?.contexto === undefined ? {} : { contexto: opcoes.contexto }),
+      ...(opcoes?.argumentos === undefined || opcoes.argumentos.length === 0 ? {} : { argumentos: [...opcoes.argumentos] }),
+      ...(typeof opcoes?.prompt_inicial === "string" && opcoes.prompt_inicial !== "" ? { prompt_inicial: opcoes.prompt_inicial } : {}),
     });
   }
 
@@ -386,5 +430,9 @@ export function criarServicoPanes(deps: DependenciasPanes): ServicoPanes {
     preparador = fn;
   };
 
-  return { ligar, exigirCli, abrirPane, encerrarPane, marcarDescartada, respawn, restaurar, enviarComando, rotulo, definirPreparador };
+  const definirComplemento = (fn: PreparadorDePane | null): void => {
+    complemento = fn;
+  };
+
+  return { ligar, exigirCli, abrirPane, encerrarPane, marcarDescartada, respawn, restaurar, enviarComando, rotulo, definirPreparador, definirComplemento };
 }

@@ -195,6 +195,17 @@ describe("sessões, saída em lote e sinaleira", () => {
     expect(saidas.map((e) => e.dados)).toEqual(["a", "bc"]);
   });
 
+  it("a saída do PTY alimenta o pulso do bichinho SÓ com o tamanho/identidade, mesmo sem adaptador (D-500); sem serviço do bichinho nada quebra", async () => {
+    const aoSaida = vi.fn();
+    const m = montar({ pulsoPty: () => ({ aoSaida, aoEntrada: vi.fn(), aoSessaoEncerrada: vi.fn() }) });
+    const { sessao_id } = await comSessao(m);
+    (m.processos[0] as PtyFalso).emitir("trabalhando\n");
+    expect(aoSaida).toHaveBeenCalledWith(expect.objectContaining({ sessao_id, dados: "trabalhando\n", ferramenta_id: expect.any(String) }));
+    const m2 = montar({ pulsoPty: () => null });
+    await comSessao(m2);
+    expect(() => (m2.processos[0] as PtyFalso).emitir("x")).not.toThrow();
+  });
+
   it("a sessão ganha os argumentos de observação (hook) e o evento de atividade vira evento + notificação", async () => {
     const m = montar();
     const { sessao_id } = await comSessao(m);

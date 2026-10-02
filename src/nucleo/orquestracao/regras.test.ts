@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { MissaoInfo, PaneInfo, ProvedorInfo } from "../mcp/portas";
 import { ErroMcp } from "../mcp/erros";
 import { PRODUTO } from "../produto";
-import { guardaDoPiloto, verificarConclusao, verificarFechamento, verificarSpawn, type EntradaSpawn } from "./regras";
+import { AVISO_CONSULTA_RAG, guardaDoPiloto, taskDoBriefing, verificarConclusao, verificarConsultaRag, verificarFechamento, verificarSpawn, type EntradaConsultaRag, type EntradaSpawn } from "./regras";
 
 const provedores: ProvedorInfo[] = [
   { provedor: "claude", cli: "claude", contas: [], habilitado: true },
@@ -94,6 +94,10 @@ describe("verificarConclusao e verificarFechamento", () => {
   it("o piloto não é fechado", () => {
     expect(erro(() => verificarFechamento({ chamador: { pane_id: "x", papel: "piloto" }, alvo: pane("pane_p", { eh_piloto: true }) })).subcode).toBe("forbidden_role");
     expect(() => verificarFechamento({ chamador: { pane_id: "pane_p", papel: "piloto" }, alvo: pane("w1") })).not.toThrow();
+    // D-520: só o orquestrador dono fecha; outro worker (ou Pane sem papel de piloto) é recusado
+    expect(erro(() => verificarFechamento({ chamador: { pane_id: "w2", papel: "explorador" }, alvo: pane("w1") })).subcode).toBe("forbidden_role");
+    expect(erro(() => verificarFechamento({ chamador: { pane_id: "w3", papel: "revisor" }, alvo: pane("w1") })).subcode).toBe("forbidden_role");
+    expect(() => verificarFechamento({ chamador: { pane_id: "livre", papel: "nenhum" }, alvo: pane("w1") })).not.toThrow(); // Pane livre dono do que abriu
   });
 });
 
@@ -126,5 +130,51 @@ describe("guarda anti-piloto-que-codifica", () => {
   it("ferramentas de leitura passam", () => {
     expect(g("Read", "/ws/projeto/src/app.ts").permitido).toBe(true);
     expect(g("Bash", null).permitido).toBe(true);
+  });
+});
+
+describe("consulta obrigatória ao RAG (Fase 15, DEC-4 d)", () => {
+  type Politica = Awaited<ReturnType<NonNullable<EntradaConsultaRag["rag"]>["politica"]>>;
+  const porta = (o: { ativo?: boolean | "erro"; modo?: Politica["consulta_obrigatoria"]; chars?: number; consultou?: boolean | "erro" } = {}): NonNullable<EntradaConsultaRag["rag"]> => ({
+    ativo: async () => { if (o.ativo === "erro") throw new Error("fora"); return o.ativo ?? true; },
+    politica: async () => ({ consulta_obrigatoria: o.modo ?? "aviso", hook_prompt: true, contexto_chars: o.chars ?? 0 }),
+    consultouRecentemente: async () => { if (o.consultou === "erro") throw new Error("lento"); return o.consultou ?? false; },
+  });
+  const base = (rag: EntradaConsultaRag["rag"], papel: EntradaConsultaRag["papel"] = "executor"): EntradaConsultaRag => ({ rag, workspace_id: "ws_1", mission_id: "mis_1", task_ref: "T-01.02", papel });
+
+  it("porta ausente = permitir", async () => {
+    expect(await verificarConsultaRag(base(undefined))).toEqual({ acao: "permitir" });
+    expect(await verificarConsultaRag(base(null))).toEqual({ acao: "permitir" });
+  });
+  it("aviso (padrão): sem consulta na janela avisa, e nunca lança", async () => {
+    expect(await verificarConsultaRag(base(porta()))).toEqual({ acao: "avisar", aviso: AVISO_CONSULTA_RAG });
+    expect(await verificarConsultaRag(base(porta({ modo: "aviso" }), "explorador"))).toMatchObject({ acao: "avisar" });
+  });
+  it("consultou na janela = permitir", async () => {
+    expect(await verificarConsultaRag(base(porta({ consultou: true, modo: "bloqueio" })))).toEqual({ acao: "permitir" });
+  });
+  it("bloqueio sem injeção e sem consulta: rule_violation/rag_consult_required", async () => {
+    const e = await verificarConsultaRag(base(porta({ modo: "bloqueio", chars: 0 }))).then(() => null, (x: ErroMcp) => x);
+    expect(e?.code).toBe("rule_violation");
+    expect(e?.subcode).toBe("rag_consult_required");
+  });
+  it("bloqueio com a injeção ligada degrada para aviso (a injeção registra a consulta)", async () => {
+    expect(await verificarConsultaRag(base(porta({ modo: "bloqueio", chars: 2000 })))).toMatchObject({ acao: "avisar" });
+  });
+  it("off, RAG desligado, RAG fora/lento (erro da porta) e papéis que não implementam NUNCA bloqueiam", async () => {
+    expect(await verificarConsultaRag(base(porta({ modo: "off" })))).toEqual({ acao: "permitir" });
+    expect(await verificarConsultaRag(base(porta({ ativo: false, modo: "bloqueio" })))).toEqual({ acao: "permitir" });
+    expect(await verificarConsultaRag(base(porta({ ativo: "erro", modo: "bloqueio" })))).toEqual({ acao: "permitir" });
+    expect(await verificarConsultaRag(base(porta({ consultou: "erro", modo: "bloqueio" })))).toEqual({ acao: "permitir" });
+    for (const papel of ["revisor", "piloto", "nenhum"] as const) expect(await verificarConsultaRag(base(porta({ modo: "bloqueio" }), papel))).toEqual({ acao: "permitir" });
+  });
+  it("sem Missão não há o que exigir", async () => {
+    expect(await verificarConsultaRag({ ...base(porta({ modo: "bloqueio" })), mission_id: null })).toEqual({ acao: "permitir" });
+  });
+  it("a task é lida do caminho do briefing; caminho fora do padrão = null", () => {
+    expect(taskDoBriefing(`${PRODUTO.pastaNoProjeto}/missoes/mis_1/briefing-T-01.02.md`)).toBe("T-01.02");
+    expect(taskDoBriefing("briefing-x.md")).toBe("x");
+    expect(taskDoBriefing("docs/outro.md")).toBeNull();
+    expect(taskDoBriefing(null)).toBeNull();
   });
 });

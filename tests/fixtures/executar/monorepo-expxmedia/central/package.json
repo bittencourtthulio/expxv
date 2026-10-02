@@ -1,0 +1,7 @@
+{
+  "name": "exemplo-central",
+  "type": "module",
+  "bin": { "exemplo": "dist/cli.js" },
+  "scripts": { "build": "tsc -p tsconfig.json", "test": "vitest run", "typecheck": "tsc --noEmit" },
+  "devDependencies": { "typescript": "^5.6.0", "vitest": "^4.1.11" }
+}

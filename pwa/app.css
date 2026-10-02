@@ -1,0 +1,30 @@
+:root{color-scheme:light dark;--fundo:#fff;--texto:#0f172a;--suave:#475569;--destaque:#2563eb;--borda:#e2e8f0;--aviso:#fef3c7}
+@media (prefers-color-scheme:dark){:root{--fundo:#0b1220;--texto:#e2e8f0;--suave:#94a3b8;--borda:#1e293b;--aviso:#422006}}
+*{box-sizing:border-box}
+body{margin:0;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);background:var(--fundo);color:var(--texto);font:16px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:32rem;margin:0 auto;padding:16px 0}
+h1{font-size:1.4rem;margin:.5rem 0}
+h2{font-size:1rem;margin:1.2rem 0 .3rem;color:var(--suave)}
+.aviso{background:var(--aviso);padding:.5rem .75rem;border-radius:8px}
+.mono{font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+button{min-height:44px;min-width:44px;padding:0 16px;border:0;border-radius:8px;background:var(--destaque);color:#fff;font:inherit}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+h3{font-size:.95rem;margin:1rem 0 .2rem}
+label{display:block;margin:.6rem 0 .2rem}
+input,textarea{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto);font:inherit}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--destaque);outline-offset:2px}
+button:disabled{opacity:.55}
+.secundario{background:transparent;color:var(--texto);border:1px solid var(--borda)}
+.perigo-botao{background:#b91c1c}
+.linha{display:flex;gap:8px;flex-wrap:wrap;margin:.8rem 0}
+.abas{display:flex;gap:4px;overflow-x:auto;margin:.6rem 0;border-bottom:1px solid var(--borda)}
+.aba{background:transparent;color:var(--suave);border-radius:8px 8px 0 0}
+.aba[aria-selected=true]{color:var(--texto);border-bottom:3px solid var(--destaque)}
+.lista{padding-left:1.1rem}
+.suave{color:var(--suave)}
+.erro{color:#b91c1c;font-weight:600}
+@media (prefers-color-scheme:dark){.erro{color:#fca5a5}}
+.selo{background:var(--aviso);padding:.3rem .6rem;border-radius:8px;font-size:.9rem}
+.sas.grande{font-size:2rem;font-weight:700;letter-spacing:.1em;padding:.5rem 0}
+.so-leitor{position:absolute;left:-9999px}
+.conexao{font-weight:600}

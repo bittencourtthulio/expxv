@@ -5,7 +5,7 @@
 import type { EstadoMissao, EstadoPane, ModoMissao, Papel, StatusHandoff } from "../../dominio";
 import { argumentoInvalido } from "../erros";
 import type { ClaimsToken } from "../tokens";
-import type { PortaHandoff, PortaMissoes, PortaPanes, PortaProvedores, PortaRelogio } from "../portas";
+import type { PortaAlertasMcp, PortaAgilMcp, PortaCatalogo, PortaCustoMcp, PortaGateway, PortaHandoff, PortaHarness, PortaLimites, PortaLoja, PortaMaestroMcp, PortaMapaMcp, PortaMemoria, PortaMissoes, PortaPanes, PortaProvedores, PortaRag, PortaRelogio, PortaRota, PortaSquads, PortaTroca } from "../portas";
 
 export interface DepsTools {
   panes: PortaPanes;
@@ -19,6 +19,36 @@ export interface DepsTools {
   maxPanesParalelos: number;
   /** Avisos de política (não bloqueiam): ex. revisor do mesmo provedor do executor. */
   avisar(mensagem: string): void;
+  /** Fase 9: política, recomendação e decisões. Ausente = as tools `harness_*` respondem `unavailable`. */
+  harness?: PortaHarness;
+  /** Fase 9: cota por conta e escolha de conta (`headline_*`). */
+  limites?: PortaLimites;
+  /** Fase 9 (T-09.16): rota do `pane_spawn` sem provedor. Ausente = o provedor é obrigatório (como no MVP). */
+  rota?: PortaRota;
+  /** Fase 9 (T-09.20): `account_switch`. Ausente = a tool responde `unavailable`. */
+  troca?: PortaTroca;
+  /** Fase 14 (T-14.13): `agent_list` e `agent_invoke`. Ausente = as tools respondem `unavailable`. */
+  squads?: PortaSquads;
+  /** Fase 8: `memory_*` e o aviso `no_learning_recorded` do `mission_complete`. Ausente = as tools respondem `unavailable` e o aviso não existe. */
+  memoria?: PortaMemoria;
+  /** Fase 16: `maestro_request` e `maestro_status`. Ausente = as tools respondem `unavailable`. */
+  maestro?: PortaMaestroMcp;
+  /** Fase 18: `backlog_*`, `estimate_*`, `sprint_status`, `rework_list`, `metrics_get`. Ausente = as tools respondem `unavailable`. */
+  agil?: PortaAgilMcp;
+  /** Fase 10: `task_list`, `task_get`, `cost_report` (somente leitura). Ausente = as tools respondem `unavailable`. */
+  custo?: PortaCustoMcp;
+  /** Fase 20: `alert_raise`. Ausente = a tool responde `unavailable`. */
+  alertas?: PortaAlertasMcp;
+  /** Fase 15: `rag_*`. Ausente = as tools respondem `unavailable`. */
+  rag?: PortaRag;
+  /** Fase 17: `map_*` (somente leitura). Ausente = as tools respondem `unavailable/map_not_ready`. */
+  mapa?: PortaMapaMcp;
+  /** Fase 7: `catalog_list` real e validação de `pane_spawn.skills`. Ausente = `catalog_list` devolve vazio e `skills` do `pane_spawn` é recusado. */
+  catalogo?: PortaCatalogo;
+  /** Fase 7B: rota `POST /loja/segredos` do lançador `mcp-run`. Ausente = a rota responde 404. */
+  loja?: PortaLoja;
+  /** Fase 7C: rota `POST /gateway`. Ausente = a rota responde 404. */
+  gateway?: PortaGateway;
 }
 
 export interface ContextoTool {

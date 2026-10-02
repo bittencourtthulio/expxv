@@ -7,11 +7,11 @@ import { criarServicoContas } from "../provedores/contas";
 import { criarServicoWorkspaces } from "../workspaces/servico";
 import { criarRepoGit, criarTmp, detectorFalso, ferramenta, git, limpar, novoBanco, sessoesFalsas } from "../../../tests/fixtures/dominio/ambiente";
 import { criarServicoPanes, CliIndisponivelErro } from "./panes";
-import { ArvoreOcupadaErro, PilotoObrigatorioErro, criarServicoMissoes } from "./servico";
+import { ArvoreOcupadaErro, PilotoObrigatorioErro, criarServicoMissoes, type DependenciasMissoes } from "./servico";
 
 afterEach(limpar);
 
-function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; comandoInicial?: boolean } = {}) {
+function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; comandoInicial?: boolean; automatica?: Pick<DependenciasMissoes, "resolverCliAutomatica" | "aoRotearPane"> } = {}) {
   const { banco, repos } = novoBanco();
   const dados = criarTmp("dados-");
   const sessoes = sessoesFalsas();
@@ -27,6 +27,7 @@ function montar(opcoes: { ferramentas?: ReturnType<typeof ferramenta>[]; comando
     banco, repos, workspaces, panes,
     aoMudar: (e) => void eventos.push(e),
     aoEventoDominio: (tipo, payload) => void dominio.push({ tipo, payload }),
+    ...(opcoes.automatica ?? {}),
     ...(opcoes.comandoInicial
       ? { comandoInicial: ({ origem, pedido, cli }: { origem: string; pedido: string; cli: string }) => (cli === "claude" && origem === "feature" ? `/expx:sprintx ${pedido}` : null) }
       : {}),
@@ -47,6 +48,14 @@ describe("criar Missão", () => {
     const m = await missoes.criar(pedido(ws?.id as string, { modo: "livre", origem: "livre", clis: {}, pedido: "" }));
     expect(m).toMatchObject({ estado: "intake", worktree: null, branch: null, modo: "livre", origem: "livre", trabalho_id: null });
     expect(sessoes.sessoes.size).toBe(0);
+  });
+
+  it("squad_id/squad_cli só valem pelo fluxo de squads: o serviço recusa em vez de criar a Missão sem a squad (nada criado)", async () => {
+    const { missoes, workspaces, repos } = montar();
+    const ws = await workspaces.abrir(criarTmp());
+    await expect(missoes.criar(pedido(ws?.id as string, { squad_id: "eq" }))).rejects.toBeInstanceOf(ValorInvalidoErro);
+    await expect(missoes.criar(pedido(ws?.id as string, { squad_cli: "codex" }))).rejects.toBeInstanceOf(ValorInvalidoErro);
+    expect(repos.mission.listarPorWorkspace(ws?.id as string).itens).toHaveLength(0);
   });
 
   it("squad e agentico exigem piloto (erro nominal, nada criado)", async () => {
@@ -81,6 +90,21 @@ describe("criar Missão", () => {
     expect(a.branch).toBe("fix/OC-2026-0142-frete-errado");
     const b = await missoes.criar(pedido(ws?.id as string, { origem: "ocorrencia", titulo: "Limpar logs", clis: {} }), { oc_id: "OC-2026-0143", tipo_ocorrencia: "chore" });
     expect(b.branch).toBe("chore/OC-2026-0143-limpar-logs");
+  });
+
+  it("Missão squad/livre com `com_worktree` em repo git ganha worktree e branch feature/<slug>, mantém origem livre e não recebe o comando do método; sem git, nada", async () => {
+    const { missoes, workspaces, sessoes, repos } = montar({ comandoInicial: true });
+    const { raiz, pai } = criarRepoGit();
+    const ws = await workspaces.abrir(raiz);
+    const m = await missoes.criar(pedido(ws?.id as string, { modo: "squad", origem: "livre", titulo: "Login com e-mail" }), { com_worktree: true });
+    expect(m).toMatchObject({ worktree: "../repo--login-com-e-mail", branch: "feature/login-com-e-mail", origem: "livre", modo: "squad" });
+    expect(existsSync(join(pai, "repo--login-com-e-mail"))).toBe(true);
+    const [pane] = repos.pane.listarPorMissao(m.id);
+    expect(sessoes.sessoes.get(pane?.sessao_pty_id as string)?.cwd).toBe(join(pai, "repo--login-com-e-mail"));
+    expect(sessoes.sessoes.get(pane?.sessao_pty_id as string)?.pedido["prompt_inicial"]).toBeUndefined();
+    const semGit = await workspaces.abrir(criarTmp());
+    const n = await missoes.criar(pedido(semGit?.id as string, { modo: "squad", origem: "livre", titulo: "Outro" }), { com_worktree: true });
+    expect(n).toMatchObject({ worktree: null, branch: null });
   });
 
   it("workspace que não é git não cria worktree (a Missão usa a raiz)", async () => {
@@ -230,5 +254,36 @@ describe("listar e detalhe", () => {
     expect((await missoes.definirTrabalho(a.id, "cobranca-pix")).trabalho_id).toBe("cobranca-pix");
     await expect(missoes.definirTrabalho(b.id, "cobranca-pix")).rejects.toThrow(/já está ligado/);
     await expect(missoes.definirTrabalho(a.id, "../x")).rejects.toBeInstanceOf(ValorInvalidoErro);
+  });
+});
+
+describe('CLI "Automático" (Fase 9, T-09.16)', () => {
+  const auto = { cli: "claude", modelo: null, conta_id: null, esforco: null, rota: { recibo: "política" } };
+
+  it("resolve pelo harness com a origem e o papel, abre o Pane na CLI escolhida e grava a rota dele", async () => {
+    const pedidos: unknown[] = [];
+    const rotas: Array<[string, unknown]> = [];
+    const { missoes, workspaces, repos } = montar({ automatica: { resolverCliAutomatica: async (e) => (pedidos.push(e), auto), aoRotearPane: (id, r) => void rotas.push([id, r.rota]) } });
+    const ws = await workspaces.abrir(criarTmp());
+    const m = await missoes.criar(pedido(ws?.id as string, { clis: { piloto: "auto" } }));
+    expect(pedidos).toEqual([{ workspace_id: ws?.id, origem: "feature", papel: "piloto", pedido: "quero cobrar por pix" }]);
+    const [pane] = repos.pane.listarPorMissao(m.id);
+    expect(pane).toMatchObject({ papel: "piloto", cli: "claude" });
+    expect(rotas).toEqual([[pane?.id, { recibo: "política" }]]);
+  });
+
+  it("sem rota (no_capacity) a Missão nem é criada", async () => {
+    const { missoes, workspaces, repos } = montar({ automatica: { resolverCliAutomatica: async () => Promise.reject(new Error("no_capacity")) } });
+    const ws = await workspaces.abrir(criarTmp());
+    await expect(missoes.criar(pedido(ws?.id as string, { clis: { piloto: "auto" } }))).rejects.toThrow("no_capacity");
+    expect(repos.mission.listarPorWorkspace(ws?.id as string).itens).toHaveLength(0);
+  });
+
+  it("CLI explícita nunca passa pelo harness", async () => {
+    let chamadas = 0;
+    const { missoes, workspaces } = montar({ automatica: { resolverCliAutomatica: async () => (chamadas++, auto) } });
+    const ws = await workspaces.abrir(criarTmp());
+    await missoes.criar(pedido(ws?.id as string));
+    expect(chamadas).toBe(0);
   });
 });

@@ -1,0 +1,20 @@
+import type { KeyObject } from "node:crypto";
+export const VALIDADE_PADRAO_DIAS: number;
+export function nomeDaVariavelDaChave(raiz?: string): string;
+export function sha512Arquivo(caminho: string): Promise<string>;
+export function montarManifesto(e: {
+  versao: string;
+  canal: "stable" | "beta";
+  artefatos: Array<{ plataforma: string; arquitetura: string; arquivo: string; url_relativa: string }>;
+  notas?: string;
+  staging?: number;
+  validoAteDias?: number;
+  agora?: Date;
+  versaoMinima?: string;
+  chavesRevogadas?: string[];
+}): Promise<Record<string, any>>;
+export function lerChavePrivada(texto: string, origem: string): KeyObject;
+export function carregarChave(o: { env?: Record<string, string | undefined>; arquivo?: string; raiz?: string }): { chave: KeyObject; origem: string } | null;
+export function publicaBase64(chave: KeyObject): string;
+export function assinarBytes(bytes: Uint8Array, chave: KeyObject): string;
+export function verificarComPublicas(bytes: Uint8Array, assinaturaB64: string, publicas: string[]): boolean;

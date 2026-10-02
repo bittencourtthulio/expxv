@@ -84,12 +84,12 @@ const VALIDOS: Record<string, unknown> = {
   "metodo:comando_sugerido": { workspace_id: WS, trabalho_id: null, gesto: "nova_feature", argumento: "x" },
   "metodo:disparar": { workspace_id: WS, trabalho_id: "cobranca-pix", gesto: "retomar", argumento: null, pane_id: PANE },
 };
-const CANAIS_DE_DOMINIO = CANAIS_INVOKE.filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_)/.test(c));
+const CANAIS_DE_DOMINIO = CANAIS_INVOKE.filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_|resumo|encerrar_agente|revelar|copiar_caminho|adicionar_)/.test(c));
 
 describe("canais de domínio: cobertura", () => {
   it("todos os canais workspaces:*, provedores:*, missoes:* e metodo:* do contrato estão registrados", () => {
     const { registro } = montar();
-    expect(registro.registrados().filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_)/.test(c))).toEqual([...CANAIS_DE_DOMINIO].sort());
+    expect(registro.registrados().filter((c) => /^(workspaces|provedores|missoes|metodo):(?!openrouter_|resumo|encerrar_agente|revelar|copiar_caminho|adicionar_)/.test(c))).toEqual([...CANAIS_DE_DOMINIO].sort());
     expect(Object.keys(VALIDOS).sort()).toEqual([...CANAIS_DE_DOMINIO].sort());
   });
 

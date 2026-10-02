@@ -1,0 +1,28 @@
+/* Seletor "Trocar bichinho" (D-674) e bloco do ovo no popover (D-671). SÓ tokens do tema: nenhuma cor literal. Sem animação própria (o sprite cuida das dele). */
+.bi-seletor { position: fixed; z-index: 71; left: 8px; bottom: 8px; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto; gap: 8px; width: min(560px, calc(100vw - 16px)); max-height: min(560px, calc(100vh - 16px)); padding: 12px; border: 1px solid var(--destaque); border-radius: 12px; background: var(--painel); color: var(--texto); box-shadow: 0 14px 40px var(--sombra); font-size: var(--fs-rotulo); }
+.bi-sel-topo { display: flex; gap: 12px; align-items: center; }
+.bi-sel-previa { flex: none; width: 84px; height: 84px; border-radius: var(--raio-pequeno); background: var(--superficie); }
+.bi-sel-info { display: grid; min-width: 0; gap: 2px; }
+.bi-sel-info strong { font-size: 15px; }
+.bi-sel-info span, .bi-sel-info small { color: var(--texto-suave); }
+.bi-sel-info small { font-size: var(--fs-pequeno); line-height: 1.35; }
+.bi-sel-uso { color: var(--aviso) !important; }
+.bi-sel-filtros { display: grid; gap: 6px; }
+.bi-sel-busca { min-height: var(--campo-altura); padding: 0 8px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: inherit; }
+.bi-sel-grupos { display: flex; flex-wrap: wrap; gap: 4px; }
+.bi-sel-grupo { min-height: 26px; padding: 0 8px; font-size: var(--fs-pequeno); }
+.bi-sel-grupo[aria-pressed="true"] { border-color: var(--destaque); color: var(--destaque-texto); background: var(--superficie-2); }
+.bi-sel-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; min-height: 120px; overflow-y: auto; padding: 2px; align-content: start; }
+.bi-sel-item { position: relative; display: grid; justify-items: center; gap: 2px; padding: 4px 2px 6px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font: inherit; cursor: pointer; }
+.bi-sel-item:hover { background: var(--superficie-2); }
+.bi-sel-item[data-atual] { border-color: var(--destaque); box-shadow: inset 0 0 0 1px var(--destaque); }
+.bi-sel-item[data-uso] .bi-sel-mini { opacity: 0.6; }
+.bi-sel-mini { width: 52px; height: 52px; }
+.bi-sel-nome { max-width: 100%; overflow: hidden; font-size: var(--fs-pequeno); text-overflow: ellipsis; white-space: nowrap; }
+.bi-sel-marca { position: absolute; top: 2px; right: 2px; padding: 0 4px; border-radius: 6px; background: var(--superficie-2); color: var(--aviso); font-size: 11.5px; font-style: normal; line-height: 14px; }
+.bi-sel-vazio { grid-column: 1 / -1; margin: 0; padding: 16px; color: var(--texto-suave); text-align: center; }
+.bi-sel-aviso { color: var(--aviso); }
+.bi-sel-rodape { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--borda); }
+.bi-sel-item:focus-visible, .bi-sel-busca:focus-visible, .bi-sel-grupo:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+.bi-botao:disabled { opacity: 0.5; cursor: default; }
+.bi-pop-ovo-dica { color: var(--texto-suave); font-size: var(--fs-pequeno); }

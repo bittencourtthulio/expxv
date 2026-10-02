@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { appendFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { criarTmp, limparTmps } from "../../../tests/fixtures/metodo/util";
 import { evento, gerarProjetoExpx, gerarVolume, HOJE_FIXTURE } from "../../../tests/fixtures/metodo/gerar";
@@ -22,6 +22,21 @@ describe("indexarProjeto", () => {
     expect(ind.avisos.some((a) => a.includes("feature-truncada/sprint-01/tasks.md"))).toBe(true);
     expect(ind.camadas).toEqual({ convencoes: true, perfil_legado: true, design_system: true, produto: true, hooks: true, lock: true, memoria: true });
     expect(ind.artefatos_lidos).toBeGreaterThan(60);
+  });
+
+  it("mede a data (mtime) de cada camada gerada e omite as ausentes", async () => {
+    const raiz = criarTmp();
+    gerarProjetoExpx(raiz);
+    const alvo = join(raiz, "docs/stack/CONVENCOES.md");
+    const quando = new Date("2026-03-04T10:20:30.000Z");
+    utimesSync(alvo, quando, quando);
+    const ind = await indexarProjeto(raiz, { agora });
+    expect(ind.camadas_mtime?.convencoes).toBe("2026-03-04T10:20:30.000Z");
+    expect(Object.keys(ind.camadas_mtime ?? {}).sort()).toEqual(["convencoes", "design_system", "memoria", "perfil_legado", "produto"]);
+    rmSync(join(raiz, "docs/produto/PRODUTO.md"));
+    const sem = await indexarProjeto(raiz, { agora });
+    expect(sem.camadas.produto).toBe(false);
+    expect(sem.camadas_mtime?.produto).toBeUndefined();
   });
 
   it("é clonável por structuredClone (atravessa o worker)", async () => {

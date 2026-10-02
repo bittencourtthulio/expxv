@@ -1,0 +1,127 @@
+{
+  "linguagem": "python",
+  "arquivos": {
+    "app/servico.py": {
+      "metricas": { "complexidade_max": 6, "erros_parse": 0, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "LIMITE", "tipo": "constante", "exportado": true },
+        { "qualificado": "_auxiliar", "tipo": "funcao", "exportado": false },
+        { "qualificado": "listar", "tipo": "funcao", "exportado": true, "complexidade": 6, "doc": "Lista os pedidos ativos do cliente.", "assinatura": "async def listar(cliente: int, modo=\"…\") -> list", "decoradores": ["@decorador(\"…\")"] },
+        { "qualificado": "externa", "tipo": "funcao", "complexidade": 1 },
+        { "qualificado": "externa.interna", "tipo": "funcao", "exportado": false, "complexidade": 2 },
+        { "qualificado": "Servico", "tipo": "classe", "exportado": true, "doc": "Serviço principal." },
+        { "qualificado": "Servico.__init__", "tipo": "metodo" },
+        { "qualificado": "Servico.publico", "tipo": "metodo", "visibilidade": "publica", "exportado": true },
+        { "qualificado": "Servico._privado", "tipo": "metodo", "visibilidade": "protegida", "exportado": false },
+        { "qualificado": "Servico.__segredo", "tipo": "metodo", "visibilidade": "privada", "exportado": false }
+      ],
+      "imports": [
+        { "especificador": "os", "tipo": "estatico", "nomes": [], "so_tipo": false },
+        { "especificador": "sys", "tipo": "estatico", "nomes": ["*=sistema"] },
+        { "especificador": "a.b.c", "tipo": "estatico", "nomes": [] },
+        { "especificador": ".", "tipo": "estatico", "nomes": ["util"] },
+        { "especificador": "..pacote.mod", "tipo": "estatico", "nomes": ["gerar=g", "validar"] },
+        { "especificador": "outro", "tipo": "estatico", "nomes": ["*"] },
+        { "especificador": ".tipos", "tipo": "estatico", "so_tipo": true, "nomes": ["Tipo"] },
+        { "especificador": "plugins.padrao", "tipo": "dinamico" },
+        { "especificador": "os", "tipo": "dinamico", "linha": 80 }
+      ],
+      "chamadas": [
+        { "de": "listar", "alvo": "validar", "receptor": null, "tipo": "chamada" },
+        { "de": "listar", "alvo": "g", "tipo": "chamada" },
+        { "de": "listar", "alvo": "formatar", "receptor": "util", "tipo": "chamada" },
+        { "de": "listar", "alvo": "buscar", "receptor": "Repositorio", "tipo": "chamada" },
+        { "de": "listar", "alvo": "ValueError", "tipo": "instancia" },
+        { "de": "externa", "alvo": "interna", "tipo": "chamada" },
+        { "de": "Servico.__init__", "alvo": "Repositorio", "tipo": "instancia" },
+        { "de": "Servico.publico", "alvo": "salvar", "receptor": "self.repo", "tipo": "chamada" },
+        { "de": "Servico.publico", "alvo": "_privado", "receptor": "self", "tipo": "chamada" }
+      ],
+      "herancas": [
+        { "classe": "Servico", "base": "Base", "tipo": "herda" },
+        { "classe": "Servico", "base": "mod.Outra", "tipo": "herda" }
+      ],
+      "dados": [
+        { "tabela": "pedidos", "operacao": "le", "de": "Servico.consulta", "confianca": "exata", "fonte": "sql" },
+        { "tabela": "clientes", "operacao": "le", "de": "Servico.consulta" },
+        { "tabela": "auditoria", "operacao": "escreve", "de": "Servico.grava" }
+      ],
+      "padroes": [
+        { "tipo": "throw", "linha": 26 },
+        { "tipo": "catch_vazio", "linha": 31 },
+        { "tipo": "env", "nome": "HOME_X" },
+        { "tipo": "env", "nome": "NOME_VAR" },
+        { "tipo": "env", "nome": "TERCEIRA" }
+      ],
+      "dinamicos": [
+        { "tipo": "import_dinamico", "linha": 55 },
+        { "tipo": "chamada_computada", "linha": 56 },
+        { "tipo": "reflexao", "linha": 64 },
+        { "tipo": "eval", "linha": 78 },
+        { "tipo": "eval", "linha": 79 },
+        { "tipo": "import_dinamico", "linha": 81 }
+      ],
+      "ausentes": {
+        "dados": [{ "tabela": "list" }, { "tabela": "items" }, { "de": "Servico.consulta", "operacao": "escreve" }],
+        "padroes": [{ "tipo": "env", "nome": "valor-padrao-secreto" }],
+        "imports": [{ "especificador": "plugins.padrao", "tipo": "estatico" }, { "especificador": "nome" }],
+        "simbolos": [{ "qualificado": "_interno" }]
+      }
+    },
+    "app/web.py": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /users/:uid", "framework": "flask", "handler": "usuario" },
+        { "tipo": "rota", "chave": "POST /users/:uid", "framework": "flask", "handler": "usuario" },
+        { "tipo": "rota", "chave": "GET /api/itens/:nome", "framework": "flask", "handler": "itens" },
+        { "tipo": "rota", "chave": "GET /v1/produtos/:pid", "framework": "fastapi", "handler": "produto" },
+        { "tipo": "rota", "chave": "POST /v1/produtos", "framework": "fastapi", "handler": "criar" },
+        { "tipo": "main", "chave": "main", "framework": "python" }
+      ],
+      "ausentes": {
+        "entradas": [{ "handler": "nao_e_rota" }, { "handler": "helper" }, { "chave": "GET /chave" }]
+      }
+    },
+    "app/urls.py": {
+      "entradas": [
+        { "tipo": "rota", "chave": "ALL /pedidos/:pk/", "framework": "django", "handler": "views.detalhe" },
+        { "tipo": "rota", "chave": "ALL /lista/", "handler": "views.Lista" },
+        { "tipo": "rota", "chave": "ALL /antigo/", "handler": "views.antigo" }
+      ],
+      "ausentes": { "entradas": [{ "chave": "ALL /api/" }] },
+      "imports": [{ "especificador": "django.urls", "nomes": ["path", "re_path", "include"] }]
+    },
+    "app/tarefas.py": {
+      "entradas": [
+        { "tipo": "job", "chave": "celery:processar", "framework": "celery", "handler": "processar" },
+        { "tipo": "cli", "chave": "cli:comando", "framework": "click", "handler": "comando" },
+        { "tipo": "cli", "chave": "cli:outro", "framework": "typer", "handler": "outro" },
+        { "tipo": "cli", "chave": "cli:argparse", "framework": "argparse" }
+      ]
+    },
+    "app/models.py": {
+      "dados": [
+        { "tabela": "app_pedido", "operacao": "define", "confianca": "heuristica", "fonte": "django" },
+        { "tabela": "clientes_legado", "operacao": "define", "confianca": "exata", "fonte": "django" },
+        { "tabela": "produtos", "operacao": "define", "confianca": "exata", "fonte": "sqlalchemy" }
+      ],
+      "ausentes": { "dados": [{ "tabela": "app_rascunho" }, { "tabela": "app_cliente" }] }
+    },
+    "app/migrations/0001_inicial.py": {
+      "dados": [
+        { "tabela": "app_pedido", "operacao": "define", "confianca": "heuristica" },
+        { "tabela": "tabela_antiga", "operacao": "define", "confianca": "exata" },
+        { "tabela": "extra", "operacao": "define", "fonte": "sql" }
+      ]
+    },
+    "app/management/commands/importar.py": {
+      "entradas": [{ "tipo": "cli", "chave": "cli:importar", "framework": "django", "handler": "Command.handle" }]
+    },
+    "app/quebrado.py": {
+      "simbolos": [{ "qualificado": "ok", "tipo": "funcao" }]
+    },
+    "tests/test_algo.py": {
+      "metricas": { "e_teste": true },
+      "simbolos": [{ "qualificado": "test_x" }]
+    }
+  }
+}

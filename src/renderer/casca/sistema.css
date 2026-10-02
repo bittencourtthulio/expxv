@@ -1,0 +1,79 @@
+/* Medidor de CPU e memória da máquina (D-530…): chip compacto no cabeçalho + popover. Só tokens; a cor nunca é o único sinal (o número
+   está sempre no texto ou no aria-label). Sem animação (a barra muda de largura direto: prefers-reduced-motion não precisa de exceção). */
+.sis-chip {
+  display: inline-flex; align-items: center; gap: 7px; flex: none; min-height: 28px; padding: 0 8px;
+  border: 1px solid var(--borda); border-radius: 6px; background: var(--superficie); color: var(--texto-suave);
+  font: 11.5px/1 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.sis-chip:hover, .sis-chip[aria-expanded="true"] { background: var(--superficie-2); color: var(--texto); }
+.sis-chip:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.sis-icone { display: none; align-items: center; gap: 2px; }
+.sis-sinal { font-weight: 700; }
+.sis-item { position: relative; display: inline-flex; align-items: baseline; gap: 4px; padding-bottom: 6px; }
+.sis-rot { color: var(--texto-discreto); }
+.sis-num { min-width: 3ch; text-align: right; color: var(--texto); }
+.sis-sep { display: none; color: var(--texto-discreto); }
+.sis-barra { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 2px; background: var(--superficie-2); overflow: hidden; }
+.sis-barra b { display: block; height: 100%; background: var(--destaque); }
+.sis-chip:hover .sis-barra, .sis-chip[aria-expanded="true"] .sis-barra { background: var(--borda); }
+.sis-item[data-tom="aviso"] .sis-barra b { background: var(--aviso); }
+.sis-item[data-tom="aviso"] .sis-num { color: var(--aviso); }
+.sis-item[data-tom="alerta"] .sis-barra b { background: var(--alerta); }
+.sis-item[data-tom="alerta"] .sis-num { color: var(--alerta); font-weight: 700; }
+.sis-chip[data-tom="aviso"] .sis-icone { color: var(--aviso); }
+.sis-chip[data-tom="alerta"] .sis-icone { color: var(--alerta); }
+
+/* O chip de consumo das CLIs cede espaço (encolhe com reticências) antes de o grupo da direita invadir a busca centralizada.
+   O piso é 48 px: min-width vence max-width, então um piso maior anulava as faixas estreitas de casca.css (112/56/48 px). */
+.topo-direita .cota-chip { flex: 0 1 auto; min-width: 48px; overflow: hidden; text-overflow: ellipsis; }
+.topo-direita .topo-acoes { flex: none; }
+.topo-direita .topo-icone { flex: none; }
+
+/* cabeçalho estreito: só os números curtos ('23% · 61%'), com as minibarras. O corte é 1360 px (medido com capturas: abaixo disso o grupo da
+   direita não cabe com os rótulos sem espremer o seletor de rigidez); a grade de 3 colunas segue mandando e a busca nunca é coberta. */
+@container (max-width: 1360px) {
+  .sis-rot { display: none; }
+  .sis-sep { display: inline; }
+  .sis-num { min-width: 0; }
+}
+/* abaixo de ~960 px: um ícone só (o tooltip e o aria-label levam os números; ▲ / ! marcam aviso e alerta) */
+@container (max-width: 960px) {
+  .sis-item, .sis-sep { display: none; }
+  .sis-icone { display: inline-flex; }
+  .sis-chip { padding: 0 7px; min-width: 28px; justify-content: center; }
+}
+
+.sis-pop {
+  position: fixed; z-index: 55; top: calc(var(--altura-topo) + 4px); right: 12px; width: min(360px, 94vw); max-height: 78vh; overflow: auto;
+  padding: 10px 12px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); color: var(--texto);
+  box-shadow: 0 8px 28px var(--sombra); font-size: 12px; display: flex; flex-direction: column; gap: 10px;
+}
+.sis-pop:focus { outline: none; }
+.sis-pop section { display: flex; flex-direction: column; gap: 4px; }
+.sis-pop-topo { display: flex; align-items: center; gap: 6px; }
+.sis-pop-topo strong { flex: 1; font-size: 12.5px; }
+.sis-linha { display: grid; grid-template-columns: 5.5em 1fr 3.4em; gap: 8px; align-items: center; }
+.sis-valor { text-align: right; font: 12px var(--mono); font-variant-numeric: tabular-nums; }
+.sis-pbarra { display: block; height: 4px; border-radius: 2px; background: var(--superficie-2); overflow: hidden; }
+.sis-pbarra i { display: block; height: 100%; background: var(--destaque); }
+.sis-pbarra[data-tom="aviso"] i { background: var(--aviso); }
+.sis-pbarra[data-tom="alerta"] i { background: var(--alerta); }
+.sis-historico { height: 26px; }
+.sis-spark { display: block; width: 100%; height: 26px; border-bottom: 1px solid var(--borda); }
+.sis-spark-vazio { color: var(--texto-discreto); font-size: 11px; line-height: 26px; }
+.sis-nucleos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 10px; margin-top: 2px; }
+.sis-nucleo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sis-nucleo-cab { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+.sis-nucleo[data-tom="aviso"] .sis-nucleo-cab { color: var(--aviso); }
+.sis-nucleo[data-tom="alerta"] .sis-nucleo-cab { color: var(--alerta); font-weight: 700; }
+.sis-detalhe-linha { margin: 0; color: var(--texto-suave); font-size: 11.5px; line-height: 1.4; }
+.sis-vazio { margin: 0; color: var(--texto-discreto); font-size: 11.5px; }
+.sis-titulo { display: flex; justify-content: space-between; gap: 8px; margin: 0; font-size: 11.5px; font-weight: 600; color: var(--texto); }
+.sis-titulo span { font: 11.5px var(--mono); color: var(--texto-suave); font-weight: 400; }
+.sis-lista, .sis-top { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+.sis-lista li, .sis-top li { display: flex; justify-content: space-between; gap: 8px; color: var(--texto-suave); font-size: 11.5px; }
+.sis-lista li span:last-child, .sis-top-valor { font: 11.5px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sis-lista small, .sis-top small { color: var(--texto-discreto); font-size: 11px; }
+.sis-top-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sis-tops { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sis-nota { margin: 0; color: var(--texto-discreto); font-size: 11px; line-height: 1.4; }

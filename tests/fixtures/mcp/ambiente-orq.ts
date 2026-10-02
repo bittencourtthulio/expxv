@@ -52,7 +52,7 @@ export async function esperar<T>(fn: () => T | Promise<T>, ms = 20_000, passo = 
 /** processos vivos de worker: a linha de comando da CLI falsa carrega o prompt "Execute o card" */
 export function processosDeWorker(): number {
   const saida = execFileSync("ps", ["-axww", "-o", "command"], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
-  return saida.split("\n").filter((l) => l.includes("cli-orq.mjs") && l.includes("Execute o card")).length;
+  return saida.split("\n").filter((l) => /cli-(orq|agente)\.mjs/.test(l) && l.includes("Execute o card")).length;
 }
 
 /** Mata o que sobrou das CLIs falsas DESTE app (identificadas pela pasta de dados, única por execução). */
@@ -60,13 +60,20 @@ export function matarOrfaos(pastaDados: string): void {
   if (pastaDados.length < 8) return; // vazio/curto casaria com tudo (AUD-01: nunca matar o que não é deste app)
   const saida = execFileSync("ps", ["-axww", "-o", "pid,command"], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
   for (const linha of saida.split("\n")) {
-    if (!linha.includes("cli-orq.mjs") || !linha.includes(pastaDados)) continue;
+    if (!/cli-(orq|agente)\.mjs/.test(linha) || !linha.includes(pastaDados)) continue;
     const pid = Number(linha.trim().split(/\s+/)[0]);
     if (Number.isInteger(pid) && pid > 0) try { process.kill(pid, "SIGKILL"); } catch { /* já saiu */ }
   }
 }
 
-export async function criarAmbienteOrq() {
+export interface OpcoesAmbienteOrq {
+  /** CLI falsa dos wrappers `claude`/`codex` (padrão `mcp/cli-orq.mjs`; `cli-agente.mjs` grava o que cada Pane recebeu). */
+  cli?: "mcp/cli-orq.mjs" | "cli-agente.mjs";
+  /** variáveis extras de ambiente do app (ex.: base do servidor Telegram falso). */
+  envExtra?: Record<string, string>;
+}
+
+export async function criarAmbienteOrq(opcoes: OpcoesAmbienteOrq = {}) {
   const temporarias: string[] = [];
   const tmp = (p: string): string => {
     const d = mkdtempSync(join(tmpdir(), p));
@@ -87,14 +94,15 @@ export async function criarAmbienteOrq() {
   const pastaClis = tmp("ade-orq-clis-");
   for (const nome of ["claude", "codex"]) {
     const script = join(pastaClis, nome);
-    writeFileSync(script, `#!/bin/sh\nexec "${process.execPath}" "${join(RAIZ, "tests", "fixtures", "mcp", "cli-orq.mjs")}" "$@"\n`);
+    writeFileSync(script, `#!/bin/sh\nexec "${process.execPath}" "${join(RAIZ, "tests", "fixtures", ...(opcoes.cli ?? "mcp/cli-orq.mjs").split("/"))}" "$@"\n`);
     chmodSync(script, 0o755);
   }
   const arquivoLog = join(tmp("ade-orq-log-"), "cli.log");
   writeFileSync(arquivoLog, "");
   // pasta de dados própria: o app pode ser REINICIADO (mesma pasta, daemon vivo) e a limpeza é nossa (fechar)
   const pastaDados = tmp("ade-e2e-");
-  const env = { [variavelDeAmbiente("E2E_CLIS")]: pastaClis, CLI_ORQ_LOG: arquivoLog };
+  const pastaAgentes = tmp("ade-orq-agentes-");
+  const env = { [variavelDeAmbiente("E2E_CLIS")]: pastaClis, CLI_ORQ_LOG: arquivoLog, CLI_AGENTE_DIR: pastaAgentes, ...(opcoes.envExtra ?? {}) };
   let app: AppAberto = await abrirApp({ pastaDados, env });
   await app.pagina.waitForSelector('nav[aria-label="Principal"]', { timeout: 15000 });
   const wsId = await app.pagina.evaluate((c) => (window as unknown as JanelaOrq).ade.workspaces.abrir(c).then((w) => w.id), raiz);
@@ -107,7 +115,16 @@ export async function criarAmbienteOrq() {
 
   return {
     get app(): AppAberto { return app; },
-    raiz, wsId, arquivoLog, detalhe, linhasDoLog,
+    raiz, wsId, arquivoLog, detalhe, linhasDoLog, pastaAgentes,
+
+    /** O que a CLI falsa de agente registrou de um Pane (argv, ambiente, arquivos de instrução); `null` se ainda não abriu. */
+    registroDoPane(paneId: string): { argv: string[]; ambiente: Record<string, string>; arquivos: Record<string, string>; cwd: string } | null {
+      try {
+        return JSON.parse(readFileSync(join(pastaAgentes, `${paneId}.json`), "utf8")) as { argv: string[]; ambiente: Record<string, string>; arquivos: Record<string, string>; cwd: string };
+      } catch {
+        return null;
+      }
+    },
 
     /** Fecha o app SEM descartar as sessões (o daemon e as CLIs seguem vivos) e o reabre na mesma pasta de dados. */
     async reiniciar(): Promise<AppAberto> {

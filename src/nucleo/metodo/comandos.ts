@@ -13,7 +13,8 @@ export const SKILLS_SOMENTE_HUMANO: readonly string[] = ["mergex-revisar"];
 
 const ARGUMENTO_MAX = 1_500;
 // eslint-disable-next-line no-control-regex
-const CONTROLE = /[\u0000-\u001f\u007f]/g;
+/** Controles C0 e DEL, C1 (0x80-0x9f, ex.: CSI 0x9b), separadores de linha/parágrafo e marcas bidi/invisíveis: nada que um terminal ou um prompt interprete como comando. */
+const CONTROLE = /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2069\ufeff]/g;
 const NOME_SKILL = /^[a-z][a-z0-9-]{0,40}$/;
 
 export function harnessDaCli(cli: string | null | undefined): Harness | null {
@@ -81,6 +82,25 @@ const TEXTO_DO_GESTO: Partial<Record<GestoMetodo, [skill: string, rotulo: string
   projeto: ["buildx", "a descrição do projeto"],
 };
 
+/** Gestos que GERAM o contexto do projeto (D-495): a skill não recebe argumento (todos aceitam vazio e não perguntam "qual trabalho"). */
+export const SKILL_DE_CONTEXTO: Partial<Record<GestoMetodo, string>> = {
+  gerar_convencoes: "stackx-detectar",
+  gerar_produto: "prodx-produto",
+  gerar_memoria: "memox-indexar",
+  gerar_design_system: "designx-cartography",
+  gerar_perfil_legado: "legadox-perfil",
+};
+
+/** `/expx:<skill>` (Claude Code) ou `/<skill>` (OpenCode), sem argumento. Só para as skills de contexto. */
+export function comandoDeContexto(gesto: GestoMetodo, cli: string | null | undefined): ComandoSugerido {
+  const base = { pane_separado: false, somente_humano: false, motivo_bloqueio: null };
+  const skill = SKILL_DE_CONTEXTO[gesto];
+  if (skill === undefined) return { ...base, comando: "", motivo_bloqueio: "Gesto desconhecido." };
+  const harness = harnessDaCli(cli);
+  if (harness === null) return { ...base, comando: "", motivo_bloqueio: MSG_SEM_SUPORTE };
+  return { ...base, comando: `${prefixoDoHarness(harness)}${skill}` };
+}
+
 /**
  * Comando sugerido para um gesto. `cli` é a CLI do Pane de destino (`claude`, `opencode`…); `argumento`
  * só vale para os gestos que criam trabalho (o pedido/texto). Nunca lança: o bloqueio vem em
@@ -89,6 +109,8 @@ const TEXTO_DO_GESTO: Partial<Record<GestoMetodo, [skill: string, rotulo: string
 export function comandoSugerido(gesto: GestoMetodo, trabalho: TrabalhoParaComando | null, cli: string | null | undefined, argumento: string | null = null): ComandoSugerido {
   const harness = harnessDaCli(cli);
   if (harness === null) return bloqueado(gesto, MSG_SEM_SUPORTE);
+
+  if (SKILL_DE_CONTEXTO[gesto] !== undefined) return comandoDeContexto(gesto, cli);
 
   const novo = TEXTO_DO_GESTO[gesto];
   if (novo !== undefined) {

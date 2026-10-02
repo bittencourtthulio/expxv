@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { CANAIS_ENVIO, CANAIS_EVENTO, CANAIS_INVOKE, CANAIS_SENSIVEIS } from "../../compartilhado/ipc";
 import { VALIDADORES_COFRE } from "./cofre";
-import { VALIDADORES_HARNESS } from "./harness";
+import { CANAIS_HARNESS_ONDA_5, CANAIS_HARNESS_TROCA, VALIDADORES_HARNESS } from "./harness";
 import { VALIDADORES_LIMITES } from "./limites";
 import { VALIDADORES_OPENROUTER } from "./openrouter";
 import { VALIDADORES_APP, registrarIpcApp } from "./app";
@@ -140,57 +140,32 @@ const VALIDADORES_FASE_9: Record<string, unknown> = {
  * Cada onda remove daqui os canais que passar a registrar (o teste abaixo falha se a lista mentir).
  */
 export const CANAIS_SEM_MANIPULADOR_AINDA: Readonly<Record<string, string>> = {
-  "limites:snapshot": "T-09.08",
-  "limites:atualizar": "T-09.08",
-  "limites:manual_definir": "T-09.08",
-  "limites:manual_limpar": "T-09.08",
   "limites:historico": "T-09.09",
   "limites:previsao": "T-09.09",
   "limites:eficiencia": "T-09.09",
   "limites:alertas": "T-09.09",
-  "harness:config_ler": "T-09.14",
-  "harness:config_gravar": "T-09.14",
-  "harness:task_types_listar": "T-09.14",
-  "harness:task_types_gravar": "T-09.14",
-  "harness:task_types_apagar": "T-09.14",
-  "harness:politica_listar": "T-09.14",
-  "harness:politica_gravar": "T-09.14",
-  "harness:politica_restaurar_semente": "T-09.14",
-  "harness:equivalencia_ler": "T-09.11",
-  "harness:equivalencia_gravar": "T-09.11",
-  "harness:equivalencia_restaurar": "T-09.11",
-  "harness:recomendar": "T-09.15",
-  "harness:decisoes_listar": "T-09.15",
-  "harness:contas_config_listar": "T-09.14",
-  "harness:contas_config_gravar": "T-09.14",
-  "harness:trocas_listar": "T-09.20",
-  "harness:troca_decidir": "T-09.20",
-  "harness:mover_pane": "T-09.20",
-  "harness:decisor_ler": "T-09.24",
-  "harness:decisor_gravar": "T-09.24",
-  "harness:decisor_testar": "T-09.24",
-  "harness:classificar_intencao": "T-09.25",
-  "harness:resolver_perfil": "T-09.25",
-  "provedores:openrouter_estado": "T-09.26",
-  "provedores:openrouter_consentir": "T-09.26",
-  "provedores:openrouter_revogar": "T-09.26",
-  "provedores:openrouter_chave_gravar": "T-09.26",
-  "provedores:openrouter_chave_apagar": "T-09.26",
-  "provedores:openrouter_testar": "T-09.26",
-  "provedores:openrouter_modelos_atualizar": "T-09.26",
-  "provedores:openrouter_modelos_listar": "T-09.26",
-  "provedores:openrouter_modelo_gravar": "T-09.26",
-  "provedores:openrouter_saldo_atualizar": "T-09.26",
-  "cofre:disponivel": "T-09.21",
-  "cofre:listar": "T-09.21",
-  "cofre:gravar": "T-09.21",
-  "cofre:apagar": "T-09.21",
-  "cofre:senha_mestra_definir": "T-09.21",
-  "cofre:desbloquear": "T-09.21",
-  "cofre:bloquear": "T-09.21",
 };
-/** Canais da Fase 9 que já ganharam manipulador registrado (vazio nesta onda: só contratos e validadores). */
-const CANAIS_FASE_9_COM_MANIPULADOR: readonly string[] = [];
+/**
+ * Canais da Fase 9 que já ganharam manipulador registrado: limites (T-09.08, via `ligarLimites` no main); cofre (T-09.21/23, `registrarIpcCofre`)
+ * e harness (T-09.14/15/24/25, `registrarIpcHarness`: política, equivalência, decisões, decisor, intenção e perfil) e OpenRouter (T-09.26,
+ * `registrarIpcOpenRouter`); os de troca (T-09.20) entram em `CANAIS_HARNESS_TROCA`.
+ */
+const CANAIS_FASE_9_COM_MANIPULADOR: readonly string[] = [
+  "limites:snapshot",
+  "limites:atualizar",
+  "limites:manual_definir",
+  "limites:manual_limpar",
+  ...CANAIS_HARNESS_ONDA_5,
+  ...CANAIS_HARNESS_TROCA,
+  "cofre:disponivel",
+  "cofre:listar",
+  "cofre:gravar",
+  "cofre:apagar",
+  "cofre:senha_mestra_definir",
+  "cofre:desbloquear",
+  "cofre:bloquear",
+  ...Object.keys(VALIDADORES_OPENROUTER),
+];
 
 describe("contrato Fase 9: todo canal tem validador estrito", () => {
   const doContrato = [...CANAIS_INVOKE, ...CANAIS_ENVIO].filter((c) => FAMILIAS_FASE_9.test(c)).sort();
@@ -214,7 +189,7 @@ describe("contrato Fase 9: todo canal tem validador estrito", () => {
     expect(CANAIS_EVENTO).toEqual(expect.arrayContaining(["limites:evento", "harness:evento"]));
     for (const c of CANAIS_SENSIVEIS) expect(CANAIS_INVOKE).toContain(c);
     expect([...CANAIS_SENSIVEIS].sort()).toEqual(
-      ["cofre:desbloquear", "cofre:gravar", "cofre:senha_mestra_definir", "harness:decisor_testar", "provedores:openrouter_chave_gravar", "provedores:openrouter_testar"].sort(),
+      ["bench:julgar", "bench:rerodar", "bench:rodar", "cofre:desbloquear", "cofre:gravar", "cofre:senha_mestra_definir", "executar:assistente_salvar", "executar:config_gravar", "harness:decisor_testar", "jarvis:acao", "jarvis:enviar", "loja_mcp:variavel_gravar", "provedores:openrouter_chave_gravar", "provedores:openrouter_testar", "rag:backend_configurar", "rag:backend_testar", "relay:parear_iniciar", "relay:parear_sas", "remoto:parear_confirmar_sas", "remoto:permissao_definir", "telegram:autorizado_config", "telegram:token_salvar", "telegram:token_testar", "voz:segredo_gravar"].sort(),
     );
   });
 });

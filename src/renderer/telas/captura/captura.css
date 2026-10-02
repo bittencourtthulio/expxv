@@ -1,0 +1,41 @@
+/* Captura (Fase 11): seletor de região sobre a imagem congelada, galeria e editor. Tudo discreto, sem janelas extras. */
+.cap-seletor { position: fixed; inset: 0; z-index: 200; background: black; cursor: crosshair; user-select: none; touch-action: none; overflow: hidden; outline: none; }
+.cap-imagem { position: absolute; pointer-events: none; }
+.cap-mira-h, .cap-mira-v { position: absolute; pointer-events: none; background: color-mix(in srgb, var(--destaque) 85%, white); opacity: 0.9; }
+.cap-mira-h { left: 0; right: 0; height: 1px; }
+.cap-mira-v { top: 0; bottom: 0; width: 1px; }
+.cap-leitor { position: absolute; pointer-events: none; padding: 1px var(--espaco-2); border-radius: 3px; background: color-mix(in srgb, black 78%, transparent); color: white; font: var(--fs-micro)/16px ui-monospace, monospace; white-space: nowrap; }
+.cap-selecao { position: absolute; pointer-events: none; border: 1px solid var(--destaque); background: color-mix(in srgb, var(--destaque) 18%, transparent); box-shadow: 0 0 0 9999px color-mix(in srgb, black 35%, transparent); }
+.cap-dica { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: var(--espaco-1) var(--espaco-3); border-radius: 4px; background: color-mix(in srgb, black 70%, transparent); color: white; font-size: var(--fs-rotulo); pointer-events: none; }
+.cap-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 120; max-width: min(520px, 90vw); padding: var(--espaco-1) var(--espaco-3); border: 1px solid var(--borda); border-radius: 6px; background: var(--painel); color: var(--texto); font-size: var(--fs-rotulo); box-shadow: 0 6px 20px var(--sombra); pointer-events: none; }
+.cap-toast:empty { display: none; }
+.cap-dialogo { max-width: 480px; }
+.cap-painel { position: fixed; top: 40px; right: 0; bottom: 26px; z-index: 90; width: min(380px, 94vw); display: flex; flex-direction: column; gap: var(--espaco-2); padding: var(--espaco-2) var(--espaco-3); overflow: auto; border-left: 1px solid var(--borda); background: var(--painel); color: var(--texto); box-shadow: -8px 0 24px var(--sombra); }
+.cap-painel-topo { display: flex; align-items: center; justify-content: space-between; }
+.cap-painel-topo h2 { margin: 0; font-size: var(--fs-campo); }
+.cap-aviso { margin: 0; font-size: var(--fs-pequeno); color: var(--texto-suave); }
+.cap-estado { margin: var(--espaco-2) 0; font-size: var(--fs-rotulo); color: var(--texto-suave); }
+.cap-estado-erro { color: var(--alerta); }
+.cap-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--espaco-2); }
+.cap-item { display: grid; grid-template-columns: 64px 1fr; gap: var(--espaco-1) var(--espaco-2); align-items: center; padding: var(--espaco-1); border: 1px solid var(--borda); border-radius: 6px; }
+.cap-mini { display: grid; place-items: center; width: 64px; height: 40px; border-radius: 4px; background: var(--superficie-2); overflow: hidden; color: var(--texto-suave); }
+.cap-mini img { width: 64px; height: 40px; object-fit: cover; }
+.cap-info { display: flex; flex-direction: column; min-width: 0; font-size: var(--fs-rotulo); }
+.cap-info small { color: var(--texto-suave); }
+.cap-acoes { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--espaco-1); }
+.cap-ferr { height: 24px; padding: 0 var(--espaco-2); border: 1px solid var(--borda); border-radius: 5px; background: transparent; color: var(--texto); font-size: var(--fs-rotulo); cursor: pointer; }
+.cap-ferr:hover:not(:disabled) { background: var(--superficie-2); }
+.cap-ferr:disabled { opacity: 0.45; cursor: default; }
+.cap-ferr[aria-pressed="true"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.cap-ferr:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.cap-perigo { border-color: var(--alerta); color: var(--alerta); }
+.cap-mais { align-self: flex-start; }
+.cap-editor-fundo { z-index: 110; }
+.cap-editor { display: flex; flex-direction: column; width: min(1100px, 96vw); max-height: 94vh; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); box-shadow: 0 24px 60px var(--sombra); }
+.cap-barra { display: flex; align-items: center; flex-wrap: nowrap; gap: var(--espaco-1); height: var(--barra-altura); padding: 0 var(--espaco-2); margin: var(--espaco-1) 0; overflow-x: auto; }
+.cap-sep { width: 1px; height: 16px; background: var(--borda); margin: 0 var(--espaco-1); }
+.cap-fechar { margin-left: auto; }
+.cap-palco { position: relative; display: grid; place-items: center; overflow: auto; padding: var(--espaco-2); background: var(--superficie-2); min-height: 120px; }
+.cap-canvas { max-width: 100%; max-height: calc(94vh - 80px); cursor: crosshair; touch-action: none; background: white; }
+.cap-texto { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; gap: var(--espaco-1); padding: var(--espaco-1); border: 1px solid var(--borda); border-radius: 6px; background: var(--painel); }
+.cap-texto input { height: var(--campo-altura); min-width: 220px; padding: 0 var(--espaco-2); border: 1px solid var(--borda); border-radius: 4px; background: var(--fundo); color: var(--texto); }

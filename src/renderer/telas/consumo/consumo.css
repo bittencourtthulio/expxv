@@ -1,0 +1,92 @@
+/* Tela Consumo (Fase 9): uma linha de controles, abas pequenas, linhas densas de 24 px. */
+.consumo { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 0; gap: var(--espaco-1); }
+.consumo-barra { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--barra-altura); overflow-x: auto; white-space: nowrap; scrollbar-width: none; font-size: var(--fs-pequeno); }
+.consumo-barra::-webkit-scrollbar { display: none; }
+.consumo-barra select, .consumo-barra input { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--superficie); color: var(--texto); font: var(--fs-pequeno) var(--fonte); }
+.consumo-barra input { width: 130px; }
+.consumo-corpo { flex: 1; min-height: 0; overflow: auto; }
+/* o ul padrão tem padding-inline de 40 px: sem este reset a grade das linhas vazava da borda direita em 900/720 */
+.consumo-lista, .consumo-grupo-item ul { list-style: none; margin: 0; padding: 0; }
+.consumo-linha { display: grid; grid-template-columns: 6.5em 92px 92px 4em minmax(8em, 1fr) minmax(10em, 1.4fr); gap: var(--espaco-2); align-items: center; min-height: 24px; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); font-size: var(--fs-pequeno); }
+/* janela estreita: a coluna "Semanal" e a "Zera" somem (a previsão de zerar segue na aba Previsão e eficiência) */
+@media (max-width: 730px) {
+  .consumo-linha { grid-template-columns: minmax(5.5em, 1fr) 80px 4em minmax(9em, 1.4fr); }
+  .consumo-linha > :nth-child(3), .consumo-linha > :nth-child(5) { display: none; }
+}
+.consumo-linha-cab { color: var(--texto-discreto); position: sticky; top: 0; background: var(--fundo); z-index: 1; }
+.consumo-grupo { padding: var(--espaco-2) var(--espaco-2) var(--espaco-1); color: var(--texto-discreto); font-size: var(--fs-pequeno); font-weight: 600; }
+.consumo-selo { display: inline-flex; padding: 0 var(--espaco-2); border: 1px solid var(--borda); border-radius: 8px; font-size: var(--fs-micro); margin-right: var(--espaco-1); }
+.consumo-selo[data-tom="aviso"] { border-color: var(--aviso); color: var(--aviso); }
+.consumo-selo[data-tom="alerta"] { border-color: var(--alerta); color: var(--alerta); }
+.consumo-secao { padding: var(--espaco-2) var(--espaco-2); }
+.consumo-secao h2 { margin: 0 0 var(--espaco-1); font-size: var(--fs-rotulo); }
+.consumo-nota { color: var(--texto-suave); font-size: var(--fs-pequeno); margin: var(--espaco-1) 0 var(--espaco-2); }
+.consumo-alerta { display: flex; gap: var(--espaco-2); align-items: center; min-height: 24px; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); font-size: var(--fs-pequeno); }
+.consumo-alerta > span { flex: 1; }
+.consumo-troca { display: grid; grid-template-columns: 7.5em 1fr 8em 6em 5em 4.5em minmax(8em, 1.2fr) auto; gap: var(--espaco-2); align-items: center; height: 26px; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); font-size: var(--fs-pequeno); }
+.consumo-troca > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.consumo-troca[data-status="sugerida"] { box-shadow: inset 2px 0 var(--aviso); }
+/* log de trocas colapsa em telas menores: o motivo (≤1000) e o recibo/tipo (≤730) somem do grid e ficam no title da linha */
+@media (max-width: 1000px) {
+  .consumo-troca { grid-template-columns: 7.5em 1fr 8em 5em 4.5em minmax(8em, 1.2fr) auto; }
+  .consumo-troca > :nth-child(4) { display: none; }
+}
+@media (max-width: 730px) {
+  .consumo-troca { grid-template-columns: 7em minmax(0, 1fr) 5.5em 4.5em auto; }
+  .consumo-troca > :nth-child(3), .consumo-troca > :nth-child(4), .consumo-troca > :nth-child(7) { display: none; }
+}
+.consumo-lista-alta { height: 100%; min-height: 160px; }
+.grafico { margin: 0; }
+/* o SVG escala com a largura: sem teto o texto dos eixos virava 18 px em telas largas (VIS) */
+.grafico svg[role="img"] { max-width: 640px; }
+.grafico-grade { stroke: var(--borda); stroke-width: 1; }
+.grafico-limiar { stroke: var(--aviso); stroke-width: 1; }
+.grafico-eixo { fill: var(--texto-discreto); font: var(--fs-micro) var(--mono); }
+.grafico-linha { stroke: var(--destaque-texto); stroke-width: 1.5; }
+.grafico-linha[data-i="1"] { stroke: var(--destaque-2); }
+.grafico-linha[data-i="2"] { stroke: var(--aviso); }
+.grafico-linha[data-i="3"] { stroke: var(--sucesso); }
+.grafico-marca { fill: var(--destaque-texto); }
+.grafico-vazio { stroke: var(--borda-campo); }
+.grafico-barra { fill: var(--destaque); opacity: 0.85; }
+.grafico-barra[data-destaque] { fill: var(--alerta); }
+.grafico-barra-topo { stroke: var(--texto); stroke-width: 2; }
+.grafico-legenda { display: flex; flex-wrap: wrap; gap: var(--espaco-3); font-size: var(--fs-micro); color: var(--texto-suave); }
+.grafico-spark { vertical-align: middle; }
+
+/* Detalhe por uso e Fontes e preços (Fase 10): linhas densas de 24 px, só tokens. */
+.uso { display: flex; flex-direction: column; gap: var(--espaco-1); padding: var(--espaco-1) var(--espaco-2) var(--espaco-2); font-size: var(--fs-pequeno); }
+.uso-controles { display: flex; align-items: center; gap: var(--espaco-2); min-height: 26px; flex-wrap: wrap; }
+.uso-controles select, .fp input, .fp select { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--superficie); color: var(--texto); font: var(--fs-pequeno) var(--fonte); }
+.uso-linha { display: grid; grid-template-columns: minmax(8em, 1.6fr) 5.5em 5.5em 5.5em 9em 3em; gap: var(--espaco-2); align-items: center; width: 100%; height: 24px; padding: 0 var(--espaco-2); border: 0; border-bottom: 1px solid var(--borda); background: none; color: var(--texto); font: var(--fs-pequeno) var(--fonte); text-align: left; }
+@media (max-width: 730px) { .uso-linha { grid-template-columns: minmax(6em, 1.6fr) 4.5em 4.5em 4.5em 7em 3em; } }
+.uso-linha-cab { color: var(--texto-discreto); }
+.uso-clicavel { cursor: pointer; }
+.uso-clicavel:hover, .uso-clicavel[aria-pressed="true"] { background: var(--superficie); }
+.uso-clicavel:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.uso-rotulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uso-lista { height: min(40vh, 360px); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
+.uso-semfonte { height: auto; min-height: 24px; box-shadow: inset 2px 0 var(--aviso); }
+.uso-proximo { grid-column: 1 / -1; color: var(--texto-suave); padding-bottom: var(--espaco-1); }
+.uso-total { font-weight: 600; }
+.uso-secao { padding: var(--espaco-2) 0; border-top: 1px solid var(--borda); }
+.uso-secao h2 { margin: 0 0 var(--espaco-1); font-size: var(--fs-rotulo); }
+.fp { display: flex; flex-direction: column; gap: var(--espaco-2); padding: var(--espaco-1) var(--espaco-2) var(--espaco-2); font-size: var(--fs-pequeno); }
+.fp h2 { margin: var(--espaco-2) 0 var(--espaco-1); font-size: var(--fs-rotulo); }
+.fp-linha { display: grid; grid-template-columns: minmax(8em, 1.4fr) 5em 5em 5em 5em minmax(6em, 1fr) 7em; gap: var(--espaco-2); align-items: center; min-height: 24px; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); }
+@media (max-width: 730px) { .fp-linha { grid-template-columns: minmax(6em, 1.4fr) 4em 4em 4em 4em minmax(5em, 1fr) 5.5em; } }
+.fp-fonte { display: grid; grid-template-columns: 6em 6em 1fr 8em; gap: var(--espaco-2); align-items: center; min-height: 24px; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); }
+.fp-form { display: flex; flex-wrap: wrap; align-items: end; gap: var(--espaco-2); }
+.fp-form label { display: flex; flex-direction: column; gap: var(--espaco-1); color: var(--texto-discreto); font-size: var(--fs-micro); }
+.fp-acoes { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; }
+
+/* provedor → conta → modelo (mesmos componentes do popover; ver casca/uso e limites.css) */
+.consumo-grupo { display: flex; align-items: center; gap: 6px; }
+/* itens da linha podem encolher (sem isso o min-content da coluna Conta empurrava o resto para fora da tela) */
+.consumo-linha > * { min-width: 0; }
+.consumo-linha strong { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.consumo-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.consumo-linha strong .consumo-nota { flex: none; margin: 0; }
+.consumo-por-modelo { list-style: none; margin: 0; padding: 0 var(--espaco-2); display: flex; flex-direction: column; gap: var(--espaco-3); }
+.consumo-por-modelo > li { padding: var(--espaco-2) 0; }
+.consumo-modelos-conta { padding-left: 26px; margin-bottom: var(--espaco-2); max-width: 520px; }

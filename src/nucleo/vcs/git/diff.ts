@@ -347,7 +347,7 @@ export interface OpcoesDiffGit extends OpcoesDiff {
   executavel?: string;
 }
 
-const ARGS_BASE = ["diff", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", "--find-renames"];
+const ARGS_BASE = ["diff", "--no-color", "--no-ext-diff", "--no-textconv", "--src-prefix=a/", "--dst-prefix=b/", "--find-renames"];
 
 /** Diff do repositório (ou de um arquivo), em stream, com limite de tamanho e marcação "grande". */
 export async function diffGit(raiz: string, op: OpcoesDiffGit = {}): Promise<Diff> {

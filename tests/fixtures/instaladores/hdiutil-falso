@@ -1,0 +1,23 @@
+#!/bin/sh
+# Dublê de `hdiutil`: attach copia $FALSO_APP_DIR para <base>/dmg.falso; detach remove e registra em $FALSO_LOG.
+case "$1" in
+  attach)
+    [ -n "$FALSO_FALHA_ATTACH" ] && { echo "hdiutil: attach failed - not recognized" >&2; exit 1; }
+    base=""
+    prox=0
+    for a in "$@"; do
+      if [ "$prox" = 1 ]; then base="$a"; prox=0; fi
+      [ "$a" = "-mountrandom" ] && prox=1
+    done
+    mp="$base/dmg.falso"
+    mkdir -p "$mp"
+    cp -R "$FALSO_APP_DIR"/. "$mp"/
+    echo "attach $mp" >> "$FALSO_LOG"
+    printf '/dev/disk99\tGUID_partition_scheme\t\n/dev/disk99s1\tApple_HFS\t%s\n' "$mp"
+    exit 0 ;;
+  detach)
+    echo "detach $2" >> "$FALSO_LOG"
+    rm -rf "$2"
+    exit 0 ;;
+esac
+exit 0

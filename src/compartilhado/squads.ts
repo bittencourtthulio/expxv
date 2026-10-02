@@ -26,7 +26,7 @@ export const NIVEIS_RIGIDEZ = [1, 2, 3, 4, 5] as const;
 export type NivelRigidez = (typeof NIVEIS_RIGIDEZ)[number];
 
 /** CLIs do catálogo + `auto` (a faixa escolhe; Fase 9). O IPC só recusa formato; `cli_desconhecida` é achado (T-14.04). */
-export const CLIS_CATALOGO = ["claude", "codex", "opencode", "gemini", "aider", "qwen", "kilo"] as const;
+export const CLIS_CATALOGO = ["claude", "codex", "opencode", "gemini", "aider", "qwen", "kilo", "grok"] as const;
 /** O orquestrador exige CLI com contrato de intake (D-203). */
 export const CLIS_COM_INTAKE = ["claude", "codex", "opencode"] as const;
 export const CLI_AUTO = "auto";
@@ -207,6 +207,35 @@ export interface FabricaAtualizacao {
 export interface PedidoFabricaAplicar {
   slug: string;
   membros: string[];
+  /**
+   * Membros `editado` que o usuário aceitou sobrescrever depois de ver o diff lado a lado (subconjunto de `membros`). Sem isto
+   * o `editado` nunca é tocado; `removido` continua intocável. Aditivo (Fase 14, onda 6).
+   */
+  sobrescrever_editados?: string[];
+}
+/** Lado a lado de UM membro entre a cópia do usuário e a fábrica nova (prompt + configuração); vazio = não existe naquele lado. */
+export interface PedidoFabricaDiff {
+  slug: string;
+  /** slug do membro ou `@squad` (campos da squad). */
+  membro: string;
+}
+export interface FabricaDiff {
+  membro: string;
+  estado: EstadoMembroFabrica;
+  atual: string;
+  fabrica: string;
+}
+
+// ---- lixeira (apagar nunca remove de verdade) ----
+export interface ItemLixeiraSquad {
+  /** nome da pasta na lixeira (`<slug>-<AAAAMMDDHHMMSS>-<hex>`); é o identificador para restaurar. */
+  nome: string;
+  slug: string;
+  /** ISO aproximado extraído do nome; `null` se ilegível. */
+  apagada_em: string | null;
+}
+export interface PedidoRestaurarLixeira {
+  nome: string;
 }
 
 // ---- execução (caixa de prompt) ----
@@ -241,6 +270,21 @@ export interface ResultadoEnviarPrompt {
   pane_id: string;
   avisos: string[];
 }
+/** Arquivos que o orquestrador grava na pasta da Missão e a UI lê (somente leitura, sempre texto). */
+export const ARQUIVOS_EXECUCAO = ["plano", "resultado"] as const;
+export type ArquivoExecucao = (typeof ARQUIVOS_EXECUCAO)[number];
+export interface PedidoArquivoExecucao {
+  execucao_id: string;
+  arquivo: ArquivoExecucao;
+}
+export interface ResultadoArquivoExecucao {
+  existe: boolean;
+  /** conteúdo (≤ 256 KiB, sem controles, segredos redigidos); `null` quando não existe. Nunca vira HTML na UI. */
+  texto: string | null;
+  truncado: boolean;
+}
+export const LIMITE_ARQUIVO_EXECUCAO_BYTES = 256 * 1024;
+
 /** Estado de uma execução, derivado do estado da Missão e dos portões (não é coluna do banco). */
 export const ESTADOS_EXECUCAO_SQUAD = ["intake", "plano", "executando", "revisando", "concluida", "falhou", "abortada"] as const;
 export type EstadoExecucaoSquad = (typeof ESTADOS_EXECUCAO_SQUAD)[number];
@@ -286,7 +330,7 @@ export interface ResultadoExportarSquad {
 export interface PedidoImportarPrevia {
   origem: DestinoExportar;
   workspace_id?: string;
-  /** slug da pasta em `.expxv/squads/` quando `origem = "repo"`. */
+  /** slug da pasta de squads exportada no repositório quando `origem = "repo"`. */
   nome?: string;
 }
 export interface PreviaImportacao {
@@ -295,6 +339,8 @@ export interface PreviaImportacao {
   achados: Achado[];
   mcps_removidos: string[];
   skills_removidas: string[];
+  /** membro (slug) → texto COMPLETO do prompt, já validado (≤ 16 KiB, sem segredo): a UI o mostra antes de confirmar. */
+  prompts: Record<string, string>;
 }
 export interface PedidoImportarConfirmar {
   previa_id: string;

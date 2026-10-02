@@ -9,6 +9,10 @@ files:
   - package.json
   - "!**/*.test.*"
   - "!**/*.map"
+  # squads de fábrica: o pacote as leva por extraResources (arquivos reais); a cópia de dist/squads (scripts/lib/ativos.mjs) fica fora do asar.
+  - "!dist/squads/**/*"
+  # Fase 22 (D-366): o servidor do relay roda na VPS do dono, NUNCA dentro do app. Só `protocolo.js` (compartilhado com o cliente do host) fica no pacote.
+  - "!dist/nucleo/relay/{servidor,ws-servidor,roteador,limites,log,main}.js"
   # node-pty: só o necessário em runtime (prebuilds + lib); fontes e deps de compilação ficam fora.
   - "!node_modules/node-pty/{src,deps,third_party,scripts,typings}/**/*"
   - "!node_modules/**/{README*,CHANGELOG*,*.md,*.ts,*.mts,*.cts,*.map,test,tests,__tests__,spec,docs,example,examples,.github,.nycrc,.eslintrc*,.editorconfig,.npmignore,.travis.yml,*.markdown}"
@@ -28,6 +32,10 @@ files:
   - node_modules/hono/package.json
   - node_modules/hono/dist/cjs/package.json
   - node_modules/hono/dist/cjs/helper/websocket/index.js
+  # web-tree-sitter (Fase 17): o worker de extração só carrega o CommonJS (`web-tree-sitter.cjs`) e o `.wasm`; a cópia ESM e a
+  # versão de depuração (2,7 MB) ficam fora. As gramáticas (`dist/nucleo/mapa/gramaticas/*.wasm`) vêm de scripts/lib/ativos.mjs.
+  - "!node_modules/web-tree-sitter/debug/**/*"
+  - "!node_modules/web-tree-sitter/web-tree-sitter.js"
   # D-24: o auto-update está desligado e nada em src/ importa electron-updater; ele e as dependências
   # exclusivas dele ficam fora do pacote (tests/scripts/empacotamento.test.ts barra o import sem tirar esta linha).
   - "!node_modules/{electron-updater,builder-util-runtime,fs-extra,graceful-fs,jsonfile,universalify,js-yaml,argparse,lazy-val,lodash.escaperegexp,lodash.isequal,semver,tiny-typed-emitter,sax}/**/*"
@@ -48,6 +56,17 @@ asarUnpack:
   # worker de indexação do método (worker_threads não lê de dentro do asar) e a única dependência dele.
   - dist/nucleo/metodo/**/*
   - node_modules/yaml/**/*
+  # mapa lógico do código (Fase 17): o worker de extração (worker_threads não lê de dentro do asar), o fecho do que ele
+  # carrega (extratores, métricas, redação, validação) e as gramáticas WASM ficam FORA do asar; o `web-tree-sitter` é a
+  # única dependência de execução do worker (`Parser.init` e `Language.load` leem arquivos `.wasm` por caminho real).
+  - dist/nucleo/mapa/**/*
+  - node_modules/web-tree-sitter/**/*
+  # fase DERIVADA do mapa (worker_threads, `worker-derivada.js`): o que ela carrega fora de dist/nucleo/mapa (banco SQLite, executor do git,
+  # o tipo de erro do git, o nome do produto e as constantes compartilhadas do mapa). `yaml` já está acima.
+  - dist/compartilhado/mapa.js
+  - dist/nucleo/banco/banco.js
+  - dist/nucleo/git/erros.js
+  - dist/nucleo/vcs/executor.js
   # servidor MCP do app: roda numa worker thread (fora do asar), junto com o fecho do que ele carrega
   # (tools, regras, domínio) e suas dependências de execução.
   - dist/main/mcp-worker.js
@@ -55,20 +74,84 @@ asarUnpack:
   - dist/nucleo/mcp/**/*
   - dist/nucleo/dominio/**/*
   - dist/nucleo/produto.js
+  # `pane_spawn` sem provedor (T-09.16): a tool do MCP importa `aplicarSkills` (puro, sem dependências).
+  - dist/nucleo/harness/skills.js
+  # RAG (Fase 15): a regra de consulta obrigatória (orquestracao/regras.js) e o envelope do contexto (mcp/tools/rag.js) são módulos puros do fecho do worker MCP.
+  - dist/nucleo/conhecimento/contexto/regra.js
+  - dist/nucleo/conhecimento/contexto/envelope.js
+  # conhecimento / RAG local (Fase 15): o worker thread que abre o `conhecimento.db` (worker_threads não lê de dentro do asar) e o fecho do que ele
+  # carrega (núcleo do conhecimento, banco SQLite, redação da memória, rede/consentimento do backend online e domínio). Sem dependência nativa nova.
+  - dist/main/conhecimento-worker.js
+  # custo (Fase 10): worker thread que lê os transcripts das CLIs por offset (worker_threads não lê de dentro do asar) e o fecho do que ele carrega
+  - dist/nucleo/custo/**/*
+  - dist/nucleo/conhecimento/**/*
+  - dist/nucleo/banco/**/*
+  - dist/nucleo/memoria/**/*
+  - dist/nucleo/rede/**/*
   # hooks por Pane (gancho.mjs roda com o executável do app como Node) e prompts editáveis.
   - dist/nucleo/orquestracao/**/*
+  # catálogo (Fase 7): o worker de varredura (worker_threads não lê de dentro do asar) e o fecho do que ele carrega (scanners, saneamento, frontmatter);
+  # o resto do fecho (`metodo/**`, `produto.js`, `yaml`) já está acima.
+  - dist/nucleo/catalogo/**/*
+  - dist/compartilhado/catalogo.js
+  # statusline do Claude (Fase 9): lida pelo main e copiada para userData; fora do asar por ser executada como processo.
+  - dist/nucleo/limites/scripts/**/*
+  # voz local embutida (Fase 11, D-544): o PROCESSO de reconhecimento (roda com ELECTRON_RUN_AS_NODE, não lê de dentro do asar) e o addon N-API pré-compilado
+  # (`sherpa-onnx-node` + o pacote nativo da plataforma: dylib/dll/.node precisam existir em disco). O worker é autocontido: só módulos do Node e o addon.
+  - dist/nucleo/voz/local/worker-sherpa.js
+  - node_modules/sherpa-onnx-node/**/*
+  - node_modules/{sherpa-onnx-darwin-arm64,sherpa-onnx-darwin-x64,sherpa-onnx-win-x64}/**/*
   - node_modules/@modelcontextprotocol/sdk/**/*
   - node_modules/@hono/node-server/**/*
   - node_modules/hono/package.json
   - node_modules/hono/dist/cjs/package.json
   - node_modules/hono/dist/cjs/helper/websocket/index.js
   - node_modules/{zod,zod-to-json-schema,ajv,ajv-formats,fast-deep-equal,json-schema-traverse,fast-uri,content-type}/**/*
+# Fase 9 (T-09.11): tabela de equivalência por faixa (editável pelo dono); lida do disco no boot, fora do asar.
+# Outras pastas de `resources/` entram aqui com uma entrada própria (nunca duplicar a chave `extraResources`).
+extraResources:
+  - from: resources/harness
+    to: harness
+    filter:
+      - equivalencia.json
+  # Fase 11 (voz local, D-541/D-544): catálogo versionado de modelos (URLs fixas, tamanhos e sha256) e as amostras do autoteste; arquivos reais, somente leitura.
+  # NENHUM modelo viaja no pacote: o modelo só é baixado por ação consentida (D-542).
+  - from: resources/voz
+    to: voz
+    filter:
+      - modelos.json
+      - "amostra-*.wav"
+  # Fase 14 (T-14.08): squads de fábrica (squad.json + membros/*.md por squad, manifesto, rigor e tabela de esforço), somente leitura,
+  # em arquivos reais fora do asar (o app lê `<resources>/squads`). `arquetipos/` é só insumo do gerador e não viaja.
+  - from: resources/squads
+    to: squads
+    filter:
+      - "**/*"
+      - "!arquetipos/**"
+  # Fase 7 (catálogo): skills embarcadas `ev-*` + manifesto sha256, em arquivos reais fora do asar. Só são copiadas para a casa da pessoa por ação
+  # explícita (instalação global opt-in) ou, por Pane, para o plugin efêmero em <userData>/panes/<pane_id>/plugin (D-43).
+  - from: resources/skills
+    to: skills
+    filter:
+      - manifesto.json
+      - "ev-*/SKILL.md"
+  # Fase 7B (Loja de MCPs): seed curado, lista de bloqueio, locks por servidor e o lançador `mcp-run.mjs` (roda como processo próprio:
+  # arquivo real fora do asar). Nada aqui instala servidor: o download só acontece por clique do usuário, em <userData>/mcp/<id>/.
+  - from: resources/mcp
+    to: mcp
+    filter:
+      - catalogo-mcps.json
+      - catalogo-mcps.json.sha256
+      - bloqueio.json
+      - mcp-run.mjs
+      - "locks/**/*"
 mac:
   category: public.app-category.developer-tools
   artifactName: ExpxV-universal.${ext}
   # node-pty distribui prebuilds imutáveis das duas arquiteturas; só build/Release/pty.node é
   # recompilado por arquitetura e unido pelo lipo.
-  x64ArchFiles: "**/node_modules/node-pty/{bin,prebuilds}/**/*"
+  # O addon de voz também viaja nas duas arquiteturas (sherpa-onnx-darwin-arm64 e -x64), igual nos dois .app: cada um já é de uma só arquitetura.
+  x64ArchFiles: "**/node_modules/{node-pty/{bin,prebuilds},sherpa-onnx-darwin-arm64,sherpa-onnx-darwin-x64}/**/*"
   # O @electron/universal, ao fundir os asars, monta UM glob com o caminho completo de cada arquivo de asarUnpack
   # e estoura o limite de 65 536 caracteres do minimatch ("pattern is too long"). Aqui os dois asars são
   # idênticos (os prebuilds do node-pty das duas arquiteturas viajam juntos), então não há o que fundir.
@@ -79,6 +162,12 @@ mac:
     - target: zip
       arch: [universal]
   icon: build/icon.icns
+  # Fase 11 (T-11.01): microfone para o ditado. O texto de uso aparece no diálogo do SO (só no 1º uso, depois do diálogo do app); o entitlement vale com runtime endurecido
+  # (quando houver assinatura, P-03/P-36). Tela: o macOS não exige chave de uso; a permissão de Gravação de Tela é pedida em tempo de execução, por ação da pessoa.
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    NSMicrophoneUsageDescription: "Para transformar a sua fala em texto no terminal (ditado). O áudio não é gravado em disco nem enviado sem o seu aceite."
   # só os idiomas do produto (UI em PT-BR); os demais pacotes de idioma do Chromium saem do .app.
   electronLanguages: [pt_BR, pt, en]
 win:
@@ -91,6 +180,8 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+  # nunca apaga os dados do usuário ao desinstalar (D-23/F7, Fase 21)
+  deleteAppDataOnUninstall: false
 # D-24: atualização desligada enquanto não houver repositório de releases; nenhuma chamada de rede
 # sem app empacotado e configurado.
 publish:

@@ -1,36 +1,37 @@
-.mis-visao { display: inline-flex; gap: 4px; }
+.mis-visao { display: inline-flex; gap: var(--espaco-1); }
 .mis-lista { height: min(70vh, 640px); border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
-.mis-linha { display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 100%; height: 100%; padding: 6px 14px; border: 0; border-bottom: 1px solid var(--borda); background: none; color: var(--texto); text-align: left; }
-.mis-linha:hover { background: var(--superficie); }
-.mis-linha-titulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
-.mis-linha-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0; font-size: 12px; color: var(--texto-suave); }
-.mis-linha-meta code { font: 11px var(--mono); color: var(--texto-discreto); }
-.mis-quadro { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
-.mis-coluna { flex: 0 0 240px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
-.mis-coluna h3 { display: flex; gap: 8px; align-items: center; margin: 0; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--borda); }
-.mis-coluna-corpo { height: min(60vh, 520px); }
-.mis-coluna .mis-linha { border-bottom: 1px solid var(--borda); }
-.mis-detalhe h2 { margin: 0 0 8px; font-size: 1.15rem; }
-.mis-detalhe h3 { margin: 18px 0 8px; font-size: 13px; color: var(--texto-suave); }
-.mis-itens { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
-.mis-itens li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
-.mis-itens code { font: 12px var(--mono); color: var(--texto-discreto); }
-.mis-vazio { margin: 0; color: var(--texto-discreto); font-size: 13px; }
+/* D-694: a linha de Missão é o padrão único (ItemLista/lst-*); a célula virtualizada só preenche a altura */
+.mis-lista .lst-linha, .mis-coluna-corpo .lst-linha { height: 100%; }
+.mis-linha-meta { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; margin: 0; font-size: var(--fs-rotulo); color: var(--texto-suave); }
+.mis-linha-meta code { font: var(--fs-pequeno) var(--mono); color: var(--texto-discreto); }
+.mis-quadro { display: flex; gap: var(--espaco-3); overflow-x: auto; padding-bottom: var(--espaco-2); }
+.mis-coluna { flex: 1 0 220px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
+.mis-coluna h3 { display: flex; gap: var(--espaco-2); align-items: center; margin: 0; padding: var(--espaco-3) var(--espaco-3); font-size: var(--fs-base); border-bottom: 1px solid var(--borda); }
+.mis-coluna-corpo { height: clamp(360px, 62vh, 1000px); }
+.mis-detalhe h2 { margin: 0 0 var(--espaco-2); font-size: 1.15rem; }
+.mis-detalhe h3 { margin: var(--espaco-5) 0 var(--espaco-2); font-size: var(--fs-base); color: var(--texto-suave); }
+.mis-itens { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--espaco-2); font-size: var(--fs-base); }
+.mis-itens li { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; padding: var(--espaco-2) var(--espaco-3); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--painel); }
+.mis-itens code { font: var(--fs-rotulo) var(--mono); color: var(--texto-discreto); }
+.mis-vazio { margin: 0; color: var(--texto-discreto); font-size: var(--fs-base); }
 .custo-desconhecido { color: var(--texto-discreto); font-style: italic; }
-.mis-grupo { margin: 0 0 14px; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px; }
-.mis-grupo legend { margin-bottom: 6px; font-size: 13px; color: var(--texto-suave); }
-.mis-opcao { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.mis-grupo { margin: 0 0 var(--espaco-4); padding: 0; border: 0; display: flex; flex-direction: column; gap: var(--espaco-2); }
+.mis-grupo legend { margin-bottom: var(--espaco-2); font-size: var(--fs-base); color: var(--texto-suave); }
+.mis-opcao { display: flex; gap: var(--espaco-3); align-items: flex-start; font-size: var(--fs-campo); }
 .mis-opcao span { display: flex; flex-direction: column; }
-.mis-opcao small { color: var(--texto-discreto); font-size: 12px; }
-.mis-papeis-cab { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 10px; font-size: 13px; }
-.mis-portoes h3 { margin: 18px 0 8px; font-size: 13px; color: var(--texto-suave); }
-.mis-portoes-aviso { margin: 0 0 6px; padding: 6px 10px; border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); font-size: 12px; color: var(--texto); }
-.mis-portoes-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
-.mis-portoes-lista li { display: flex; align-items: center; gap: 8px; min-height: 24px; padding: 2px 8px; border-radius: var(--raio-pequeno); background: var(--painel); }
+.mis-opcao small { color: var(--texto-discreto); font-size: var(--fs-rotulo); }
+.mis-papeis-cab { display: flex; justify-content: space-between; align-items: center; margin: var(--espaco-1) 0 var(--espaco-3); font-size: var(--fs-base); }
+.mis-portoes h3 { margin: var(--espaco-5) 0 var(--espaco-2); font-size: var(--fs-base); color: var(--texto-suave); }
+.mis-portoes-aviso { margin: 0 0 var(--espaco-2); padding: var(--espaco-2) var(--espaco-3); border: 1px solid var(--aviso); border-radius: var(--raio-pequeno); font-size: var(--fs-rotulo); color: var(--texto); }
+.mis-portoes-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--espaco-1); font-size: var(--fs-rotulo); }
+.mis-portoes-lista li { display: flex; align-items: center; gap: var(--espaco-2); min-height: 24px; padding: var(--espaco-1) var(--espaco-2); border-radius: var(--raio-pequeno); background: var(--painel); }
 .mis-portoes-lista li[data-estado="liberado"] { color: var(--texto-suave); }
 .mis-portao-icone { flex: none; }
 .mis-portao-nome { min-width: 76px; }
 .mis-portao-estado { min-width: 52px; color: var(--texto-suave); }
 .mis-portao-papel { flex: 1; color: var(--texto-discreto); }
-.mis-portao-botao { margin-left: auto; min-height: 24px; padding: 0 8px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: 12px; }
+.mis-portao-botao { margin-left: auto; min-height: var(--botao-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto); font-size: var(--fs-rotulo); }
 .mis-portao-botao:hover { background: var(--superficie-2); }
+
+/* aba Board (Fase 10): ocupa a altura útil da página */
+.mis-board-host { height: min(76vh, 920px); min-height: 360px; }

@@ -1,0 +1,39 @@
+/* Indicadores de alertas na casca (Fase 20). Estado sempre por forma e texto; tokens existentes (AA nos dois temas). */
+.alertas-indicador { position: relative; display: inline-flex; }
+.alertas-botao { position: relative; }
+.alertas-badge {
+  position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center; font: 600 10px var(--mono);
+  background: var(--destaque); color: var(--sobre-destaque); border: 1px solid var(--painel);
+}
+.alertas-badge[data-critico] { background: var(--alerta); color: var(--fundo); }
+.alertas-ponto-critico {
+  position: absolute; bottom: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font: 700 9px var(--mono); background: var(--painel); color: var(--alerta); border: 1px solid var(--alerta);
+}
+.alertas-painel {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; width: 360px; max-width: 92vw; padding: 10px; border: 1px solid var(--borda); border-radius: var(--raio-pequeno);
+  background: var(--painel); color: var(--texto); box-shadow: 0 12px 32px var(--sombra); font-size: 12px;
+}
+.alertas-painel-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.alertas-link { border: 0; background: none; color: var(--destaque-texto); font-size: 12px; text-decoration: underline; cursor: pointer; padding: 2px 4px; }
+.alertas-link:disabled { color: var(--texto-discreto); cursor: default; text-decoration: none; }
+.alertas-painel-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow: auto; }
+.alertas-painel-lista li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; padding: 4px 6px; border-radius: 6px; background: var(--superficie); }
+.alertas-painel-lista li[data-lido] { opacity: 0.75; }
+.alertas-painel-titulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alertas-painel-tempo { grid-column: 2; color: var(--texto-discreto); font-size: 11px; }
+.alertas-painel-vazio { margin: 8px 0; color: var(--texto-suave); }
+.alertas-painel-rodape { display: flex; justify-content: flex-end; margin-top: 8px; }
+.alertas-painel-abrir { min-height: 28px; }
+.alertas-sev { font: 600 11px var(--mono); white-space: nowrap; }
+.alertas-sev[data-tom="alerta"] { color: var(--alerta); }
+.alertas-sev[data-tom="aviso"] { color: var(--aviso); }
+.alertas-sev[data-tom="sucesso"] { color: var(--sucesso); }
+.alertas-sev[data-tom="neutro"] { color: var(--texto-suave); }
+.alertas-check { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 13px; }
+.rodape-canal { border: 0; background: none; padding: 0; cursor: pointer; font: inherit; color: var(--texto-suave); }
+.rodape-canal[data-tom="erro"] { color: var(--alerta); }
+.rodape-canal[data-tom="aviso"] { color: var(--aviso); }
+.rodape-canal[data-tom="ok"] { color: var(--sucesso); }
+@media (prefers-reduced-motion: reduce) { .alertas-painel { transition: none; animation: none; } }

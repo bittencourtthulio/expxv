@@ -78,3 +78,15 @@ export function montarQuadro(t: Trabalho): Record<StatusTask, CardQuadro[]> {
   }
   return col;
 }
+
+export type FaseLegivel = "planejando" | "executando" | "aguardando" | "concluido";
+export const ROTULO_FASE_LEGIVEL: Record<FaseLegivel, string> = { planejando: "Planejando", executando: "Executando", aguardando: "Aguardando você", concluido: "Concluído" };
+const ESTAGIOS_DE_EXECUCAO = new Set(["f6", "e3", "e4", "e5", "b4", "b5", "b6"]);
+
+/** Status em linguagem de quem acompanha: o que o trabalho está fazendo agora. Humano pendente (assinatura, raio ALTO, bloqueio, decisão) vira "Aguardando você". */
+export function faseLegivel(t: Pick<Trabalho, "status" | "estagio" | "bloqueios" | "decisoes_pendentes" | "prodx" | "raio">): FaseLegivel {
+  if (t.status === "concluido") return "concluido";
+  const humano = t.status === "bloqueado" || t.decisoes_pendentes > 0 || (t.prodx !== null && t.prodx.veredito !== null && !t.prodx.assinado) || (t.raio !== null && t.raio.faixa?.toLowerCase() === "alto" && !t.raio.aprovado);
+  if (humano) return "aguardando";
+  return ESTAGIOS_DE_EXECUCAO.has(t.estagio.toLowerCase()) && t.status === "em_andamento" ? "executando" : "planejando";
+}

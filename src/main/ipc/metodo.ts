@@ -20,6 +20,11 @@ const TABELA_GESTOS: Record<GestoMetodo, true> = {
   entrega_atencao: true,
   entrega_qa: true,
   entrega_pr: true,
+  gerar_convencoes: true,
+  gerar_produto: true,
+  gerar_memoria: true,
+  gerar_design_system: true,
+  gerar_perfil_legado: true,
 };
 export const GESTOS_METODO = Object.keys(TABELA_GESTOS) as GestoMetodo[];
 

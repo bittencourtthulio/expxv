@@ -1,0 +1,1 @@
+{ "name": "expxdev", "version": "0.0.0", "bin": { "expx": "dist/cli/expx-bin.js", "expxdev": "dist/cli/expx-bin.js" }, "engines": { "node": ">=20.19.0" } }

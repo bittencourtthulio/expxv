@@ -1,0 +1,4 @@
+{
+  // base com comentário e vírgula sobrando
+  "compilerOptions": { "baseUrl": ".", "paths": { "@app/*": ["src/*"], }, "moduleResolution": "bundler", "module": "esnext", "allowImportingTsExtensions": true }
+}

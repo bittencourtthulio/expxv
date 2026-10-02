@@ -61,7 +61,7 @@ export function remover(arvore: NoPainel, id: string): NoPainel | null {
 export interface AbaLeve { arvore: NoPainel }
 
 /** Estado atual → layout gravável: só sessões que existem; aba vazia sai; fixada só vale se ainda é raiz de aba. */
-export function montarLayout(abas: readonly AbaLeve[], ativa: string | null, fixadas: readonly string[], existe: (id: string) => boolean): LayoutTerminais {
+export function montarLayout(abas: readonly AbaLeve[], ativa: string | null, fixadas: readonly string[], existe: (id: string) => boolean, extras: { expandido?: string | null; focoUnico?: boolean } = {}): LayoutTerminais {
   const saida: LayoutTerminais["abas"] = [];
   for (const aba of abas) {
     const arvore = podar(aba.arvore, existe);
@@ -69,16 +69,21 @@ export function montarLayout(abas: readonly AbaLeve[], ativa: string | null, fix
   }
   const raizes = new Set(saida.map((a) => folhas(a.arvore)[0]));
   const todas = new Set(saida.flatMap((a) => folhas(a.arvore)));
-  return {
+  const layout: LayoutTerminais = {
     versao: 2,
     ativa: ativa !== null && todas.has(ativa) ? ativa : null,
     abas: saida,
     fixadas: fixadas.filter((id, i) => raizes.has(id) && fixadas.indexOf(id) === i),
   };
+  // D-570: modo foco lembrado por workspace
+  if (extras.expandido != null && todas.has(extras.expandido)) layout.expandido = extras.expandido;
+  if (extras.focoUnico === true) layout.foco_unico = true;
+  return layout;
 }
 
 /** Layout guardado + sessões que o daemon devolveu → grupos a montar. Tolera o que mudou desde que foi gravado. */
 export function restaurarLayout(layout: Pick<LayoutTerminais, "ativa" | "abas"> & { fixadas?: string[] } | null, sessoes: readonly string[]): { grupos: NoPainel[]; ativa: string | null; fixadas: string[] } {
+  // (o modo foco — `expandido`/`foco_unico` — é lido por quem chama, em `restaurar`)
   const disponiveis = new Set(sessoes);
   const usadas = new Set<string>();
   const grupos: NoPainel[] = [];

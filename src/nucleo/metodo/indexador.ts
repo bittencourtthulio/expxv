@@ -1,9 +1,10 @@
+import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import { descobrir } from "./descoberta";
 import { montarTrabalhos } from "./modelo";
 import { criarTailJsonl } from "./parser/jsonl";
 import { lerArtefato } from "./parser/leitores";
-import type { Artefato, EventoRastro, IndiceProjeto, Rejeicao } from "./tipos";
+import type { Artefato, CamadaComData, EventoRastro, IndiceProjeto, Rejeicao } from "./tipos";
 
 export interface OpcoesIndexador {
   /** relógio injetado (epoch ms). */
@@ -38,6 +39,30 @@ async function emLotes<T, R>(itens: T[], limite: number, fn: (x: T) => Promise<R
     }
   });
   await Promise.all(trabalhadores);
+  return saida;
+}
+
+/** Arquivo de cada camada de contexto (relativo à raiz); só estas cinco têm data. */
+const ARQUIVO_DA_CAMADA: Readonly<Record<CamadaComData, string>> = {
+  convencoes: "docs/stack/CONVENCOES.md",
+  perfil_legado: "docs/legado/PERFIL.md",
+  design_system: "docs/design-system/DESIGN-SYSTEM.md",
+  produto: "docs/produto/PRODUTO.md",
+  memoria: ".expx/memoria/indice.json",
+};
+
+/** Um `stat` por camada presente (barato, só nos arquivos já descobertos). Nunca lança: falha vira "sem data". */
+async function datasDasCamadas(raiz: string, presentes: Readonly<Record<CamadaComData, boolean>>): Promise<Partial<Record<CamadaComData, string>>> {
+  const saida: Partial<Record<CamadaComData, string>> = {};
+  await Promise.all(
+    (Object.keys(ARQUIVO_DA_CAMADA) as CamadaComData[]).filter((c) => presentes[c]).map(async (c) => {
+      try {
+        saida[c] = (await stat(join(raiz, ...ARQUIVO_DA_CAMADA[c].split("/")))).mtime.toISOString();
+      } catch {
+        /* sem data */
+      }
+    }),
+  );
   return saida;
 }
 
@@ -132,6 +157,15 @@ export function criarIndexador(opcoes: OpcoesIndexador = {}): Indexador {
           artefatos.set(a.caminho, uso);
         }
 
+        const camadas = {
+          convencoes: d.camadas.includes("docs/stack/CONVENCOES.md"),
+          perfil_legado: d.camadas.includes("docs/legado/PERFIL.md"),
+          design_system: d.camadas.includes("docs/design-system/DESIGN-SYSTEM.md"),
+          produto: d.camadas.includes("docs/produto/PRODUTO.md"),
+          hooks: d.config.hooks,
+          lock: d.config.lock,
+          memoria: d.config.memoria,
+        };
         const trabalhos = montarTrabalhos({ descoberta: d, artefatos, eventos, agora, ...(opcoes.diasBloqueio === undefined ? {} : { diasBloqueio: opcoes.diasBloqueio }) });
         return {
           raiz,
@@ -141,15 +175,8 @@ export function criarIndexador(opcoes: OpcoesIndexador = {}): Indexador {
           violacoes: trabalhos.flatMap((t) => t.violacoes),
           rejeicoes,
           avisos,
-          camadas: {
-            convencoes: d.camadas.includes("docs/stack/CONVENCOES.md"),
-            perfil_legado: d.camadas.includes("docs/legado/PERFIL.md"),
-            design_system: d.camadas.includes("docs/design-system/DESIGN-SYSTEM.md"),
-            produto: d.camadas.includes("docs/produto/PRODUTO.md"),
-            hooks: d.config.hooks,
-            lock: d.config.lock,
-            memoria: d.config.memoria,
-          },
+          camadas,
+          camadas_mtime: await datasDasCamadas(raiz, camadas),
           artefatos_lidos: lidos.length,
         };
       } catch (erro) {

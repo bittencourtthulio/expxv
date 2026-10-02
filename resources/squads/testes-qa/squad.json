@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "slug": "testes-qa",
+  "nome": "Testes e QA",
+  "descricao": "Gera testes que falham com a implementação errada e mede a cobertura antes e depois.",
+  "escopo": "qualidade",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 5,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "testes-qa",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "gerador-de-testes",
+      "papel": "executor",
+      "rotulo": "Gerador de testes",
+      "descricao": "Escreve testes de integração e funcionais que discriminam.",
+      "prompt": "membros/gerador-de-testes.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-builder",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "context7",
+        "playwright-mcp"
+      ],
+      "hooks": [],
+      "max_instancias": 3,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "analista-de-cobertura",
+      "papel": "scout",
+      "rotulo": "Analista de cobertura",
+      "descricao": "Mede a cobertura e aponta o que está sem teste e é arriscado.",
+      "prompt": "membros/analista-de-cobertura.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "haiku",
+        "esforco": "baixo",
+        "faixa": "rapido"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor-de-testes",
+      "papel": "reviewer",
+      "rotulo": "Revisor de testes",
+      "descricao": "Revisão independente contra o contrato do card; só ele libera a conclusão.",
+      "prompt": "membros/revisor-de-testes.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

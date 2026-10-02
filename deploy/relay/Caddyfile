@@ -1,0 +1,13 @@
+# TLS automático (ACME) na frente do relay. RELAY_DOMINIO vem do ambiente do compose.
+{$RELAY_DOMINIO} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	@canal path /v1/canal/*
+	reverse_proxy @canal relay:8080
+	respond 404
+}

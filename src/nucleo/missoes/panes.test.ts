@@ -129,7 +129,7 @@ describe("preparador de lançamento (orquestração)", () => {
     const vistos: Array<{ pane: string; papel: string; contexto: unknown }> = [];
     panes.definirPreparador(async (e) => {
       vistos.push({ pane: e.pane.id, papel: e.pane.papel, contexto: e.pedido.contexto });
-      return { argumentos: ["--mcp-config", "/x/mcp.json", "fim"], ambiente: { TOKEN_DO_PANE: "abc" } };
+      return { argumentos: ["--mcp-config", "/x/mcp.json", "fim"], ambiente: { TOKEN_DO_PANE: "abc" }, prompt_embutido: true };
     });
     const r = await panes.abrirPane({ workspace_id: ws.id, cli: "claude", papel: "executor", argumentos: ["--antes"], prompt_inicial: "ignorado", contexto: { task: "t1" } });
     const s = sessoes.sessoes.get(r.sessao_id);
@@ -138,6 +138,24 @@ describe("preparador de lançamento (orquestração)", () => {
     expect(s?.ambiente).toMatchObject({ TOKEN_DO_PANE: "abc" });
     expect(vistos).toEqual([{ pane: r.pane.id, papel: "executor", contexto: { task: "t1" } }]);
     expect(repos.pane.exigir(r.pane.id).sessao_pty_id).toBe(r.sessao_id);
+  });
+
+  it("a permissão efetiva do preparador (agente de squad) chega às sessões; sem ela nada é enviado", async () => {
+    const { panes, ws, sessoes } = montar();
+    panes.definirPreparador(async (e) => (e.pedido.cli === "claude" ? { argumentos: [], ambiente: {}, permissao: "seguro" } : { argumentos: [], ambiente: {} }));
+    const a = await panes.abrirPane({ workspace_id: ws.id, cli: "claude", papel: "executor" });
+    const b = await panes.abrirPane({ workspace_id: ws.id, cli: "terminal" });
+    expect(sessoes.sessoes.get(a.sessao_id)?.permissao).toBe("seguro");
+    expect(sessoes.sessoes.get(b.sessao_id)?.permissao).toBeUndefined();
+  });
+
+  it("causa do 'pane vazio': preparo SEM prompt embutido (Pane livre com MCP/settings) não pode engolir o prompt inicial do disparo", async () => {
+    const { panes, ws, sessoes } = montar();
+    panes.definirPreparador(async () => ({ argumentos: ["--mcp-config", "/x/mcp.json", "--settings", "/x/s.json"], ambiente: {} }));
+    const r = await panes.abrirPane({ workspace_id: ws.id, cli: "claude", prompt_inicial: "/expx:prodx pedido" });
+    const s = sessoes.sessoes.get(r.sessao_id);
+    expect(s?.pedido["prompt_inicial"]).toBe("/expx:prodx pedido");
+    expect(s?.pedido["argumentos"]).toEqual(["--mcp-config", "/x/mcp.json", "--settings", "/x/s.json"]);
   });
 
   it("preparador que devolve null mantém o lançamento comum (com prompt inicial)", async () => {
@@ -297,6 +315,31 @@ describe("respawn", () => {
   it("Pane inexistente é erro nominal", async () => {
     const { panes } = montar();
     await expect(panes.respawn("pane_nada")).rejects.toBeInstanceOf(NaoEncontradoErro);
+  });
+
+  it("Fase 8: `opcoes.prompt_inicial` chega à sessão (Pane livre) e `opcoes.contexto` ao preparador; nada é persistido", async () => {
+    const { repos, panes, ws, sessoes, banco } = montar();
+    const a = await panes.abrirPane({ workspace_id: ws.id, cli: "claude" });
+    await panes.encerrarPane(a.pane.id, "fim");
+    const vistos: unknown[] = [];
+    panes.definirPreparador(async (e) => {
+      vistos.push(e.pedido.contexto);
+      return null;
+    });
+    const b = await panes.respawn(a.pane.id, { contexto: { brief: "BRIEF-X" }, prompt_inicial: "BRIEF-X" });
+    expect(vistos).toEqual([{ brief: "BRIEF-X" }]);
+    expect(sessoes.sessoes.get(b.sessao_id)?.pedido.prompt_inicial).toBe("BRIEF-X");
+    const dump = JSON.stringify(banco.consultar("SELECT * FROM pane")) + JSON.stringify(banco.consultar("SELECT * FROM sessao"));
+    expect(dump).not.toContain("BRIEF-X");
+    expect(repos.pane.exigir(b.pane.id).respawn_de).toBe(a.pane.id);
+  });
+
+  it("índice único `ux_pane_respawn_vivo`: um segundo filho vivo do mesmo Pane é recusado pelo banco", async () => {
+    const { panes, ws, repos } = montar();
+    const a = await panes.abrirPane({ workspace_id: ws.id, cli: "claude" });
+    await panes.encerrarPane(a.pane.id, "fim");
+    await panes.respawn(a.pane.id);
+    expect(() => repos.pane.criar({ workspace_id: ws.id, tipo: "cli", cli: "claude", respawn_de: a.pane.id })).toThrow(/UNIQUE|ux_pane_respawn_vivo|respawn_de/);
   });
 });
 

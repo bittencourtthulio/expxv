@@ -1,0 +1,8 @@
+{
+  "session_id": "sess-fixture-0001",
+  "transcript_path": "transcript.jsonl",
+  "cwd": "/tmp/workspace-fixture",
+  "permission_mode": "default",
+  "hook_event_name": "UserPromptSubmit",
+  "prompt": "corrige, estou com um problema no cadastro de clientes: não salva o telefone"
+}

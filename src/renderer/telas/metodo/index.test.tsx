@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ApiAde } from "../../../compartilhado/ipc";
 import type { IndiceProjeto } from "../../../nucleo/metodo/tipos";
 import { criarStoreMetodo } from "../../estado/metodo";
+import { aoPedirTela } from "../../estado/navegacao";
 import Tela from "./index";
 import { indice, tk, trabalho } from "./fabrica";
 
@@ -26,29 +27,35 @@ describe("Tela Método", () => {
 
   it("sem docs/: estado normal, com caminho para criar o primeiro trabalho", async () => {
     montar("w1", null);
-    expect(await screen.findByText(/não tem docs do método/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Nova feature" })).toBeTruthy();
+    expect(await screen.findByText(/ainda não tem docs do método/)).toBeTruthy();
+    expect(screen.getByRole("radio", { name: /Nova feature/ })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /O que você quer construir ou corrigir/ })).toBeTruthy();
   });
 
   it("com docs/ e sem trabalhos", async () => {
     montar("w1", indice([]));
-    expect(await screen.findByText("Sem trabalhos ainda")).toBeTruthy();
+    expect(await screen.findByRole("textbox", { name: /O que você quer construir ou corrigir/ })).toBeTruthy();
   });
 
-  it("lista trabalhos com sinaleira em texto e abre o detalhe", async () => {
-    const t = trabalho([tk("T-1", { status: "concluida" }), tk("T-2", { depende_de: ["T-1"] })], {
-      sinaleira: { cor: "amarelo", motivo: "Auditoria pendente", motivos: [] }, veredito_auditoria: "aprovado",
-      entrega: { estado: "aberta", branch: "feat/x", portao: "PRONTO", pr_url: null, pr_estado: null, commits: 3, arquivo: "docs/mergex/E.md" },
-    });
-    montar("w1", indice([t]));
-    expect(await screen.findByLabelText(/Sinaleira atenção: Auditoria pendente/)).toBeTruthy();
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: /Minha feature/ })); });
-    expect(screen.getByRole("heading", { name: "Minha feature" })).toBeTruthy();
-    expect(screen.getByText("feat/x")).toBeTruthy();
-    expect(screen.getByText(/Auditoria:/).textContent).toContain("Aprovado");
-    await act(async () => { fireEvent.click(screen.getByRole("tab", { name: "Quadro" })); });
-    expect(screen.getByRole("region", { name: "Coluna Pendente" })).toBeTruthy();
-    await act(async () => { fireEvent.click(screen.getByRole("tab", { name: "Grafo" })); });
-    expect(await screen.findByRole("img", { name: /Grafo do plano/ })).toBeTruthy();
+  it("com trabalhos: a aba padrão é o Pedido, sem lista de trabalhos, só o atalho discreto", async () => {
+    montar("w1", indice([trabalho([tk("T-1")]), trabalho([tk("T-2")], { id: "outro", titulo: "Outra" })]));
+    expect(await screen.findByRole("textbox", { name: /O que você quer construir ou corrigir/ })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Pedido" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.queryByRole("tab", { name: "Trabalhos" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Minha feature/ })).toBeNull();
+    const atalho = screen.getByRole("button", { name: "Ver trabalhos (2)" });
+    const ouvir = vi.fn();
+    const sai = aoPedirTela(ouvir);
+    fireEvent.click(atalho);
+    expect(ouvir).toHaveBeenCalledWith("trabalhos");
+    sai();
+  });
+
+  it("as demais abas seguem na sub-navegação lateral esquerda", async () => {
+    montar("w1", indice([trabalho()]));
+    await screen.findByRole("tab", { name: "Pedido" });
+    for (const n of ["Violações", "Instalação", "Saúde"]) expect(screen.getByRole("tab", { name: new RegExp(n) })).toBeTruthy();
+    await act(async () => { fireEvent.click(screen.getByRole("tab", { name: "Saúde" })); });
+    expect(screen.queryByRole("textbox", { name: /O que você quer construir ou corrigir/ })).toBeNull();
   });
 });

@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+docs
+node_modules
+dist
+dist-app
+dist-pwa
+dist-relay
+.git

@@ -1,0 +1,98 @@
+/* Tela Loja de MCPs: casca compacta (D-32). Só tokens (nenhuma cor literal). Linha única de controles (~28 px), cartões de 56 px. */
+.lm-tela { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; font-size: var(--fs-rotulo); }
+.lm-barra { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--barra-altura); padding: var(--espaco-1) var(--espaco-2); border-bottom: 1px solid var(--borda); background: var(--painel); overflow-x: auto; white-space: nowrap; }
+.lm-btn { min-height: var(--botao-altura); padding: 0 var(--espaco-2); gap: var(--espaco-1); font-size: var(--fs-pequeno); flex: none; }
+.lm-btn .icone { width: 12px; height: 12px; }
+.lm-mini { min-height: var(--botao-altura); padding: 0 var(--espaco-2); gap: var(--espaco-1); font-size: var(--fs-micro); }
+.lm-busca { display: inline-flex; align-items: center; gap: var(--espaco-1); width: 220px; flex: none; padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.lm-busca .icone { width: 12px; height: 12px; color: var(--texto-suave); }
+.lm-busca input { flex: 1; min-width: 0; min-height: var(--campo-altura); border: 0; outline: 0; background: none; font-size: var(--fs-pequeno); }
+.lm-busca:focus-within { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.lm-select, .lm-hab-form select, .lm-hab-form input, .lm-rot select, .lm-rot input { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 6px; background: var(--superficie); color: var(--texto); font-size: var(--fs-pequeno); }
+/* combos sem texto cortado sem dica (P-2 do dono): valor longo vira reticências com o texto completo no title do select */
+.lm-select, .lm-hab-form select, .lm-rot select, .lm-gw-campo select { max-width: 200px; text-overflow: ellipsis; overflow: hidden; }
+.lm-filtros { display: inline-flex; gap: var(--espaco-1); flex: none; }
+.lm-contador { margin-left: auto; color: var(--texto-suave); font-size: var(--fs-pequeno); flex: none; }
+.lm-aviso-topo { color: var(--texto-suave); font-size: var(--fs-pequeno); max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.lm-faixa { margin: var(--espaco-1) var(--espaco-2) 0; padding: var(--espaco-2) var(--espaco-3); font-size: var(--fs-pequeno); }
+.lm-corpo-tela { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-height: 0; }
+.lm-corpo-tela[data-painel] { grid-template-columns: minmax(0, 1fr) 360px; }
+.lm-lista { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.lm-lista .virtual-lista { flex: 1; }
+.lm-carregando { padding: var(--espaco-4); color: var(--texto-suave); }
+/* D-694: a linha do catálogo usa o padrão único do app (componentes/ItemLista + lista-padrao.css, classes lst-*).
+   O envoltório .lm-linha só preserva data-mcp-id (foco pelo teclado e seletores do e2e) e o preenchimento da linha virtualizada. */
+.lm-linha { display: flex; height: 100%; }
+.lm-linha .lst-linha { flex: 1; min-width: 0; }
+.lm-botao { min-height: var(--botao-altura); min-width: 84px; justify-content: center; padding: 0 var(--espaco-3); font-size: var(--fs-pequeno); }
+.lm-progresso { color: var(--destaque-texto); font-size: var(--fs-micro); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-painel { display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--borda); background: var(--painel); }
+.lm-painel-cab { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-2); padding: var(--espaco-2) var(--espaco-3); border-bottom: 1px solid var(--borda); }
+.lm-painel-cab h2 { margin: 0; font-size: var(--fs-base); }
+.lm-icone { display: inline-grid; place-items: center; width: var(--botao-icone); height: var(--botao-icone); padding: 0; border: 0; border-radius: 5px; background: none; color: var(--texto-suave); }
+.lm-icone:hover { background: var(--superficie-2); color: var(--texto); }
+.lm-painel-corpo { flex: 1; min-height: 0; overflow: auto; padding: var(--espaco-2) var(--espaco-3); font-size: var(--fs-pequeno); }
+.lm-painel-corpo p { margin: 0 0 var(--espaco-2); }
+.lm-acoes { display: flex; flex-wrap: wrap; gap: var(--espaco-1); margin: var(--espaco-2) 0; }
+.lm-acoes a.botao { text-decoration: none; }
+.lm-secao { margin: var(--espaco-3) 0 0; padding-top: var(--espaco-2); border-top: 1px solid var(--borda); }
+.lm-secao h3, .lm-plano h3 { margin: 0 0 var(--espaco-1); font-size: var(--fs-pequeno); color: var(--texto-discreto); }
+.lm-plano h3 { font-size: var(--fs-base); text-transform: none; letter-spacing: 0; color: var(--texto); }
+.lm-versao { color: var(--texto-suave); font-weight: 400; }
+.lm-nota { color: var(--texto-suave); font-size: var(--fs-pequeno); }
+.lm-ok { color: var(--sucesso); }
+.lm-dl { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: var(--espaco-1) var(--espaco-2); margin: 0; }
+.lm-dl dt { color: var(--texto-discreto); font-size: var(--fs-micro); }
+.lm-dl dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.lm-codigo { margin: 0 0 var(--espaco-1); padding: var(--espaco-2) var(--espaco-2); border: 1px solid var(--borda); border-radius: 6px; background: var(--fundo); color: var(--texto); font: var(--fs-pequeno)/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
+.lm-hash { font: var(--fs-micro) var(--mono); overflow-wrap: anywhere; }
+.lm-lista-simples { margin: 0; padding-left: var(--espaco-4); }
+.lm-logs { margin: var(--espaco-1) 0 0; padding: 0; list-style: none; max-height: 160px; overflow: auto; font: var(--fs-micro) var(--mono); }
+.lm-logs li[data-nivel="erro"] { color: var(--alerta); }
+.lm-logs li[data-nivel="aviso"] { color: var(--aviso); }
+.lm-habilitacoes { margin: 0 0 var(--espaco-2); padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--espaco-1); }
+.lm-habilitacoes li { display: flex; align-items: center; gap: var(--espaco-2); }
+.lm-hab-alvo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-hab-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--espaco-2); }
+.lm-rot { display: inline-flex; flex-direction: column; gap: var(--espaco-1); color: var(--texto-suave); font-size: var(--fs-micro); }
+.lm-isolamento { display: flex; flex-wrap: wrap; gap: var(--espaco-1); margin: var(--espaco-2) 0 0; padding: 0; list-style: none; }
+.lm-consentimento { font-size: var(--fs-rotulo); }
+.lm-plano { margin: var(--espaco-2) 0; padding: var(--espaco-2) var(--espaco-3); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.lm-aviso, .lm-aviso-linha { font-size: var(--fs-pequeno); }
+.lm-aviso-linha[data-nivel="alto"] { color: var(--alerta); }
+.lm-aviso-linha[data-nivel="atencao"] { color: var(--aviso); }
+.lm-bloqueios { margin: var(--espaco-2) 0; padding-left: var(--espaco-4); color: var(--alerta); font-size: var(--fs-rotulo); }
+.lm-entendi { display: flex; align-items: center; gap: var(--espaco-2); margin-top: var(--espaco-2); font-size: var(--fs-rotulo); color: var(--texto); }
+.lm-var { margin: 0 0 var(--espaco-3); }
+.lm-var-cab { display: flex; align-items: center; gap: var(--espaco-2); margin-bottom: var(--espaco-1); }
+.lm-var-linha { display: flex; gap: var(--espaco-2); }
+.lm-var-linha input { flex: 1; min-width: 0; min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 6px; background: var(--superficie); color: var(--texto); font: var(--fs-rotulo) var(--mono); }
+.lm-var-linha input[aria-invalid="true"] { border-color: var(--alerta); }
+@media (max-width: 1000px) { .lm-corpo-tela[data-painel] { grid-template-columns: minmax(0, 1fr) 300px; } .lm-busca { width: 160px; } }
+/* Janela menor: a barra de controles quebra em linhas em vez de rolar para o lado (mesma correção do
+   Catálogo: botões do fim da barra não podem ficar fora da tela sem pista em 1000/900/720). */
+@media (max-width: 1000px) {
+  .lm-barra { flex-wrap: wrap; white-space: normal; overflow-x: visible; row-gap: var(--espaco-1); }
+  .lm-btn, .lm-mini, .lm-select, .lm-contador, .lm-aviso-topo, .lm-busca input { white-space: nowrap; }
+  .lm-busca { flex: 1 1 150px; width: auto; min-width: 140px; }
+}
+@media (prefers-reduced-motion: reduce) { .lm-tela * { transition: none !important; animation: none !important; } }
+.lm-descobrir-form { display: flex; align-items: flex-end; gap: var(--espaco-2); margin: var(--espaco-2) 0; }
+.lm-descobrir-form .lm-rot { flex: 1; }
+.lm-descobertos { margin: var(--espaco-2) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--espaco-2); max-height: 340px; overflow: auto; }
+.lm-descobertos li { padding: var(--espaco-2) var(--espaco-2); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); }
+.lm-desc-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2); }
+/* Gateway MCP (Fase 7C): painel dentro da Loja. */
+.lm-gw-form { margin: var(--espaco-2) 0; padding: var(--espaco-2) var(--espaco-3); border: 1px solid var(--borda); border-radius: 6px; display: grid; gap: var(--espaco-2); }
+.lm-gw-form legend { padding: 0 var(--espaco-1); font-size: var(--fs-pequeno); color: var(--texto-discreto); }
+.lm-gw-check { display: flex; align-items: center; gap: var(--espaco-2); font-size: var(--fs-rotulo); }
+.lm-gw-campo { display: grid; gap: var(--espaco-1); font-size: var(--fs-pequeno); color: var(--texto-suave); }
+.lm-gw-campo select, .lm-gw-campo input { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 6px; background: var(--superficie); color: var(--texto); font-size: var(--fs-pequeno); }
+.lm-gw-linha { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: end; margin: var(--espaco-1) 0; }
+.lm-gw-lista { height: 176px; border: 1px solid var(--borda); border-radius: 6px; }
+.lm-gw-lista .virtual-lista { height: 100%; }
+.lm-gw-ferr { display: flex; align-items: center; gap: var(--espaco-2); height: 100%; padding: 0 var(--espaco-2); font-size: var(--fs-pequeno); }
+.lm-gw-aud { display: grid; grid-template-columns: 62px 96px 74px minmax(0, 1fr) 100px 54px 90px; gap: var(--espaco-2); align-items: center; height: 100%; padding: 0 var(--espaco-2); font: var(--fs-micro) var(--mono); }
+.lm-gw-aud span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-gw-aud[data-decisao="permitida"] { color: var(--texto); }
+.lm-gw-aud:not([data-decisao="permitida"]) { color: var(--aviso); }

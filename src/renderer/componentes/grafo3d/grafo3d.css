@@ -1,0 +1,18 @@
+/* Grafo 3D (D-390): só tokens de tokens.css; as cores do WebGL vêm das mesmas variáveis, lidas em runtime. */
+.g3d { position: relative; flex: 1; min-width: 0; min-height: 240px; border: 1px solid var(--borda); border-radius: 6px; overflow: hidden; background: var(--fundo); }
+.g3d-palco { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--destaque) 10%, var(--fundo)), var(--fundo) 72%); outline-offset: -2px; touch-action: none; }
+.g3d-cena { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.g3d-cena:active { cursor: grabbing; }
+.g3d-rotulo { position: absolute; left: 0; top: 0; pointer-events: none; white-space: nowrap; font-size: 11.5px; font-weight: 500; color: var(--texto); text-shadow: 0 0 6px var(--fundo), 0 0 2px var(--fundo), 0 0 2px var(--fundo); will-change: transform, opacity; }
+.g3d-ctl { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; padding: 2px; border: 1px solid var(--borda); border-radius: 6px; background: var(--painel); }
+.g3d-ctl button { height: var(--botao-icone, 32px); padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: var(--texto-suave); font: inherit; font-size: 11.5px; cursor: pointer; }
+.g3d-ctl button:hover { background: var(--superficie); color: var(--texto); }
+.g3d-ctl button:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.g3d-dica { position: absolute; pointer-events: none; transform: translate(12px, 12px); max-width: 260px; padding: 2px 8px; border: 1px solid var(--borda); border-radius: 6px; background: var(--painel); color: var(--texto); font-size: 11.5px; box-shadow: 0 2px 8px var(--sombra); }
+.g3d-legenda { position: absolute; left: 6px; bottom: 6px; display: flex; flex-wrap: wrap; gap: 2px 10px; max-width: 70%; margin: 0; padding: 3px 8px; list-style: none; border: 1px solid var(--borda); border-radius: 6px; background: var(--painel); color: var(--texto-suave); font-size: 11.5px; }
+.g3d-legenda li { display: inline-flex; align-items: center; gap: 4px; }
+.g3d-ponto { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px 1px currentColor; }
+.g3d-aviso { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); margin: 0; padding: 2px 10px; border: 1px solid var(--borda); border-radius: 6px; background: var(--painel); color: var(--aviso); font-size: 11.5px; }
+.g3d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.g3d-ctl select { height: var(--botao-icone, 32px); border: 0; border-radius: 4px; background: transparent; color: var(--texto-suave); font: inherit; font-size: 11.5px; }
+.g3d-ctl select:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }

@@ -51,6 +51,8 @@ export interface AccountUsage extends LimitSnapshot {
   slack_pct: number | null;
   idade_s: number;
   vencidas: JanelaKind[];
+  /** Nome da conta como o dono vê (ex.: "Pessoal"). Aditivo e opcional: ausente em fixtures e builds antigos. */
+  account_label?: string;
 }
 
 export interface CotaGeral {

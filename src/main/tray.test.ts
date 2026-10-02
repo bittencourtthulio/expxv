@@ -71,3 +71,20 @@ describe("caminho do ícone a partir do __dirname do main (dist/main)", () => {
     expect(existsSync(pedido)).toBe(true);
   });
 });
+
+describe("pânico do Telegram na bandeja (Fase 20)", () => {
+  const base = { abrir: () => undefined, sair: () => undefined, notificacoes: { ativo: () => true, definir: async () => undefined } };
+  it("só aparece com o canal ligado e chama o MESMO fluxo de pânico", async () => {
+    const { montarItensTray } = await import("./tray");
+    let acionou = 0;
+    const sem = montarItensTray({ ...base, telegramPanico: { visivel: () => false, acionar: () => void acionou++ } });
+    expect(sem.some((i) => /pânico/i.test(i.label ?? ""))).toBe(false);
+    const com = montarItensTray({ ...base, telegramPanico: { visivel: () => true, acionar: () => void acionou++ } });
+    const item = com.find((i) => /pânico/i.test(i.label ?? ""));
+    expect(item?.label).toBe("Parar tudo no Telegram (pânico)");
+    item?.click?.();
+    expect(acionou).toBe(1);
+    // sem a opção (versões antigas do menu) nada muda
+    expect(montarItensTray(base).map((i) => i.label)).toEqual([expect.stringContaining("Abrir"), "Pausar notificações", undefined, "Sair"]);
+  });
+});

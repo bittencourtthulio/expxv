@@ -1,14 +1,14 @@
-.ini-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-.ini-cartao { padding: 16px 18px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
-.ini-cartao h2 { display: flex; gap: 8px; align-items: center; margin: 0 0 10px; font-size: 14px; }
-.ini-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.ini-item { display: flex; flex-direction: column; width: 100%; gap: 2px; padding: 8px 10px; border: 0; border-radius: var(--raio-pequeno); background: transparent; color: var(--texto); text-align: left; font-size: 13px; }
+.ini-grade { list-style: none; margin: 0; padding: 0; }
+.ini-cartao { padding: var(--espaco-4) var(--espaco-5); border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
+.ini-cartao h2 { display: flex; gap: var(--espaco-2); align-items: center; margin: 0 0 var(--espaco-3); font-size: var(--fs-campo); }
+.ini-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--espaco-1); }
+.ini-item { display: flex; flex-direction: column; width: 100%; gap: var(--espaco-1); padding: var(--espaco-2) var(--espaco-3); border: 0; border-radius: var(--raio-pequeno); background: transparent; color: var(--texto); text-align: left; font-size: var(--fs-base); }
 .ini-item:hover { background: var(--superficie); }
 .ini-item:focus-visible { outline: 2px solid var(--destaque); }
-.ini-detalhe { color: var(--texto-discreto); font: 12px var(--mono); overflow-wrap: anywhere; }
-.ini-nada { margin: 0; color: var(--texto-discreto); font-size: 13px; }
-.ini-passos { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
-.ini-passo { display: flex; gap: 10px; align-items: center; color: var(--texto-suave); font-size: 14px; }
+.ini-detalhe { color: var(--texto-discreto); font: var(--fs-rotulo) var(--mono); overflow-wrap: anywhere; }
+.ini-nada { margin: 0; color: var(--texto-discreto); font-size: var(--fs-base); }
+.ini-passos { list-style: none; margin: var(--espaco-4) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--espaco-3); text-align: left; }
+.ini-passo { display: flex; gap: var(--espaco-3); align-items: center; color: var(--texto-suave); font-size: var(--fs-campo); }
 .ini-passo[data-atual] { color: var(--destaque-texto); font-weight: 600; }
 .ini-passo[data-feito] { color: var(--sucesso); }
-.ini-passo-n { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid currentColor; border-radius: 50%; font-size: 12px; }
+.ini-passo-n { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid currentColor; border-radius: 50%; font-size: var(--fs-rotulo); }

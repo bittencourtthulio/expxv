@@ -1,0 +1,5 @@
+/* Faixa "Executando" no topo da tela Terminais. Só tokens. */
+.faixa-exec { display: flex; align-items: center; gap: var(--espaco-3); padding: 0 var(--espaco-3); min-height: 32px; flex: none; background: var(--painel); border-bottom: 1px solid var(--borda); border-left: 3px solid var(--destaque); font-size: var(--fs-base); }
+.faixa-exec-texto { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto); }
+.faixa-exec-botao { min-height: var(--alvo-minimo); padding: 0 var(--espaco-3); font: inherit; font-size: var(--fs-rotulo); color: var(--destaque-texto); background: transparent; border: 1px solid var(--borda); border-radius: var(--raio-pequeno); cursor: pointer; }
+.faixa-exec-botao:hover { background: var(--superficie); }

@@ -1,0 +1,18 @@
+[importlinter]
+root_package = app
+
+[importlinter:contract:camadas]
+name = Camadas do app
+type = layers
+layers =
+    web
+    dominio
+    infra
+
+[importlinter:contract:proibido]
+name = Dominio sem requests
+type = forbidden
+source_modules =
+    app.dominio
+forbidden_modules =
+    app.web

@@ -1,0 +1,286 @@
+{
+  "versao": 1,
+  "fonte": "docs/ade/base/J-voz-local.md",
+  "runtime": "sherpa-onnx-node@1.13.8",
+  "hosts_origem": [
+    "huggingface.co"
+  ],
+  "hosts_arquivos": [
+    "*.hf.co",
+    "*.huggingface.co"
+  ],
+  "modelos": [
+    {
+      "id": "parakeet-tdt-0.6b-v3-int8",
+      "nome": "Parakeet TDT 0.6B v3 (NVIDIA)",
+      "descricao": "O mais preciso, com pontuação e maiúsculas. Entende 25 idiomas europeus, incluindo português. O mesmo modelo que o Orca usa.",
+      "idiomas": [
+        "pt",
+        "en",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "nl",
+        "pl",
+        "ru",
+        "uk",
+        "cs",
+        "sk",
+        "sl",
+        "hr",
+        "bg",
+        "ro",
+        "hu",
+        "el",
+        "fi",
+        "sv",
+        "da",
+        "et",
+        "lv",
+        "lt",
+        "mt"
+      ],
+      "familia": "nemo_transducer",
+      "perfil": "recomendado",
+      "recomendado": true,
+      "velocidade": "media",
+      "qualidade": "excelente",
+      "ram_estimada_mb": 1500,
+      "trecho_max_s": 40,
+      "amostra": "pt",
+      "licenca": {
+        "id": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "atribuicao": "Modelo NVIDIA Parakeet TDT 0.6B v3 (NVIDIA), licença CC-BY-4.0; exportação ONNX int8 do projeto sherpa-onnx."
+      },
+      "origem": {
+        "host": "huggingface.co",
+        "caminho_base": "/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/resolve/2bda32ec70b097a55adaa07d9a7173915b43cc78/"
+      },
+      "arquivos": [
+        {
+          "nome": "encoder.int8.onnx",
+          "papel": "encoder",
+          "bytes": 652184281,
+          "sha256": "acfc2b4456377e15d04f0243af540b7fe7c992f8d898d751cf134c3a55fd2247"
+        },
+        {
+          "nome": "decoder.int8.onnx",
+          "papel": "decoder",
+          "bytes": 11845275,
+          "sha256": "179e50c43d1a9de79c8a24149a2f9bac6eb5981823f2a2ed88d655b24248db4e"
+        },
+        {
+          "nome": "joiner.int8.onnx",
+          "papel": "joiner",
+          "bytes": 6355277,
+          "sha256": "3164c13fc2821009440d20fcb5fdc78bff28b4db2f8d0f0b329101719c0948b3"
+        },
+        {
+          "nome": "tokens.txt",
+          "papel": "vocabulario",
+          "bytes": 93939,
+          "sha256": "d58544679ea4bc6ac563d1f545eb7d474bd6cfa467f0a6e2c1dc1c7d37e3c35d"
+        }
+      ]
+    },
+    {
+      "id": "whisper-small-int8",
+      "nome": "Whisper Small (OpenAI)",
+      "descricao": "Bom equilíbrio: metade do tamanho do Parakeet, boa qualidade em português. Mais lento que o Parakeet em trechos longos.",
+      "idiomas": [
+        "pt",
+        "en",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "nl",
+        "pl",
+        "ru",
+        "ja",
+        "zh",
+        "ko",
+        "tr",
+        "ar",
+        "hi"
+      ],
+      "familia": "whisper",
+      "perfil": "equilibrado",
+      "recomendado": false,
+      "velocidade": "media",
+      "qualidade": "muito_boa",
+      "ram_estimada_mb": 900,
+      "trecho_max_s": 28,
+      "amostra": "pt",
+      "licenca": {
+        "id": "MIT",
+        "url": "https://github.com/openai/whisper/blob/main/LICENSE",
+        "atribuicao": "Modelo Whisper (OpenAI), licença MIT; exportação ONNX int8 do projeto sherpa-onnx."
+      },
+      "origem": {
+        "host": "huggingface.co",
+        "caminho_base": "/csukuangfj/sherpa-onnx-whisper-small/resolve/8f3c18b358db4d1f2fc1eae49d75cd20989e4309/"
+      },
+      "arquivos": [
+        {
+          "nome": "small-encoder.int8.onnx",
+          "papel": "encoder",
+          "bytes": 112442483,
+          "sha256": "4cbe7b22fa9026b843b60a68640c747de05bafb1a11b57edc0e66c232d9f33a9"
+        },
+        {
+          "nome": "small-decoder.int8.onnx",
+          "papel": "decoder",
+          "bytes": 262226114,
+          "sha256": "acad50b5c782696e91b55914cc5ab4f756f1532f76e22aa6fc615f39fb69a8ee"
+        },
+        {
+          "nome": "small-tokens.txt",
+          "papel": "vocabulario",
+          "bytes": 816730,
+          "sha256": "b34b360dbb493e781e479794586d661700670d65564001f23024971d1f2fa126"
+        }
+      ]
+    },
+    {
+      "id": "whisper-base-int8",
+      "nome": "Whisper Base (OpenAI)",
+      "descricao": "Pequeno e rápido, para computadores modestos. Português aceitável em frases curtas; erra mais nomes técnicos.",
+      "idiomas": [
+        "pt",
+        "en",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "nl",
+        "pl",
+        "ru",
+        "ja",
+        "zh",
+        "ko",
+        "tr",
+        "ar",
+        "hi"
+      ],
+      "familia": "whisper",
+      "perfil": "leve",
+      "recomendado": false,
+      "velocidade": "rapida",
+      "qualidade": "boa",
+      "ram_estimada_mb": 500,
+      "trecho_max_s": 28,
+      "amostra": "pt",
+      "licenca": {
+        "id": "MIT",
+        "url": "https://github.com/openai/whisper/blob/main/LICENSE",
+        "atribuicao": "Modelo Whisper (OpenAI), licença MIT; exportação ONNX int8 do projeto sherpa-onnx."
+      },
+      "origem": {
+        "host": "huggingface.co",
+        "caminho_base": "/csukuangfj/sherpa-onnx-whisper-base/resolve/bb53ee204431c90d314c1cc08d28d23e5b7927cc/"
+      },
+      "arquivos": [
+        {
+          "nome": "base-encoder.int8.onnx",
+          "papel": "encoder",
+          "bytes": 29120534,
+          "sha256": "0b8fb1304b6109976038efff5ace81720e00386f3ff6b54ee8c75291ca0a1e11"
+        },
+        {
+          "nome": "base-decoder.int8.onnx",
+          "papel": "decoder",
+          "bytes": 130672026,
+          "sha256": "9759d217388a01b3a4c7c15533201067b48ae819c4daafc8624e64b9409dc02d"
+        },
+        {
+          "nome": "base-tokens.txt",
+          "papel": "vocabulario",
+          "bytes": 816730,
+          "sha256": "b34b360dbb493e781e479794586d661700670d65564001f23024971d1f2fa126"
+        }
+      ]
+    },
+    {
+      "id": "moonshine-tiny-en-int8",
+      "nome": "Moonshine Tiny (inglês)",
+      "descricao": "Muito rápido, só para inglês. Escolha se você dita em inglês e quer resposta quase instantânea.",
+      "idiomas": [
+        "en"
+      ],
+      "familia": "moonshine",
+      "perfil": "ingles",
+      "recomendado": false,
+      "velocidade": "rapida",
+      "qualidade": "boa",
+      "ram_estimada_mb": 400,
+      "trecho_max_s": 30,
+      "amostra": "en",
+      "licenca": {
+        "id": "MIT",
+        "url": "https://huggingface.co/csukuangfj/sherpa-onnx-moonshine-tiny-en-int8/blob/main/LICENSE",
+        "atribuicao": "Modelo Moonshine (Useful Sensors), licença MIT; exportação ONNX int8 do projeto sherpa-onnx."
+      },
+      "origem": {
+        "host": "huggingface.co",
+        "caminho_base": "/csukuangfj/sherpa-onnx-moonshine-tiny-en-int8/resolve/bf2b762c076d8ea61e2af0b3851c9564fb77552e/"
+      },
+      "arquivos": [
+        {
+          "nome": "preprocess.onnx",
+          "papel": "preprocessador",
+          "bytes": 6800738,
+          "sha256": "f33addce61a143460fe753b5ee5b7db255e5140b5b779c065b94f6c83ff0bf4e"
+        },
+        {
+          "nome": "encode.int8.onnx",
+          "papel": "encoder",
+          "bytes": 18249187,
+          "sha256": "8774dfba578de027ec6595c2c654a0836434489bc963a0db124a7f181f571acb"
+        },
+        {
+          "nome": "uncached_decode.int8.onnx",
+          "papel": "decoder_sem_cache",
+          "bytes": 53216096,
+          "sha256": "216737000dd5881a17aa043f6bbd286add33e4c3b0ae257153e2ec15438bdc41"
+        },
+        {
+          "nome": "cached_decode.int8.onnx",
+          "papel": "decoder_com_cache",
+          "bytes": 45264830,
+          "sha256": "2aff28bba6a03d8dcf5c9feac45462629bae37317442299f28115ad09da773f6"
+        },
+        {
+          "nome": "tokens.txt",
+          "papel": "vocabulario",
+          "bytes": 436688,
+          "sha256": "1165c2aeb9f72f457a83be2d459a09054f27490acd9b41bd43794dfd25e296ea"
+        }
+      ]
+    }
+  ],
+  "amostras": {
+    "pt": {
+      "arquivo": "amostra-pt.wav",
+      "palavras_esperadas": [
+        "teste",
+        "voz",
+        "terminal"
+      ],
+      "minimo": 2,
+      "descricao": "voz sintetizada localmente: \"Olá, este é um teste de voz no terminal.\""
+    },
+    "en": {
+      "arquivo": "amostra-en.wav",
+      "palavras_esperadas": [
+        "voice",
+        "test",
+        "terminal"
+      ],
+      "minimo": 2,
+      "descricao": "voz sintetizada localmente: \"Hello, this is a voice test in the terminal.\""
+    }
+  }
+}

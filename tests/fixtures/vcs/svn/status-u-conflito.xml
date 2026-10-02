@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<status>
+<target
+   path=".">
+<entry
+   path="a.txt">
+<wc-status
+   props="none"
+   item="conflicted"
+   revision="5">
+<commit
+   revision="5">
+<author>dev</author>
+<date>2026-10-01T03:28:11.079354Z</date>
+</commit>
+</wc-status>
+</entry>
+<entry
+   path="a.txt.r3">
+<wc-status
+   item="unversioned"
+   props="none">
+</wc-status>
+</entry>
+<entry
+   path="a.txt.r5">
+<wc-status
+   props="none"
+   item="unversioned">
+</wc-status>
+</entry>
+<entry
+   path="a.txt.mine">
+<wc-status
+   props="none"
+   item="unversioned">
+</wc-status>
+</entry>
+<against
+   revision="5"/>
+</target>
+</status>

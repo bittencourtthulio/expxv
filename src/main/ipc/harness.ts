@@ -193,3 +193,30 @@ export const VALIDADORES_HARNESS = {
 } satisfies ValidadoresDaFamilia<"harness:">;
 
 export type CanalHarness = keyof typeof VALIDADORES_HARNESS;
+
+/** Canais com manipulador desde a onda 5 de `harness:*` (os de troca vêm em `CANAIS_HARNESS_TROCA`). */
+export const CANAIS_HARNESS_ONDA_5 = [
+  "harness:config_ler",
+  "harness:config_gravar",
+  "harness:task_types_listar",
+  "harness:task_types_gravar",
+  "harness:task_types_apagar",
+  "harness:politica_listar",
+  "harness:politica_gravar",
+  "harness:politica_restaurar_semente",
+  "harness:equivalencia_ler",
+  "harness:equivalencia_gravar",
+  "harness:equivalencia_restaurar",
+  "harness:recomendar",
+  "harness:decisoes_listar",
+  "harness:contas_config_listar",
+  "harness:contas_config_gravar",
+  "harness:decisor_ler",
+  "harness:decisor_gravar",
+  "harness:decisor_testar",
+  "harness:classificar_intencao",
+  "harness:resolver_perfil",
+] as const;
+
+/** Canais do executor de troca por consumo (T-09.20): só são registrados quando o executor está ligado. */
+export const CANAIS_HARNESS_TROCA = ["harness:trocas_listar", "harness:troca_decidir", "harness:mover_pane"] as const;

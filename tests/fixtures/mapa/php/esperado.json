@@ -1,0 +1,157 @@
+{
+  "linguagem": "php",
+  "arquivos": {
+    "app/Models/Cliente.php": {
+      "metricas": { "complexidade_max": 4, "erros_parse": 0, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "App\\Models\\Cliente", "nome": "Cliente", "tipo": "classe", "exportado": true, "doc": "Cliente da loja." },
+        { "qualificado": "App\\Models\\Cliente.ATIVO", "tipo": "constante", "visibilidade": "publica" },
+        { "qualificado": "App\\Models\\Cliente.total", "tipo": "metodo", "visibilidade": "publica", "exportado": true, "complexidade": 4, "doc": "Total gasto pelo cliente.", "assinatura": "public function total(int $meses = 3): float" },
+        { "qualificado": "App\\Models\\Cliente.auditar", "tipo": "metodo", "visibilidade": "privada", "exportado": false, "complexidade": 1 },
+        { "qualificado": "App\\Models\\Cliente.normalizar", "tipo": "metodo", "visibilidade": "protegida", "exportado": false },
+        { "qualificado": "App\\Models\\Cliente.jsonSerialize", "tipo": "metodo", "visibilidade": "publica" }
+      ],
+      "imports": [
+        { "especificador": "Illuminate\\Database\\Eloquent\\Model", "tipo": "estatico", "nomes": ["Model"] },
+        { "especificador": "App\\Contracts\\Auditavel", "nomes": ["Auditavel"] },
+        { "especificador": "App\\Support\\Helper", "nomes": ["Helper"] },
+        { "especificador": "App\\Support\\Formatter", "nomes": ["Formatter=Fmt"] },
+        { "especificador": "App\\Support\\moeda", "nomes": ["function moeda"] },
+        { "especificador": "App\\Support\\LIMITE", "nomes": ["const LIMITE"] }
+      ],
+      "herancas": [
+        { "classe": "App\\Models\\Cliente", "base": "Model", "tipo": "herda" },
+        { "classe": "App\\Models\\Cliente", "base": "Auditavel", "tipo": "implementa" },
+        { "classe": "App\\Models\\Cliente", "base": "\\JsonSerializable", "tipo": "implementa" },
+        { "classe": "App\\Models\\Cliente", "base": "Notificavel", "tipo": "herda" },
+        { "classe": "App\\Models\\Cliente", "base": "\\App\\Traits\\Datavel", "tipo": "herda" }
+      ],
+      "chamadas": [
+        { "de": "App\\Models\\Cliente.total", "alvo": "moeda", "receptor": null, "tipo": "chamada" },
+        { "de": "App\\Models\\Cliente.total", "alvo": "auditar", "receptor": "this", "tipo": "chamada" },
+        { "de": "App\\Models\\Cliente.total", "alvo": "normalizar", "receptor": "self", "tipo": "chamada" },
+        { "de": "App\\Models\\Cliente.total", "alvo": "arredondar", "receptor": "Helper", "tipo": "chamada" },
+        { "de": "App\\Models\\Cliente.total", "alvo": "boot", "receptor": "parent", "tipo": "chamada" },
+        { "de": "App\\Models\\Cliente.jsonSerialize", "alvo": "Fmt", "tipo": "instancia" },
+        { "de": "App\\Models\\Cliente.jsonSerialize", "alvo": "Cliente", "tipo": "instancia" },
+        { "de": "App\\Models\\Cliente.auditar", "alvo": "\\RuntimeException", "tipo": "instancia" }
+      ],
+      "dados": [{ "tabela": "clientes", "operacao": "define", "fonte": "eloquent", "confianca": "exata", "de": "App\\Models\\Cliente" }],
+      "padroes": [{ "tipo": "throw" }],
+      "ausentes": {
+        "chamadas": [{ "alvo": "pedidos" }, { "alvo": "ativo" }]
+      }
+    },
+    "app/Http/Controllers/ClienteController.php": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "App\\Http\\Controllers\\ClienteController", "tipo": "classe" },
+        { "qualificado": "App\\Http\\Controllers\\ClienteController.index", "tipo": "metodo", "visibilidade": "publica" },
+        { "qualificado": "App\\Http\\Controllers\\Repositorio", "tipo": "interface" },
+        { "qualificado": "App\\Http\\Controllers\\Repositorio.achar", "tipo": "metodo" },
+        { "qualificado": "App\\Http\\Controllers\\Datavel", "tipo": "trait" },
+        { "qualificado": "App\\Http\\Controllers\\Status", "tipo": "enum" },
+        { "qualificado": "App\\Http\\Controllers\\auxiliar", "nome": "auxiliar", "tipo": "funcao", "exportado": true }
+      ],
+      "herancas": [{ "classe": "App\\Http\\Controllers\\ClienteController", "base": "Controller", "tipo": "herda" }],
+      "chamadas": [
+        { "de": "App\\Http\\Controllers\\ClienteController.show", "alvo": "achar", "receptor": "this", "tipo": "chamada" },
+        { "de": "App\\Http\\Controllers\\ClienteController.index", "alvo": "table", "receptor": "DB", "tipo": "chamada" },
+        { "de": "App\\Http\\Controllers\\ClienteController.index", "alvo": "view", "receptor": null, "tipo": "chamada" },
+        { "de": "App\\Http\\Controllers\\ClienteController.index", "alvo": "all", "receptor": "Cliente", "tipo": "chamada" }
+      ],
+      "dados": [
+        { "tabela": "clientes", "operacao": "le", "fonte": "laravel", "confianca": "exata", "linha": 10 },
+        { "tabela": "logs", "operacao": "escreve", "fonte": "laravel" },
+        { "tabela": "clientes", "operacao": "le", "fonte": "sql", "confianca": "heuristica", "de": "App\\Http\\Controllers\\ClienteController.show" },
+        { "tabela": "pedidos", "operacao": "le", "fonte": "sql", "confianca": "heuristica" }
+      ]
+    },
+    "routes/web.php": {
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /clientes/:id", "framework": "laravel", "handler": "ClienteController.show", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /clientes", "handler": "ClienteController.store" },
+        { "tipo": "rota", "chave": "GET /ping", "handler": null },
+        { "chave": "GET /photos", "handler": "PhotoController.index" },
+        { "chave": "POST /photos", "handler": "PhotoController.store" },
+        { "chave": "GET /photos/create", "handler": "PhotoController.create" },
+        { "chave": "GET /photos/:photo", "handler": "PhotoController.show" },
+        { "chave": "GET /photos/:photo/edit", "handler": "PhotoController.edit" },
+        { "chave": "PUT /photos/:photo", "handler": "PhotoController.update" },
+        { "chave": "DELETE /photos/:photo", "handler": "PhotoController.destroy" },
+        { "chave": "GET /posts", "handler": "PostController.index" },
+        { "chave": "DELETE /posts/:post", "handler": "PostController.destroy" },
+        { "chave": "GET /admin/painel", "handler": "PainelController.ver" },
+        { "chave": "DELETE /api/x/:y", "handler": "XController.apagar" },
+        { "chave": "GET /m", "handler": "MController.m" },
+        { "chave": "POST /m", "handler": "MController.m" }
+      ],
+      "ausentes": {
+        "entradas": [{ "chave": "GET /posts/create" }, { "chave": "GET /posts/:post/edit" }, { "chave": "GET /painel" }, { "chave": "DELETE /x/:y" }]
+      }
+    },
+    "src/Controller/ApiController.php": {
+      "simbolos": [{ "qualificado": "App\\Controller\\ApiController.show", "decoradores": ["#[Route(\"…\", name: \"…\", methods: [\"…\", \"…\"])]"] }],
+      "entradas": [
+        { "chave": "GET /api/items/:id", "framework": "symfony", "handler": "App\\Controller\\ApiController.show", "confianca": "exata" },
+        { "chave": "HEAD /api/items/:id" },
+        { "chave": "POST /api/legado", "handler": "App\\Controller\\ApiController.legado" },
+        { "chave": "ALL /api/livre", "handler": "App\\Controller\\ApiController.livre" }
+      ],
+      "ausentes": { "entradas": [{ "chave": "GET /nao" }, { "chave": "ALL /nao" }, { "chave": "GET /api/falso" }] }
+    },
+    "src/Entity/Pedido.php": {
+      "dados": [
+        { "tabela": "pedidos", "operacao": "define", "fonte": "doctrine", "de": "App\\Entity\\Pedido" },
+        { "tabela": "itens_pedido", "operacao": "define", "fonte": "doctrine", "de": "App\\Entity\\Item" }
+      ]
+    },
+    "app/Console/Kernel.php": {
+      "entradas": [
+        { "tipo": "job", "chave": "schedule:relatorio:diario", "framework": "laravel", "handler": "App\\Console\\Kernel.schedule" },
+        { "tipo": "job", "chave": "schedule:LimparCache" }
+      ],
+      "ausentes": { "entradas": [{ "chave": "schedule:nao:agendado" }] }
+    },
+    "app/Console/Commands/Sincronizar.php": {
+      "entradas": [
+        { "tipo": "cli", "chave": "artisan:app:sincronizar", "handler": "App\\Console\\Commands\\Sincronizar.handle" },
+        { "tipo": "cli", "chave": "console:app:limpar", "handler": "App\\Console\\Commands\\Limpar.execute" }
+      ]
+    },
+    "plugin.php": {
+      "metricas": { "erros_parse": 0 },
+      "imports": [
+        { "especificador": "./inc/util.php", "tipo": "require" },
+        { "especificador": "lib/base.php", "tipo": "require" },
+        { "especificador": "./../topo.php", "tipo": "require" }
+      ],
+      "entradas": [
+        { "tipo": "evento", "chave": "action:init", "framework": "wordpress", "handler": "iniciar_plugin" },
+        { "tipo": "evento", "chave": "filter:the_content", "handler": "filtrar" },
+        { "tipo": "evento", "chave": "action:wp_head", "handler": null }
+      ],
+      "padroes": [
+        { "tipo": "env", "nome": "WP_DEBUG" },
+        { "tipo": "env", "nome": "APP_NOME" },
+        { "tipo": "env", "nome": "CHAVE_X" },
+        { "tipo": "catch_vazio" }
+      ],
+      "dados": [
+        { "tabela": "contas", "operacao": "escreve", "fonte": "sql", "confianca": "exata" },
+        { "tabela": "usuarios", "operacao": "le" },
+        { "tabela": "perfis", "operacao": "le" }
+      ],
+      "dinamicos": [{ "tipo": "eval" }, { "tipo": "chamada_computada" }, { "tipo": "reflexao" }, { "tipo": "require_dinamico" }],
+      "chamadas": [{ "de": null, "alvo": "iniciar_plugin", "tipo": "chamada" }],
+      "ausentes": {
+        "padroes": [{ "tipo": "env", "nome": "SERVER_NAME" }],
+        "dados": [{ "tabela": "option" }, { "tabela": "an" }, { "tabela": "list" }]
+      }
+    },
+    "index.php": {
+      "entradas": [{ "tipo": "main", "chave": "web:index", "framework": "php" }],
+      "imports": [{ "especificador": "./vendor/autoload.php", "tipo": "require" }]
+    }
+  }
+}

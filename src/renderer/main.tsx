@@ -5,6 +5,8 @@ import { storeTema } from "./estado/tema";
 import { marcar } from "./perf";
 import "./fontes.css";
 import "./tokens.css";
+import "./componentes/pagina.css";
+import "./componentes/conforto.css";
 
 storeTema.iniciar();
 createRoot(document.getElementById("raiz")!).render(

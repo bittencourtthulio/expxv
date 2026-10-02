@@ -1,0 +1,63 @@
+// Mapa lógico do código (Fase 17). Puro: sem Electron. Nada daqui carrega no boot (P-248): quem precisa importa
+// de forma preguiçosa (`await import("./nucleo/mapa")`). Os canais `mapa:*` e a ligação ao main são de outras tasks.
+export * from "./tipos";
+export * from "./contrato";
+export * from "./esquema";
+export * from "./validacao";
+export * from "./linguagens";
+export * from "./gramaticas";
+export * from "./redacao";
+export * from "./metricas";
+export * from "./hash";
+export * from "./sensiveis";
+export * from "./gitignore";
+export * from "./varredura";
+export * from "./armazem";
+export * from "./pool";
+export { executarExtracao } from "./worker-extracao";
+export type { DadosWorker, MensagemExtrair, RespostaExtracao } from "./worker-extracao";
+export { extrairArquivo, obterExtrator } from "./extratores/registro";
+export type { OpcoesExtracao } from "./extratores/registro";
+export { ErroExtracao } from "./extratores/comum";
+export type { ContextoExtracao, Extrator, ResultadoExtrator } from "./extratores/comum";
+export { extrairTabelasSql, pareceSql } from "./extratores/sql";
+export type { TabelaSql } from "./extratores/sql";
+// Onda 2 (T-17.08..T-17.30): extratores por linguagem, manifestos, resolvedores, chamadas, grafo e análises.
+// Namespaces para evitar colisão de nomes entre módulos.
+export * from "./analisador";
+export * from "./manifestos";
+export * from "./chamadas";
+export * from "./git-historia";
+export * from "./raio";
+export * as resolucao from "./resolucao/comum";
+export * as grafoMemoria from "./grafo/memoria";
+export * as grafoCiclos from "./grafo/ciclos";
+export * as grafoPagerank from "./grafo/pagerank";
+export * as grafoAlcance from "./grafo/alcance";
+export * as grafoCamadas from "./grafo/camadas";
+export * as grafoMetricas from "./grafo/metricas-grafo";
+export * as analiseEntradas from "./analises/entradas";
+export * as analiseDados from "./analises/dados";
+export * as analiseCamadas from "./analises/camadas";
+export * as analiseTestes from "./analises/testes";
+export * as analiseHotspots from "./analises/hotspots";
+export * as analiseMorto from "./analises/morto";
+export * as analiseDuplicacao from "./analises/duplicacao";
+export * as analiseExternas from "./analises/externas";
+export * as analisePadroes from "./analises/padroes";
+export * as analiseZonas from "./analises/zonas";
+export * as regrasFronteira from "./regras-fronteira";
+export * as cobertura from "./cobertura";
+// Onda 3 (T-17.21, T-17.31..T-17.38): serviço, fase derivada, consultas, fachada, saídas (pacote, exportação, disparo).
+export * from "./servico";
+export * from "./fachada";
+export * from "./consultas";
+export * from "./confinado";
+export * as derivada from "./derivada";
+export * as exportar from "./exportar";
+export * as inventario from "./inventario";
+export * as perfilProvisorio from "./perfil-provisorio";
+export * as pacoteContexto from "./pacote-contexto";
+export * as disparo from "./disparo";
+export * as pastaDoMapa from "./pasta";
+export * as ferramentasExternas from "./adaptadores/detectar";

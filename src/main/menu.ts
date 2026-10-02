@@ -12,6 +12,7 @@ import { PRODUTO } from "../nucleo/produto";
 
 export type EventoMenu =
   | { tipo: "abrir-projeto" }
+  | { tipo: "adicionar-workspace" }
   | { tipo: "paleta" }
   | { tipo: "tema"; valor: "claro" | "escuro" | "sistema" | "alternar" }
   | { tipo: "sobre" };
@@ -48,7 +49,9 @@ export function montarTemplateMenu(plataforma: string, emitir: (e: EventoMenu) =
   const arquivo: ItemTemplate = {
     label: "Arquivo",
     submenu: [
-      { label: "Abrir projeto…", accelerator: tecla("Cmd+O", "Ctrl+Shift+O"), click: () => emitir({ tipo: "abrir-projeto" }) },
+      // D-613: "Abrir pasta…" continua indo DIRETO ao diálogo nativo; "Adicionar workspace…" (⌘⇧O / Ctrl+Shift+O) abre o modal com pasta, clone e novo projeto
+      { label: "Abrir pasta…", accelerator: tecla("Cmd+O", "Ctrl+Alt+O"), click: () => emitir({ tipo: "abrir-projeto" }) },
+      { label: "Adicionar workspace…", accelerator: tecla("Cmd+Shift+O", "Ctrl+Shift+O"), registerAccelerator: false, click: () => emitir({ tipo: "adicionar-workspace" }) },
       SEP,
       mac ? { role: "close" } : { label: "Sair", role: "quit" },
     ],

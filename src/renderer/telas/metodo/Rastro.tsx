@@ -64,7 +64,7 @@ export function Rastro({ workspaceId, trabalhoId }: { workspaceId: string; traba
       {erro ? <p className="met-erro" role="alert">{erro}</p> : null}
       {!carregando && eventos.length === 0 && !erro ? <p className="met-suave">Sem eventos no rastro deste trabalho.</p> : (
         <VirtualLista
-          itens={filtrados} alturaItem={30} alturaPadrao={420} rotulo="Eventos do rastro" chave={(e, i) => `${e.ts}-${i}`}
+          itens={filtrados} alturaItem={36} alturaPadrao={420} rotulo="Eventos do rastro" chave={(e, i) => `${e.ts}-${i}`}
           renderItem={(e) => (
             <div className="met-evento" data-resultado={e.resultado}>
               <time>{hora(e.ts)}</time>

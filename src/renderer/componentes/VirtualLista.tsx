@@ -13,10 +13,12 @@ interface Props<T> {
   className?: string;
   /** linhas extras renderizadas acima e abaixo da janela. */
   extra?: number;
+  /** Pede para rolar até o índice (cada pedido novo precisa de `n` diferente). */
+  rolarPara?: { indice: number; n: number } | undefined;
 }
 
 /** Lista virtualizada de altura fixa: só as linhas visíveis (mais `extra`) existem no DOM. */
-export function VirtualLista<T>({ itens, alturaItem, alturaPadrao = 400, rotulo, chave, renderItem, className = "", extra = 4 }: Props<T>) {
+export function VirtualLista<T>({ itens, alturaItem, alturaPadrao = 400, rotulo, chave, renderItem, className = "", extra = 4, rolarPara }: Props<T>) {
   const ref = useRef<HTMLDivElement>(null);
   const [topo, setTopo] = useState(0);
   const [altura, setAltura] = useState(alturaPadrao);
@@ -38,6 +40,13 @@ export function VirtualLista<T>({ itens, alturaItem, alturaPadrao = 400, rotulo,
   }, [medir]);
 
   useEffect(() => () => cancelAnimationFrame(quadro.current), []);
+
+  useEffect(() => {
+    if (rolarPara === undefined || !ref.current) return;
+    ref.current.scrollTop = rolarPara.indice * alturaItem;
+    setTopo(rolarPara.indice * alturaItem);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolarPara?.n]);
 
   const aoRolar = () => {
     if (quadro.current) return;

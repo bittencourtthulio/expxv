@@ -22,6 +22,7 @@ export const CATALOGO_TERMINAIS: readonly FerramentaCatalogo[] = [
   { id: "aider", nome: "Aider", executaveis: ["aider"], mapeada: true, descricao: "AI pair programming no terminal" },
   { id: "qwen", nome: "Qwen Code", executaveis: ["qwen"], mapeada: true, descricao: "CLI do Qwen Code" },
   { id: "kilo", nome: "Kilo Code", executaveis: ["kilo", "kilocode"], mapeada: true, descricao: "CLI do Kilo Code" },
+  { id: "grok", nome: "Grok", executaveis: ["grok"], mapeada: true, descricao: "Grok Build TUI (xAI)" },
 ] as const;
 
 /**
@@ -38,10 +39,13 @@ export function argumentosAutomaticos(id: FerramentaId, permissao: PermissaoWork
   if (id === "opencode") return ["--auto"];
   if (id === "aider") return ["--yes-always"];
   if (id === "qwen") return ["--approval-mode=yolo"];
+  // Grok: `auto` = "o que a verificação de segurança permite; o resto é bloqueado ou escalado" (docs do Grok, 22-permissions).
+  // NUNCA `bypassPermissions` nem `--always-approve`/`--yolo` (mesmo modo, sem trava).
+  if (id === "grok") return ["--permission-mode", "auto"];
   return [];
 }
 
-/** Ferramentas cujo agente para com ESC; as demais (terminal, personalizado, aider) recebem Ctrl+C. Nunca encerra o processo. */
+/** Ferramentas cujo agente para com ESC; as demais (terminal, personalizado, aider, grok: o Esc do Grok nunca cancela um turno, só o Ctrl+C) recebem Ctrl+C. Nunca encerra o processo. */
 const INTERROMPEM_COM_ESC: readonly string[] = ["claude", "codex", "gemini", "opencode", "qwen", "kilo"];
 
 export function teclaDeInterrupcao(id: string): string {
@@ -51,18 +55,30 @@ export function teclaDeInterrupcao(id: string): string {
 /** Começa por letra ou dígito: um id iniciado por `-` viraria opção da CLI em `--resume`/`resume` (AUD-24). */
 export const ID_CONVERSA = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 
-/** Retomar a conversa: só Claude (`--resume <id>`) e Codex (subcomando `resume <id>`). */
+/** Retomar a conversa: Claude e Grok (`--resume <id>`) e Codex (subcomando `resume <id>`). */
 export function argumentosDeRetomada(id: string, conversaId: string): string[] | null {
   if (!ID_CONVERSA.test(conversaId)) return null;
-  if (id === "claude") return ["--resume", conversaId];
+  if (id === "claude" || id === "grok") return ["--resume", conversaId];
   if (id === "codex") return ["resume", conversaId];
   return null;
 }
+
+/** Subcomandos e aliases de `grok --help` (1.0.46): um prompt de uma palavra só não pode coincidir com eles. */
+const SUBCOMANDOS_GROK: readonly string[] = [
+  "agent", "clone", "completions", "cursor-worker", "dashboard", "doctor", "du", "disk-usage", "export", "help", "inspect", "leader", "login", "logout",
+  "mcp", "memory", "models", "plugin", "sessions", "setup", "trace", "update", "usage", "version", "v", "worktree", "wrap",
+];
 
 /** Prompt inicial por argumento da CLI; vai sempre por último. */
 export function argumentosDePromptInicial(id: string, prompt: string): string[] | null {
   if (id === "claude" || id === "codex") return [prompt];
   if (id === "opencode") return ["--prompt", prompt];
+  if (id === "grok") {
+    // `grok [OPTIONS] [PROMPT] [COMMAND]`: uma palavra igual a um subcomando (login, update, logout...) seria executada como ele.
+    const palavra = prompt.trim();
+    if (palavra.startsWith("-") || (!/\s/.test(palavra) && SUBCOMANDOS_GROK.includes(palavra))) return null;
+    return [prompt];
+  }
   return null;
 }
 
@@ -81,6 +97,7 @@ export const MODELO_PADRAO_DA_CLI = "default";
  * só entram valores que a documentação pública da CLI aceita em `--model`. Sem valor conhecido com certeza,
  * a CLI fica só com o padrão dela (`default`, `padrao: true`), que não gera `--model`.
  * - claude: aliases `opus`, `sonnet`, `haiku` (sempre apontam para o modelo atual da família).
+ * - grok: ids confirmados por `grok models` em 2026-10-01 (rever a cada versão da CLI).
  * - codex, gemini: os nomes de modelo mudam com frequência; por ora só o padrão da CLI.
  */
 const MODELOS_ESTATICOS: Readonly<Record<string, readonly ModeloDaFerramenta[]>> = {
@@ -91,6 +108,14 @@ const MODELOS_ESTATICOS: Readonly<Record<string, readonly ModeloDaFerramenta[]>>
   ],
   codex: [{ modelo: MODELO_PADRAO_DA_CLI, padrao: true, niveis_esforco: [] }],
   gemini: [{ modelo: MODELO_PADRAO_DA_CLI, padrao: true, niveis_esforco: [] }],
+  // ids listados por `grok models` (grok 1.0.46, 2026-10-01); `default` deixa a CLI escolher (hoje grok-4.7). Esforço: indicativo (D-443).
+  grok: [
+    { modelo: MODELO_PADRAO_DA_CLI, padrao: true, niveis_esforco: [] },
+    { modelo: "grok-4.7", niveis_esforco: [] },
+    { modelo: "grok-4.7-build-fast", niveis_esforco: [] },
+    { modelo: "grok-4.6", niveis_esforco: [] },
+    { modelo: "grok-4.5", niveis_esforco: [] },
+  ],
 };
 
 export function modelosDaFerramenta(id: string): ModeloDaFerramenta[] {
@@ -98,7 +123,7 @@ export function modelosDaFerramenta(id: string): ModeloDaFerramenta[] {
 }
 
 /** CLIs cujo seletor de modelo é `--model <valor>` (documentado nas respectivas CLIs). */
-const CLIS_COM_FLAG_MODELO: readonly string[] = ["claude", "codex", "gemini", "opencode", "aider"];
+const CLIS_COM_FLAG_MODELO: readonly string[] = ["claude", "codex", "gemini", "opencode", "aider", "grok"];
 const MODELO_VALIDO = /^[A-Za-z0-9][A-Za-z0-9._:/@-]{0,99}$/;
 
 /** `--model <modelo>` quando a CLI suporta e o valor é seguro (não começa com `-`, sem espaço); senão nenhum argumento. */
@@ -146,7 +171,7 @@ function validarServidor(s: ServidorMcp): void {
  * - Claude: `--mcp-config <arquivo 0600>` (o conteúdo devolvido em `arquivo` leva o cabeçalho);
  * - Codex: `-c mcp_servers.<nome>.url` + `bearer_token_env_var` (o token entra só pelo ambiente);
  * - OpenCode: `OPENCODE_CONFIG_CONTENT` (`mcp.<nome>` remoto, token por `{env:VAR}`).
- * `null` quando a ferramenta não suporta. Combine com os hooks por `combinarAmbientes`.
+ * `null` quando a ferramenta não suporta (Grok: D-441, a config só aceita `mcp_servers` em arquivo global/de projeto, nunca por flag ou ambiente). Combine com os hooks por `combinarAmbientes`.
  */
 export function configuracaoDeMcp(id: string, servidor: ServidorMcp, arquivo: string): ConfiguracaoMcp | null {
   if (id !== "claude" && id !== "codex" && id !== "opencode") return null;

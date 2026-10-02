@@ -1,0 +1,50 @@
+/* Layout fluido das telas (padrão único): TODAS ocupam 100% da área de conteúdo (largura e altura), sem coluna centralizada.
+   O prop `largura` e o `centralizar` de `Pagina` seguem na API mas não limitam mais nada: --largura-pagina é 100% em todos os modos.
+   Modos declarados por tela em `modo`: leitura e painel = preenchem com margem fluida; cheia = sem margem (trabalho / canvas).
+   Só o texto corrido longo (parágrafos) mantém medida de leitura (<= 72ch, em conforto.css). Sem cor literal (tokens.css). */
+:root {
+  --largura-estreita: 100%;
+  --largura-padrao: 100%;
+  --largura-larga: 100%;
+  --largura-total: 100%;
+  --pagina-pad-x: clamp(12px, 2.2vw, 40px);
+  --pagina-pad-y: clamp(10px, 2vh, 28px);
+  --pagina-gap: clamp(8px, 1.2vw, 16px);
+}
+
+.pagina { box-sizing: border-box; min-width: 0; }
+.pagina-cabecalho h1 { font-size: clamp(1.1rem, 0.95rem + 0.5vw, 1.5rem); }
+.pagina-cabecalho p { margin-bottom: clamp(12px, 2vh, 24px); }
+
+/* leitura e painel: o contêiner ocupa 100% da área (sem margem lateral automática nem teto de largura) */
+.tela [data-modo="leitura"], .tela [data-modo="painel"] {
+  box-sizing: border-box; min-width: 0; width: var(--largura-pagina, var(--largura-total));
+}
+.tela [data-modo="painel"] { --largura-pagina: var(--largura-total); }
+.tela [data-largura="estreita"] { --largura-pagina: var(--largura-estreita); }
+.tela [data-largura="padrao"] { --largura-pagina: var(--largura-padrao); }
+.tela [data-largura="larga"] { --largura-pagina: var(--largura-larga); }
+.tela [data-largura="total"] { --largura-pagina: var(--largura-total); }
+
+/* páginas de texto/formulário (componente Pagina): padding fluido */
+.tela .pagina[data-modo] { max-width: none; padding: var(--pagina-pad-y) var(--pagina-pad-x); }
+/* modo painel dentro de Pagina ocupa a altura e rola por dentro (min-height: 0) */
+.tela .pagina[data-modo="painel"] { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+.tela .pagina[data-modo="painel"] > :not(.pagina-cabecalho) { flex: 1; min-height: 0; }
+/* cheia: preenche tudo, sem margem nem teto */
+.tela .pagina[data-modo="cheia"] { width: 100%; max-width: none; height: 100%; min-height: 0; padding: 0; display: flex; flex-direction: column; }
+.tela [data-modo="cheia"] { min-width: 0; min-height: 0; }
+
+/* `centralizar` não centraliza mais: a página preenche a altura da área e o conteúdo cresce junto */
+.tela .pagina[data-centralizar] { min-height: 100%; display: flex; flex-direction: column; }
+.tela .pagina[data-centralizar] > :not(.pagina-cabecalho) { flex: 1; min-height: 0; }
+
+/* cartões e grades que se reorganizam sozinhos: auto-fit + minmax e 1fr (ver .ini-grade/.prov-lista em conforto.css, em flex para a última linha esticar) */
+.pagina-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--gap-cards, var(--pagina-gap)); }
+
+/* estreito (≥ 720 px é o mínimo da janela): empilha colunas sem perder função */
+@media (max-width: 760px) {
+  .tela .pagina .met-quadro { grid-template-columns: minmax(0, 1fr); }
+  .tela .pagina .cfg-sobre { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .pagina, .pagina * { scroll-behavior: auto; } }

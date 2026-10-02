@@ -23,11 +23,11 @@
 import type { CanaisEvento } from "../compartilhado/ipc";
 import type { Banco } from "../nucleo/banco";
 import { criarRepositorios, type Repositorios } from "../nucleo/banco/repos";
-import { comandoInicialDaMissao, criarServicoMetodoMissao, type ServicoMetodoMissao } from "../nucleo/metodo/missao";
+import { comandoInicialDaMissao, criarServicoMetodoMissao, ESPERA_CONFIRMACAO_ENTREGA_MS, type ServicoMetodoMissao } from "../nucleo/metodo/missao";
 import type { OpcoesObservador, Observador } from "../nucleo/metodo/observador";
 import { criarClienteWorker, type ClienteWorker } from "../nucleo/metodo/worker";
 import { criarServicoPanes, type ServicoPanes, type SessoesDePanes } from "../nucleo/missoes/panes";
-import { criarServicoMissoes, type ServicoMissoes } from "../nucleo/missoes/servico";
+import { criarServicoMissoes, type DependenciasMissoes, type ServicoMissoes } from "../nucleo/missoes/servico";
 import { criarServicoPortoes } from "../nucleo/orquestracao/portoes";
 import { criarServicoContas, type ServicoContas } from "../nucleo/provedores/contas";
 import { criarServicoProvedores, type DetectorDeProvedores, type ServicoProvedores } from "../nucleo/provedores/servico";
@@ -45,6 +45,11 @@ type EventoDeDominio = "workspaces:mudou" | "missoes:mudou" | "metodo:mudou";
 
 export interface DependenciasServicosDominio {
   registro: RegistroIpc;
+  /** Fase 9 (T-09.16): CLI "Automático" das Missões (o harness nasce depois do domínio: lido de forma preguiçosa pelo main). */
+  resolverCliAutomatica?: DependenciasMissoes["resolverCliAutomatica"];
+  aoRotearPane?: DependenciasMissoes["aoRotearPane"];
+  /** Fase 15: contexto prévio do RAG para `metodo:disparar` (leitura preguiçosa pelo main). */
+  contextoPrevio?: (workspaceId: string, texto: string, arquivos: string[]) => Promise<string>;
   banco: Banco;
   barramento: Barramento;
   /** Espera a onda 2 do boot e devolve o gerenciador de sessões da janela atual. */
@@ -57,6 +62,8 @@ export interface DependenciasServicosDominio {
   escolherPasta: () => Promise<string | null>;
   /** Envia ao renderer da janela atual (no-op sem janela). */
   emitir: <C extends EventoDeDominio>(canal: C, payload: CanaisEvento[C]) => void;
+  /** A autodetecção criou contas padrão (login existente): religa limites/harness; a UI recarrega ao listar provedores. */
+  aoContasMudarem?: () => void;
   /** Serviço de workspaces já criado pelo main (para dar `resolverCwd` ao contexto dos terminais). */
   workspaces?: ServicoWorkspaces;
   armazemLayout?: (workspaceId: string | null) => ArmazemLayout;
@@ -70,8 +77,12 @@ export interface DependenciasServicosDominio {
   criarObservador?: (op: OpcoesObservador) => Observador;
   worktreesDe?: (ws: WorkspaceMetodo) => Promise<string[]>;
   debounceMetodoMs?: number;
+  /** Fase 14: cria a Missão com `squad_id` (leitura preguiçosa: as squads nascem depois do domínio). */
+  criarMissaoComSquad?: (pedido: import("../compartilhado/dominio").PedidoCriarMissao) => Promise<import("../nucleo/dominio").Mission>;
   /** Esperas de `Panes.restaurar` quando o daemon ainda não responde (teste: `[]`). */
   atrasosRestauracaoMs?: readonly number[];
+  /** Módulos da suíte desligados no workspace (D-480): os comandos sugeridos/disparados desses módulos são recusados com motivo claro. */
+  modulosDesligados?: (workspaceId: string) => ReadonlySet<string>;
 }
 
 export interface ServicosDominio {
@@ -83,6 +94,8 @@ export interface ServicosDominio {
   panes: ServicoPanes;
   metodo: ServicoMetodoMissao;
   gerenciadorMetodo: GerenciadorMetodo;
+  /** Avisa que a lista/o atual de workspaces mudou fora dos canais `workspaces:*` (ex.: modal "Adicionar workspace"): emite `workspaces:mudou` e religa o método/terminais ao atual. */
+  avisarWorkspaces(): void;
   /** Onda 2 do boot: religa os Panes, acompanha as sessões e começa a observar o workspace atual. */
   iniciar(): Promise<void>;
   /** Libera watchers, worker e assinaturas. Idempotente. As sessões continuam no daemon. */
@@ -96,7 +109,7 @@ export function registrarServicosDominio(deps: DependenciasServicosDominio): Ser
   const repos = criarRepositorios(banco);
   const workspaces = deps.workspaces ?? criarServicoWorkspaces({ repos, escolherPasta: deps.escolherPasta });
   const contas = criarServicoContas({ banco, repos, pastaDeDados: deps.pastaDeDados });
-  const provedores = criarServicoProvedores({ detector: deps.detector, contas });
+  const provedores = criarServicoProvedores({ detector: deps.detector, contas, aoContasCriadas: () => deps.aoContasMudarem?.() });
   const armazemLayout = deps.armazemLayout ?? ((id: string | null) => criarArmazemLayout(deps.pastaDeDados, id));
   let iniciado = false;
   let encerrado = false;
@@ -198,13 +211,17 @@ export function registrarServicosDominio(deps: DependenciasServicosDominio): Ser
   const missoes = criarServicoMissoes({
     banco, repos, workspaces, panes,
     comandoInicial: comandoInicialDaMissao,
+    ...(deps.resolverCliAutomatica === undefined ? {} : { resolverCliAutomatica: deps.resolverCliAutomatica }),
+    ...(deps.aoRotearPane === undefined ? {} : { aoRotearPane: deps.aoRotearPane }),
     aoMudar: aoMudarMissao,
     aoEventoDominio: (tipo, payload) => barramento.emitir(tipo, payload),
     aviso,
   });
 
   metodo = criarServicoMetodoMissao({
-    repos, workspaces, missoes, panes, detector: deps.detector,
+    repos, workspaces, missoes, panes, detector: deps.detector, confirmarEntregaMs: ESPERA_CONFIRMACAO_ENTREGA_MS,
+    ...(deps.contextoPrevio === undefined ? {} : { contextoPrevio: deps.contextoPrevio }),
+    ...(deps.modulosDesligados === undefined ? {} : { modulosDesligados: deps.modulosDesligados }),
     indices: async (workspaceId) => {
       await garantirMetodo(workspaceId);
       return gerenciadorMetodo.indices(workspaceId);
@@ -214,11 +231,11 @@ export function registrarServicosDominio(deps: DependenciasServicosDominio): Ser
   // ---------------------------------------------------------------- canais (só registra: nada pesado)
   registrarIpcWorkspaces({ registro: deps.registro, servico: workspaces, aoMudar: avisarWorkspaces });
   registrarIpcProvedores({ registro: deps.registro, servico: provedores, contas });
-  registrarIpcMissoes({ registro: deps.registro, servico: missoes, portoes: criarServicoPortoes({ repos, banco, aoMudar: avisarMissoes }) });
+  registrarIpcMissoes({ registro: deps.registro, servico: missoes, portoes: criarServicoPortoes({ repos, banco, aoMudar: avisarMissoes }), ...(deps.criarMissaoComSquad === undefined ? {} : { criarComSquad: deps.criarMissaoComSquad }) });
   registrarIpcMetodo({ registro: deps.registro, leitura, missao: metodo });
 
   return {
-    repos, workspaces, provedores, contas, missoes, panes, metodo, gerenciadorMetodo,
+    repos, workspaces, provedores, contas, missoes, panes, metodo, gerenciadorMetodo, avisarWorkspaces,
 
     async iniciar() {
       if (encerrado || iniciado) return;
@@ -230,6 +247,10 @@ export function registrarServicosDominio(deps: DependenciasServicosDominio): Ser
           aviso(`${nome}: ${e instanceof Error ? e.message : String(e)}`);
         }
       };
+      // boot ocioso: depois da onda 1, sem bloquear nada (detector em cache; stat de pastas)
+      const t = setTimeout(() => void isolado("contas padrão", () => provedores.garantirContasPadrao()), 0);
+      t.unref();
+      timers.add(t);
       await Promise.all([
         isolado("restaurar Panes", async () => {
           const r = await panes.restaurar();

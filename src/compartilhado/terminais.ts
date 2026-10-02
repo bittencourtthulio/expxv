@@ -24,7 +24,7 @@ export type AtividadeTerminal = "trabalhando" | "aguardando" | "pronto";
 export const ATIVIDADES_TERMINAL: readonly AtividadeTerminal[] = ["trabalhando", "aguardando", "pronto"];
 
 export type FerramentaId =
-  | "terminal" | "claude" | "codex" | "gemini" | "opencode" | "aider" | "qwen" | "kilo" | "personalizado";
+  | "terminal" | "claude" | "codex" | "gemini" | "opencode" | "aider" | "qwen" | "kilo" | "grok" | "personalizado";
 
 export type ModoLancamento = "direto" | "cmd_wrapper" | "powershell_wrapper";
 export type CodigoDeteccao = "ausente" | "sem_permissao" | "nao_mapeado";
@@ -90,7 +90,10 @@ interface Base { versao: 1; sequencia: number; sessao_id: string }
 export type EventoTerminal =
   | (Base & { tipo: "saida"; dados: string })
   | (Base & { tipo: "estado"; estado: EstadoSessao; erro_codigo: string | null; mensagem: string | null })
-  | (Base & { tipo: "encerramento"; codigo: number | null; sinal: number | null })
+  /** `solicitado`: o app pediu o encerramento (orquestrador, dono, fim do trabalho): o código 143 ou o sinal NÃO são falha e nunca aparecem como tal. */
+  | (Base & { tipo: "encerramento"; codigo: number | null; sinal: number | null; solicitado?: true })
+  /** O app fechou a sessão de propósito (D-520): a interface tira o painel da grade na hora, sem "Sessão encerrada" pendurada. Vem ANTES do fim do processo. */
+  | (Base & { tipo: "fechada" })
   | (Base & { tipo: "atividade"; atividade: AtividadeTerminal })
   | (Base & { tipo: "conversa"; conversa_id: string })
   | (Base & { tipo: "subagente_iniciado"; subagente_id: string; rotulo: string; descricao: string | null })
@@ -102,13 +105,18 @@ export interface FalhaTerminal { sessao_id: string; codigo: string; mensagem: st
 // ---- layout de painéis (árvore binária por aba; persistido no main por workspace) ----
 export type NoLayout =
   | { tipo: "terminal"; sessao_id: string }
-  | { tipo: "divisao"; orientacao: "horizontal" | "vertical"; primeiro: NoLayout; segundo: NoLayout };
+  /** `proporcao` (opcional, 0,05 a 0,95): fatia do PRIMEIRO filho; ausente = 0,5. Só o layout "orquestrador + workers" (D-515) a define. */
+  | { tipo: "divisao"; orientacao: "horizontal" | "vertical"; proporcao?: number; primeiro: NoLayout; segundo: NoLayout };
 
 export interface LayoutTerminais {
   versao: 2;
   ativa: string | null;
   abas: Array<{ arvore: NoLayout }>;
   fixadas: string[];
+  /** D-570: painel que ocupava a aba inteira (modo foco com 2+ painéis); ausente = nenhum. */
+  expandido?: string | null;
+  /** D-570: modo foco de um painel só (esconde a linha de abas); ausente = falso. */
+  foco_unico?: boolean;
 }
 
 // ---- anexos ----

@@ -1,0 +1,244 @@
+.painel-ws {
+  grid-area: painel; position: relative; z-index: 12; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--painel); border-right: 1px solid var(--borda); color: var(--texto); font-size: var(--fs-base);
+}
+.painel-ws[data-sobreposto] {
+  position: absolute; grid-area: auto; top: var(--altura-topo); bottom: var(--altura-rodape); left: var(--menu-recolhido); width: min(var(--painel-ws-largura), calc(100% - var(--menu-recolhido) - 24px));
+  z-index: 18; box-shadow: 12px 0 32px var(--sombra);
+}
+
+/* ---- topo ---- */
+.pws-topo { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 8px 12px; border-bottom: 1px solid var(--borda); }
+.pws-titulo-linha { display: flex; align-items: center; gap: 6px; min-height: var(--alvo-minimo); }
+.pws-titulo { margin: 0; font-size: var(--fs-titulo); font-weight: 600; letter-spacing: -0.01em; }
+.pws-contagem { font: 600 var(--fs-micro) var(--mono); color: var(--texto-suave); padding: 1px 6px; border-radius: 8px; background: var(--superficie); }
+.pws-selo {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  font: 700 var(--fs-micro) var(--mono); background: var(--aviso); color: var(--fundo);
+}
+.pws-espaco { flex: 1; }
+.pws-busca {
+  display: flex; align-items: center; gap: 6px; height: var(--campo-altura); padding: 0 8px;
+  border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--superficie); color: var(--texto-suave);
+}
+.pws-busca:focus-within { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.pws-busca input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: var(--fs-base); color: var(--texto); }
+.pws-busca input::placeholder { color: var(--texto-discreto); }
+
+.pws-icone-botao {
+  display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--alvo-minimo); height: var(--alvo-minimo); padding: 0;
+  border: 1px solid transparent; border-radius: var(--raio-pequeno); background: none; color: var(--texto-suave);
+}
+.pws-icone-botao:hover:not(:disabled) { color: var(--texto); background: var(--superficie-2); }
+.pws-icone-botao:disabled { opacity: 0.45; cursor: default; }
+.pws-icone-botao[aria-pressed="true"], .pws-icone-botao[aria-expanded="true"] { color: var(--destaque-texto); background: var(--superficie); }
+.pws-icone-botao .icone { width: 15px; height: 15px; }
+.pws-fav[aria-pressed="true"] .icone { fill: currentColor; fill-opacity: 0.3; }
+
+.pws-botao {
+  min-height: var(--botao-altura); padding: 0 var(--botao-pad-x); border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno);
+  background: var(--superficie); color: var(--texto); font-size: var(--botao-fonte);
+}
+.pws-botao:hover { background: var(--superficie-2); }
+.pws-botao-primario { background: var(--destaque); border-color: var(--destaque); color: var(--sobre-destaque); }
+.pws-botao-primario:hover { background: var(--destaque); filter: brightness(1.08); }
+.pws-botao-perigo { border-color: var(--alerta); color: var(--alerta); }
+
+/* ---- corpo e lista ---- */
+.pws-corpo { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 6px 4px 12px 4px; scrollbar-gutter: stable; }
+.pws-lista, .pws-arvore { list-style: none; margin: 0; padding: 0; }
+.pws-lista { display: flex; flex-direction: column; gap: 6px; }
+
+/* Hierarquia do cartão: NOME ≫ ramo/chips ≫ pasta ≫ ações. Recuo esquerdo curto (--pws-pad-esq) e recuo por nível de agente pequeno (--pws-recuo-nivel). */
+.pws-cartao {
+  --pws-pad-esq: 8px; --pws-recuo-nivel: 10px;
+  cursor: pointer; position: relative; display: flex; flex-direction: column; gap: 1px; padding: 4px 6px 6px var(--pws-pad-esq); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie);
+  /* ~30 cartões: o navegador pula o que está fora da tela (lista "virtualizada" sem medir altura) */
+  content-visibility: auto; contain-intrinsic-size: auto 96px;
+}
+.pws-cartao:hover { border-color: var(--borda-campo); background: var(--superficie-2); }
+/* ativo: sem caixa pesada; marcador curto à esquerda (como na sub-navegação) e nome em azul D-31 */
+.pws-cartao[data-ativo] { background: var(--superficie-2); }
+.pws-cartao[data-ativo]::before { content: ""; position: absolute; left: -1px; top: 8px; width: 3px; height: 18px; border-radius: 0 2px 2px 0; background: var(--destaque); }
+.pws-cartao[data-ativo] .pws-nome-botao { color: var(--destaque-texto); }
+.pws-cartao[data-atencao] { border-color: var(--aviso); }
+.pws-cartao[data-arrastando] { opacity: 0.5; }
+.pws-cartao[data-alvo] { border-color: var(--destaque); box-shadow: 0 -2px var(--destaque); }
+
+/* linha do nome: SÓ o bichinho e o nome */
+.pws-linha-nome { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 30px; }
+.pws-bichinho { flex: none; margin-left: -4px; display: inline-flex; align-items: center; justify-content: center; }
+.pws-bichinho:empty { display: none; }
+.pws-bichinho .bi-mini { width: 28px; height: 28px; margin: 0; }
+.pws-nome-botao {
+  flex: 1; min-width: 0; display: block; min-height: 28px; padding: 3px 4px 3px 0; border: 0; border-radius: var(--raio-pequeno); background: none; color: var(--texto); text-align: left;
+  font: 600 max(var(--fs-campo), 14px) / 1.25 var(--fonte); letter-spacing: -0.005em;
+  /* o nome ocupa tudo e quebra antes de cortar; reticências só em último caso (2 linhas) */
+  overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+}
+.pws-nome-botao:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }
+.pws-atencao-ponto { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--aviso); }
+
+/* linha 2 (sempre presente): resumo de agentes, o que precisa de você, execução, etapa e há quanto tempo; quebra em duas linhas em vez de cortar.
+   Linha 3: ramo + pasta; as ações (recolher, fixar, ⋯) aparecem no hover sobre o FIM da pasta, nunca sobre a linha 2 nem sobre o nome. */
+.pws-linha-estado { display: flex; align-items: center; min-width: 0; padding-left: 2px; }
+.pws-acoes {
+  position: absolute; right: -2px; top: 50%; transform: translateY(-50%); z-index: 3; display: flex; align-items: center; gap: 0; padding-left: 14px;
+  background: linear-gradient(to right, transparent, var(--superficie-2) 14px);
+  opacity: 0; pointer-events: none;
+}
+.pws-cartao:hover .pws-acoes, .pws-acoes:focus-within, .pws-acoes[data-aberto], .pws-cartao:focus-within .pws-acoes { opacity: 1; pointer-events: auto; }
+/* favorito é estado: a estrela marcada fica visível em repouso (só ela) */
+.pws-acoes[data-favorito] { opacity: 1; pointer-events: auto; }
+.pws-acoes[data-favorito]:not(:focus-within):not([data-aberto]) { background: none; padding-left: 0; }
+.pws-cartao:not(:hover):not(:focus-within) .pws-acoes[data-favorito]:not([data-aberto]) > :not(.pws-fav) { display: none; }
+.pws-acoes .pws-icone-botao { width: max(28px, var(--alvo-minimo)); height: max(28px, var(--alvo-minimo)); }
+.pws-acoes .pws-icone-botao .icone { width: 14px; height: 14px; }
+.pws-acoes .pws-icone-botao:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+/* toque: sem hover, as ações ficam sempre visíveis */
+@media (hover: none) { .pws-acoes { opacity: 1; pointer-events: auto; position: static; transform: none; background: none; padding-left: 0; margin-left: auto; } }
+.pws-chevron { color: var(--texto-discreto); }
+.pws-chevron:hover { color: var(--texto); }
+.pws-chevron-icone { width: 12px; height: 12px; }
+.pws-chevron[aria-expanded="true"] .pws-chevron-icone { transform: rotate(90deg); }
+
+.pws-menu-raiz { position: relative; }
+.pws-menu {
+  position: fixed; z-index: 1000; min-width: 190px; max-width: calc(100vw - 16px); padding: 4px; display: flex; flex-direction: column;
+  background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); box-shadow: 8px 8px 24px var(--sombra);
+}
+.pws-menu button { display: flex; align-items: center; gap: 8px; min-height: var(--alvo-minimo); padding: 0 10px; border: 0; border-radius: var(--raio-pequeno); background: none; color: var(--texto); font-size: var(--fs-base); text-align: left; white-space: nowrap; }
+.pws-menu button:hover { background: var(--superficie-2); }
+.pws-menu .icone { width: 14px; height: 14px; color: var(--texto-suave); }
+.pws-menu-perigo, .pws-menu-perigo .icone { color: var(--alerta) !important; }
+
+.pws-meta { position: relative; display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 22px; padding: 0 2px 2px 2px; color: var(--texto-discreto); font-size: var(--fs-pequeno); }
+.pws-meta[data-favorito] { padding-right: 30px; }
+.pws-pasta { font-family: var(--mono); min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 0 1 auto; }
+.pws-ramo { display: inline-flex; align-items: center; gap: 4px; min-width: 0; flex: none; max-width: 70%; min-height: 18px; color: var(--texto-suave); font-size: var(--fs-pequeno); padding-right: 4px; }
+.pws-ramo .icone { width: 12px; height: 12px; flex: none; }
+.pws-ramo-nome { font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pws-sujo { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--aviso); }
+
+.pws-chips { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 1px 0; }
+.pws-chip {
+  display: inline-flex; align-items: center; min-height: 18px; padding: 0 7px; border-radius: 9px; border: 1px solid var(--borda); background: var(--painel);
+  color: var(--texto-suave); font-size: var(--fs-pequeno); white-space: nowrap;
+}
+.pws-sem-agentes { color: var(--texto-discreto); font-size: var(--fs-pequeno); min-height: 18px; display: inline-flex; align-items: center; }
+.pws-ultima { margin-left: auto; padding-left: 4px; color: var(--texto-discreto); font-size: var(--fs-pequeno); white-space: nowrap; }
+.pws-chip-resumo { gap: 5px; }
+.pws-resumo-ponto { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--texto-discreto); }
+.pws-chip-resumo[data-estado="trabalhando"] .pws-resumo-ponto { background: var(--destaque); }
+.pws-chip-resumo[data-estado="aguardando"] .pws-resumo-ponto { background: var(--aviso); }
+.pws-chip-resumo[data-estado="erro"] .pws-resumo-ponto { background: var(--alerta); }
+.pws-chip[data-tom="aguardando"] { border-color: var(--aviso); color: var(--aviso); font-weight: 600; }
+.pws-chip[data-tom="erro"] { border-color: var(--alerta); color: var(--alerta); font-weight: 600; }
+.pws-chip[data-tom="execucao"] { color: var(--sucesso); border-color: var(--sucesso); }
+.pws-chip[data-tom="neutro"] { color: var(--texto); }
+.pws-chips { row-gap: 4px; }
+
+/* ---- árvore de agentes ---- */
+.pws-arvore { margin: 4px 0 0 calc(var(--pws-pad-esq) * -1 + 2px); padding: 4px 0 0 0; border-top: 1px solid var(--borda); }
+.pws-no { position: relative; display: flex; align-items: stretch; min-width: 0; padding-left: calc(var(--nivel, 0) * var(--pws-recuo-nivel)); }
+/* linhas-guia discretas: vertical contínua até o último irmão, com um traço curto até o nó */
+.pws-no[data-nivel]:not([data-nivel="0"])::before { content: ""; position: absolute; left: calc(var(--nivel, 0) * var(--pws-recuo-nivel) - 5px); top: 0; bottom: 0; border-left: 1px solid var(--borda); }
+.pws-no[data-ultimo]:not([data-nivel="0"])::before { bottom: 50%; }
+.pws-no[data-nivel]:not([data-nivel="0"])::after { content: ""; position: absolute; left: calc(var(--nivel, 0) * var(--pws-recuo-nivel) - 5px); top: 50%; width: 5px; border-top: 1px solid var(--borda); }
+
+.pws-agente, .pws-missao {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 2px 4px; border: 1px solid transparent; border-radius: var(--raio-pequeno);
+  background: none; color: var(--texto); text-align: left;
+}
+.pws-agente:hover, .pws-missao:hover { background: var(--superficie-2); }
+.pws-cartao[data-ativo] .pws-agente:hover, .pws-cartao[data-ativo] .pws-missao:hover { background: var(--superficie); }
+.pws-agente-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pws-agente-titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; min-width: 0; }
+.pws-agente-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
+.pws-agente-nome { min-width: 0; flex: 1; display: flex; align-items: baseline; gap: 5px; overflow: hidden; white-space: nowrap; font-size: var(--fs-rotulo); }
+.pws-agente-cli { flex: none; max-width: 70%; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.pws-agente-papel { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-pequeno); font-weight: 400; color: var(--texto-suave); }
+.pws-agente-agora { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-pequeno); color: var(--texto-suave); }
+.pws-no[data-estado="aguardando"] .pws-agente-agora { color: var(--aviso); }
+.pws-no[data-estado="erro"] .pws-agente-agora { color: var(--alerta); }
+.pws-sub { flex: none; font: 500 var(--fs-micro) var(--mono); color: var(--texto-discreto); padding: 0 5px; border: 1px solid var(--borda); border-radius: 8px; }
+.pws-tempo { flex: none; font: var(--fs-micro) var(--mono); color: var(--texto-discreto); }
+.pws-terminar { color: var(--texto-suave); }
+.pws-terminar:hover:not(:disabled) { color: var(--alerta); }
+.pws-parar { width: 10px; height: 10px; border-radius: 2px; background: currentColor; }
+.pws-missao .icone { width: 14px; height: 14px; color: var(--destaque-texto); flex: none; }
+.pws-abrir-missao { flex: none; font-size: var(--fs-pequeno); color: var(--destaque-texto); }
+.pws-no-missao { padding-left: 0; }
+.pws-mais { padding: 2px 8px 2px 14px; font-size: var(--fs-pequeno); color: var(--texto-discreto); }
+.pws-exec .pws-agente-nome { font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; }
+
+/* glifo de estado: forma própria por estado (anel girando, !, ✓, ×, …, ponto) */
+.pws-glifo { flex: none; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font: 700 11px var(--mono); color: var(--texto-discreto); }
+.pws-glifo[data-forma="anel"] { border: 2px solid var(--borda-campo); border-top-color: var(--destaque); border-radius: 50%; width: 13px; height: 13px; margin: 1.5px; }
+.pws-glifo[data-forma="alerta"] { color: var(--aviso); }
+.pws-glifo[data-forma="check"] { color: var(--sucesso); }
+.pws-glifo[data-forma="erro"] { color: var(--alerta); font-size: 14px; }
+.pws-glifo[data-forma="ponto"]::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--texto-discreto); }
+@media (prefers-reduced-motion: no-preference) {
+  .pws-glifo[data-forma="anel"] { animation: pws-girar 1s linear infinite; }
+  .pws-cartao { transition: border-color var(--duracao) ease, background var(--duracao) ease; }
+}
+@keyframes pws-girar { to { transform: rotate(360deg); } }
+
+/* confirmação inline de terminar / remover */
+.pws-confirmar { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; margin: 2px 0; padding: 6px 8px; border: 1px solid var(--borda-campo); border-radius: var(--raio-pequeno); background: var(--painel); }
+.pws-confirmar[data-forte] { border-color: var(--alerta); }
+.pws-confirmar-texto { margin: 0; font-size: var(--fs-pequeno); line-height: 1.4; color: var(--texto-suave); }
+.pws-confirmar-texto strong { color: var(--texto); font-size: var(--fs-rotulo); }
+.pws-confirmar-acoes { display: flex; gap: 6px; }
+.pws-cartao > .pws-confirmar { margin: 4px 4px 0; }
+
+/* estados vazio, erro, carregando */
+.pws-vazio { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 16px 6px; padding: 20px 12px; text-align: center; color: var(--texto-suave); font-size: var(--fs-base); border: 1px dashed var(--borda); border-radius: var(--raio-pequeno); }
+.pws-vazio p { margin: 0; }
+.pws-vazio .icone { width: 24px; height: 24px; color: var(--destaque-texto); }
+.pws-erro { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; padding: 8px 10px; border: 1px solid var(--alerta); border-radius: var(--raio-pequeno); color: var(--alerta); font-size: var(--fs-pequeno); }
+.pws-erro-acoes { display: flex; gap: 6px; }
+.pws-esqueleto { display: flex; flex-direction: column; gap: 6px; }
+.pws-esqueleto i { display: block; height: 64px; border-radius: var(--raio-pequeno); background: var(--superficie); }
+@media (prefers-reduced-motion: no-preference) { .pws-esqueleto i { animation: pws-pulso 1.4s ease-in-out infinite; } }
+@keyframes pws-pulso { 50% { opacity: 0.55; } }
+
+/* borda de redimensionar */
+.pws-borda { position: absolute; top: 0; bottom: 0; right: -3px; width: 7px; cursor: col-resize; z-index: 2; touch-action: none; }
+.pws-borda::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 1px; background: transparent; }
+.pws-borda:hover::after, .pws-borda:focus-visible::after { background: var(--destaque); width: 2px; left: 2px; }
+.pws-borda:focus-visible { outline: none; }
+
+/* modo visão geral: uma linha por workspace = [bichinho][nome] + selo mínimo de atenção; ações no hover/foco */
+.painel-ws[data-compacto] .pws-cartao { flex-direction: row; flex-wrap: wrap; align-items: center; padding-block: 2px; }
+.painel-ws[data-compacto] .pws-linha-nome { flex: 1 1 0; }
+.painel-ws[data-compacto] .pws-nome-botao { -webkit-line-clamp: 1; line-clamp: 1; }
+.painel-ws[data-compacto] .pws-cartao > .pws-acoes { top: 15px; right: 2px; }
+.painel-ws[data-compacto] .pws-cartao > .linha-suite, .painel-ws[data-compacto] .pws-cartao > .pws-confirmar { flex: 0 0 100%; }
+.pws-selo-compacto {
+  flex: none; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  font: 700 var(--fs-micro) var(--mono); background: var(--aviso); color: var(--fundo);
+}
+.pws-cartao:hover > .pws-selo-compacto, .pws-cartao:focus-within > .pws-selo-compacto { visibility: hidden; }
+
+/* o cartão todo troca o workspace; controles dentro dele mantêm o cursor e o clique próprios */
+.pws-cartao button, .pws-cartao input, .pws-cartao a, .pws-cartao [role="menu"] { cursor: default; }
+.pws-cartao button:not(:disabled) { cursor: pointer; }
+
+/* D-570/D-571: contagem de terminais no cartão (discreta) e o grupo "Sem projeto" no fim da lista */
+.pws-chip-terminais { opacity: 0.8; }
+.pws-sem-projeto { display: block; width: calc(100% - 16px); margin: 6px 8px 8px; padding: 6px 10px; border: 1px dashed var(--borda); border-radius: 6px; background: transparent; color: var(--texto-suave); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.pws-sem-projeto:hover { background: var(--superficie-2); color: var(--texto); }
+.pws-sem-projeto[aria-current="true"] { border-style: solid; border-color: var(--destaque); color: var(--texto); }
+.pws-sem-projeto:focus-visible { outline: 2px solid var(--destaque); outline-offset: -1px; }
+
+/* a estrela do favorito (visível em repouso) reserva a própria folga: nada fica por baixo dela */
+.pws-cartao[data-favorito] .pws-chips { padding-right: 28px; }
+.painel-ws[data-compacto] .pws-cartao[data-favorito] > .pws-selo-compacto { margin-right: 28px; }
+.pws-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+/* chips de estado clicáveis: levam aos Terminais (o botão herda o visual do chip) */
+button.pws-chip-acao { font: inherit; cursor: pointer; background: none; }
+button.pws-chip-acao:hover { background: var(--superficie-2); }
+button.pws-chip-acao:focus-visible { outline: 2px solid var(--destaque); outline-offset: 1px; }

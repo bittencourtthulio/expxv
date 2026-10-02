@@ -359,3 +359,16 @@ Padrões de orquestração sugeridos:
 13. **`/expx:` vs sem namespace.** O ADE precisa conhecer o harness do Pane: Claude Code usa `/expx:sprintx`, OpenCode `/sprintx`. O lock informa `harness: [claude, opencode]`. Outros CLIs (MimoCode só tem ponte parcial para runx) não são suportados por sprintx.
 14. **Lembrete de prompt.** O hook `UserPromptSubmit` injeta um lembrete por regex de palavras; prompts gerados pelo ADE com palavras como "bug" ou "implementar" acionam skill diferente da pretendida. Usar o slash command explícito e evitar texto livre que case outro gatilho.
 15. **Atualização.** `expx update` muda skills (lock com sha256 por arquivo; o doctor avisa divergência local). O ADE deve ler `expx-lock.json` (`cli_version`, `commit` por skill) para versionar seu parser e alertar incompatibilidade de schema.
+
+---
+
+## 7. Instalação pelo app: o que o pacote `expxdev` 0.9.0 faz de verdade (lido do pacote em cache, offline; D-470 a D-478)
+
+Fonte: `~/.npm/_npx/<hash>/node_modules/expxdev` (README, `package.json`, `dist/cli/{expx,init,init-flags,selecao}.js`, `dist/nucleo/catalogo.js`, `dist/plugin/atomico.js`, `dist/harness/*.js`, `dist/update/flags.js`). Correções/precisões ao que as seções 0–6 diziam:
+
+- **`engines.node >= 20.19.0`**; `bin`: `expx` e `expxdev` → `dist/cli/expx-bin.js`; sem `postinstall`/`install`/`prepare`; dependências `@inquirer/prompts`, `chokidar`, `ink`, `react`, `ws`, `yaml`, `zod`.
+- **Flags do `init`:** `--skills a,b` (repetível), `--harness claude,opencode` (padrão do CLI: só `claude`), `--yes|--sim`, `--check|--simular`, `--painel`; qualquer outra → `opcao desconhecida em init: <flag>`. **Sem `--skills`** e sem terminal: `nenhuma skill selecionada` + `escolha as skills com --skills…` + `disponiveis: <NOMES>` (código 1). **Sem `--yes`** e sem terminal: imprime `instalaria: …` e sai 0 sem escrever. `update` aceita `--check --latest --yes|--sim --to <ref>` e nomes de skill. Não há `--dir`: o destino é o `cwd`.
+- **Catálogo (`NOMES`, na ordem da seleção):** sprintx, runx, legadox, stackx, mergex, memox, prodx, buildx, designx; `camada: true` em legadox, stackx, memox, prodx, designx ("sozinha não faz nada: instale sprintx ou runx junto").
+- **Como instala:** para cada skill resolve a maior tag semver (ou a branch), `git clone --depth 1` (git do sistema; **git obrigatório**), detecta o layout (`SKILL.md` mais raso), recusa referência a caminho fora da pasta e hasheia os arquivos para o lock; só depois escreve, **atomicamente**: monta `.expx.tmp-<pid>-<ms>` na raiz e troca por `rename` (o `.expx/` anterior inteiro — `hooks.json`, `memoria/`, `estado.json` — sai); `instalarHooks` copia hooks e `.claude/skills/<nome>`; `mesclarSettings` mescla `.claude/settings.json` com backup datado; com `opencode` materializa `.opencode/`; com `claude` no PATH roda `claude plugin marketplace add <abs>/.expx/marketplace`, `… update expx-local`, `plugin uninstall expx@expx-local` (tolerante), `plugin install expx@expx-local` (grava na config do Claude do usuário; sem o binário, imprime os comandos).
+- **Variáveis lidas:** `NO_COLOR` e **`EXPX_SKILLS_LOCAIS`** (pasta local que substitui o repositório das skills — o app nunca a herda).
+- **`doctor`:** sai 1 quando há `[erro]` (ex.: "este projeto nao tem .expx/"), 0 com "nenhum problema encontrado".

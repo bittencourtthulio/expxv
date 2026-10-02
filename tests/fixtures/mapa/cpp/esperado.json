@@ -1,0 +1,59 @@
+{
+  "linguagem": "cpp",
+  "arquivos": {
+    "include/loja/pedido.hpp": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "loja.Pedido", "tipo": "classe", "doc": "Pedido da loja.", "exportado": true },
+        { "qualificado": "loja.Pedido.Pedido", "tipo": "metodo", "visibilidade": "publica" },
+        { "qualificado": "loja.Pedido.total", "tipo": "metodo", "visibilidade": "publica", "exportado": true },
+        { "qualificado": "loja.Pedido.criar", "tipo": "metodo" },
+        { "qualificado": "loja.Pedido.ajustar", "tipo": "metodo", "visibilidade": "protegida", "exportado": false },
+        { "qualificado": "loja.Item", "tipo": "struct" },
+        { "qualificado": "loja.Estado", "tipo": "enum" },
+        { "qualificado": "loja.calcular", "tipo": "funcao", "exportado": true }
+      ],
+      "imports": [
+        { "especificador": "<string>", "tipo": "estatico", "nomes": [] },
+        { "especificador": "loja/base.hpp" }
+      ],
+      "herancas": [
+        { "classe": "loja.Pedido", "base": "Base", "tipo": "herda" },
+        { "classe": "loja.Pedido", "base": "Auditavel", "tipo": "herda" }
+      ],
+      "dinamicos": [{ "tipo": "chamada_computada" }],
+      "ausentes": { "simbolos": [{ "nome": "id_" }] }
+    },
+    "src/pedido.cpp": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "LIMITE", "tipo": "constante" },
+        { "qualificado": "QUADRADO", "tipo": "funcao", "assinatura": "#define QUADRADO(…)" },
+        { "qualificado": "loja.Pedido.Pedido", "tipo": "metodo" },
+        { "qualificado": "loja.Pedido.total", "tipo": "metodo", "complexidade": 5 },
+        { "qualificado": "loja.Pedido.criar", "tipo": "metodo", "complexidade": 1 },
+        { "qualificado": "loja.maior", "tipo": "funcao", "complexidade": 2, "decoradores": ["template"] },
+        { "qualificado": "loja.interna", "tipo": "funcao", "exportado": false, "visibilidade": "privada", "complexidade": 2 },
+        { "qualificado": "main", "tipo": "funcao", "exportado": true, "complexidade": 2 }
+      ],
+      "imports": [
+        { "especificador": "loja/pedido.hpp" },
+        { "especificador": "<cstdlib>" },
+        { "especificador": "<sqlite3.h>" }
+      ],
+      "chamadas": [
+        { "de": "loja.Pedido.total", "alvo": "calcular", "receptor": null, "tipo": "chamada" },
+        { "de": "loja.Pedido.total", "alvo": "ajustar", "receptor": null, "tipo": "chamada" },
+        { "de": "loja.Pedido.criar", "alvo": "Pedido", "receptor": "loja", "tipo": "instancia" },
+        { "de": "loja.Pedido.criar", "alvo": "ajustar", "receptor": "p", "tipo": "chamada" },
+        { "de": "loja.Pedido.criar", "alvo": "executar", "receptor": "helper", "tipo": "chamada" },
+        { "de": "loja.interna", "alvo": "getenv", "tipo": "chamada" }
+      ],
+      "entradas": [{ "tipo": "main", "chave": "main", "handler": "main", "confianca": "exata" }],
+      "dados": [{ "tabela": "pedidos", "operacao": "le", "de": "loja.interna", "confianca": "exata", "fonte": "sql" }],
+      "dinamicos": [{ "tipo": "reflexao" }],
+      "padroes": [{ "tipo": "env", "nome": "HOME" }, { "tipo": "throw" }, { "tipo": "catch_vazio" }],
+      "ausentes": { "dados": [{ "tabela": "the" }, { "tabela": "items" }], "chamadas": [{ "alvo": "sizeof" }] }
+    }
+  }
+}

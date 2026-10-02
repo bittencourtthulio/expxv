@@ -84,6 +84,12 @@ export function criarLoteSaida(op: OpcoesLoteSaida): LoteSaida {
     const ultimo = eventos[eventos.length - 1] as Saida;
     const pedacos = dividirPorBytes(eventos.length === 1 ? ultimo.dados : eventos.map((e) => e.dados).join(""));
     const base = eventos.length - pedacos.length;
+    if (base < 0) {
+      // Texto multibyte (acento, caixa, emoji) fatiado por bytes rende MAIS pedaços que eventos: não há sequência para os extras
+      // (o renderer descarta sequência repetida). Então cada evento segue sozinho e inteiro, com a sequência que já tem.
+      for (const e of eventos) op.enviar({ versao: 1, tipo: "saida", sequencia: e.sequencia, sessao_id: e.sessao_id, dados: e.dados });
+      return;
+    }
     pedacos.forEach((dados, i) => {
       const origem = eventos[base + i] as Saida;
       op.enviar({ versao: 1, tipo: "saida", sequencia: origem.sequencia, sessao_id: ultimo.sessao_id, dados });

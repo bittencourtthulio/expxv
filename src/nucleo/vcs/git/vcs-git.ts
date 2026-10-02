@@ -78,7 +78,8 @@ export interface VcsGitOperacoes {
   };
   remotos: {
     listar: Sem<typeof rmt.listarRemotos>;
-    fetch: Sem<typeof rmt.fetchRemoto>;
+    /** `git fetch` (traz objetos e refs; nunca altera a árvore de trabalho). */
+    atualizarRemoto: Sem<typeof rmt.fetchRemoto>;
     pull: Sem<typeof rmt.pullRemoto>;
     enviar: Sem<typeof rmt.pushRemoto>;
     /** Única via de push forçado: manual, confirmação digitada, nunca na branch padrão, sempre com simulação. */
@@ -191,7 +192,7 @@ export function criarVcsGit(raiz: string, opcoes: { tipo?: Extract<TipoVcs, "git
     },
     remotos: {
       listar: (o) => rmt.listarRemotos(raiz, com(o)),
-      fetch: (o) => rmt.fetchRemoto(raiz, com(o)),
+      atualizarRemoto: (o) => rmt.fetchRemoto(raiz, com(o)),
       pull: (o) => rmt.pullRemoto(raiz, com(o)),
       enviar: (o) => rmt.pushRemoto(raiz, com(o)),
       sobrescreverComLease: (o) => rmt.forceWithLease(raiz, com(o)),

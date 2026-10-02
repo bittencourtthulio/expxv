@@ -1,27 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Instalacao } from "./Instalacao";
 import { Saude, proporcaoSemTrabalho } from "./Saude";
 import { Violacoes } from "./Violacoes";
 import { formatarDuracao, montarQuadro } from "./util";
 import { indice, tk, trabalho } from "./fabrica";
-
-describe("Instalação", () => {
-  it("lista camadas faltantes com o comando de cada uma e hooks somente leitura", () => {
-    render(<Instalacao indice={indice([])} />);
-    expect(screen.getByText("/expx:legadox-perfil")).toBeTruthy();
-    expect(screen.getByText("/expx:memox-indexar")).toBeTruthy();
-    expect(screen.getByText(/Hooks não instalados/)).toBeTruthy();
-  });
-  it("mostra modo de cada hook quando instalados e alerta de expx_schema", () => {
-    const i = indice([], { camadas: { convencoes: true, perfil_legado: true, design_system: true, produto: true, hooks: true, lock: true, memoria: true }, rejeicoes: [{ caminho: "docs/x/PLANO.md", motivo: "schema_maior" }] });
-    render(<Instalacao indice={i} />);
-    expect(screen.getByRole("alert").textContent).toMatch(/Incompatibilidade de expx_schema/);
-    expect(screen.getByText("segredo-no-commit").closest("li")?.textContent).toContain("bloqueio");
-    expect(screen.getByText(/Todas as camadas estão instaladas/)).toBeTruthy();
-  });
-});
 
 describe("Saúde", () => {
   it("calcula a proporção de pedidos prodx que não viram trabalho", () => {

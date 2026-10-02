@@ -8,5 +8,6 @@
     "noEmit": true,
     "types": ["node", "vite/client", "@testing-library/jest-dom"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx", "scripts/**/*.d.ts", "scripts/**/*.d.mts", "*.mts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx", "scripts/**/*.d.ts", "scripts/**/*.d.mts", "*.mts"],
+  "exclude": ["tests/fixtures/mapa/resolucao-ts/**"]
 }

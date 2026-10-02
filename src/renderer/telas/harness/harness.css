@@ -1,0 +1,60 @@
+/* Tela Harness (Fase 9): uma linha de controles, abas pequenas, linhas densas (D-32). */
+.harness { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 0; gap: var(--espaco-1); }
+.harness-barra { display: flex; align-items: center; gap: var(--espaco-2); min-height: var(--barra-altura); overflow-x: auto; white-space: nowrap; scrollbar-width: none; font-size: var(--fs-pequeno); }
+.harness-barra::-webkit-scrollbar { display: none; }
+.harness-barra select, .harness-barra input, .h-campo input, .h-campo select, .h-linha input, .h-linha select { min-height: var(--campo-altura); padding: 0 var(--espaco-2); border: 1px solid var(--borda-campo); border-radius: 4px; background: var(--superficie); color: var(--texto); font: var(--fs-pequeno) var(--fonte); }
+/* combos sem texto cortado sem dica (P-2 do dono): valor longo vira reticências e o texto completo vai no title do select */
+.harness-barra select { max-width: 190px; text-overflow: ellipsis; overflow: hidden; }
+.harness-barra input[type="search"] { width: 120px; }
+.harness-barra input.h-limiar { width: 48px; }
+.harness-barra [aria-invalid="true"], .h-campo [aria-invalid="true"], .h-linha [aria-invalid="true"] { border-color: var(--alerta); }
+.harness-corpo { flex: 1; min-height: 0; overflow: auto; }
+.harness-corpo-alto { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.h-secao { padding: var(--espaco-2) var(--espaco-2); }
+.h-secao h2 { margin: 0 0 var(--espaco-1); font-size: var(--fs-rotulo); }
+.h-nota { margin: var(--espaco-1) 0 var(--espaco-2); color: var(--texto-suave); font-size: var(--fs-pequeno); }
+.h-aviso { margin: var(--espaco-1) 0; padding: var(--espaco-2) var(--espaco-2); border: 1px solid var(--aviso); border-radius: 6px; color: var(--aviso); font-size: var(--fs-pequeno); }
+.h-erro { margin: var(--espaco-1) 0; padding: var(--espaco-2) var(--espaco-2); border: 1px solid var(--alerta); border-radius: 6px; color: var(--alerta); font-size: var(--fs-pequeno); }
+.h-linha { display: grid; grid-template-columns: minmax(8em, 1.2fr) 7em minmax(8em, 1.2fr) 6em 8em minmax(7em, 1fr) 80px; gap: var(--espaco-2); align-items: center; height: 100%; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); font-size: var(--fs-pequeno); }
+.h-linha > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Tabela densa colapsa em telas menores (nada além da borda direita): o esforço some ≤1000 px quando a linha
+   não está em edição (o campo continua no modo edição); ≤730 px a "Conta fixa" também some (só leitura). */
+@media (max-width: 1000px) {
+  .h-cab > :nth-child(4), .h-linha:not([data-editando]) > :nth-child(4) { display: none; }
+  .h-linha { grid-template-columns: minmax(6.5em, 1.2fr) 6em minmax(6.5em, 1.2fr) 5em 7em minmax(5.5em, 1fr) 76px; }
+  .h-linha:not([data-editando]) { grid-template-columns: minmax(6.5em, 1.2fr) 6em minmax(6.5em, 1.2fr) 7em minmax(5.5em, 1fr) 76px; }
+}
+@media (max-width: 730px) {
+  .h-cab > :nth-child(5), .h-linha > :nth-child(5) { display: none; }
+  .h-linha { grid-template-columns: minmax(5.5em, 1.2fr) 5.5em minmax(5em, 1.2fr) 4.5em minmax(4.5em, 1fr) 76px; }
+  .h-linha:not([data-editando]) { grid-template-columns: minmax(5.5em, 1.2fr) 5.5em minmax(5em, 1.2fr) minmax(4.5em, 1fr) 76px; }
+}
+.h-linha > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-linha[data-problema] { box-shadow: inset 2px 0 var(--alerta); background: color-mix(in srgb, var(--alerta) 8%, transparent); }
+.h-linha[data-editando] { background: var(--superficie); }
+.h-linha:focus-visible { outline: 2px solid var(--destaque); outline-offset: -2px; }
+.h-grupo { display: flex; align-items: center; height: 100%; padding: 0 var(--espaco-2); color: var(--texto-discreto); font-size: var(--fs-pequeno); font-weight: 600; }
+.h-cab { color: var(--texto-discreto); border-bottom: 1px solid var(--borda); }
+.h-grade { display: grid; gap: var(--espaco-1) var(--espaco-2); align-items: center; font-size: var(--fs-pequeno); }
+/* grade provedor × faixa: colunas encolhem em telas menores em vez de vazar da borda direita */
+.h-grade-eq { grid-template-columns: 8em repeat(var(--n-faixas, 4), minmax(9em, 1fr)); }
+@media (max-width: 730px) { .h-grade-eq { grid-template-columns: 6.5em repeat(var(--n-faixas, 4), minmax(6.5em, 1fr)); } }
+.h-celula { display: flex; flex-direction: column; gap: var(--espaco-1); }
+.h-celula input { width: 100%; }
+.h-selo { display: inline-flex; padding: 0 var(--espaco-2); border: 1px solid var(--borda); border-radius: 8px; font-size: var(--fs-micro); color: var(--texto-suave); }
+.h-selo[data-tom="destaque"] { border-color: var(--destaque); color: var(--destaque-texto); }
+.h-selo[data-tom="aviso"] { border-color: var(--aviso); color: var(--aviso); }
+.h-campo { display: flex; flex-direction: column; gap: var(--espaco-1); margin-bottom: var(--espaco-2); font-size: var(--fs-pequeno); }
+.h-campo input, .h-campo select { min-height: var(--campo-altura); }
+.h-linha-simples { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; font-size: var(--fs-pequeno); margin: var(--espaco-1) 0; }
+.h-conta { padding: var(--espaco-2) var(--espaco-2); border-bottom: 1px solid var(--borda); font-size: var(--fs-pequeno); }
+.h-conta-cab { display: flex; gap: var(--espaco-2); align-items: center; flex-wrap: wrap; }
+.h-conta-campos { display: flex; gap: var(--espaco-2); flex-wrap: wrap; margin-top: var(--espaco-2); align-items: center; }
+.h-conta input { width: 12em; }
+.h-conta input.h-num { width: 7em; }
+.h-decisao { display: grid; grid-template-columns: 7em 6em 1fr 4em 8em; gap: var(--espaco-2); align-items: center; height: 100%; padding: 0 var(--espaco-2); border-bottom: 1px solid var(--borda); font-size: var(--fs-pequeno); }
+.h-decisao > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-mascara { font-family: var(--mono); letter-spacing: 0.1em; color: var(--texto-discreto); }
+.h-lista { flex: 1; min-height: 120px; }
+/* linhas do padrão D-694 dentro de lista virtualizada preenchem o slot (Cofre) */
+.h-lista .lst-linha { height: 100%; }

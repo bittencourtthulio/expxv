@@ -94,15 +94,32 @@ describe("servidor MCP", () => {
     const r = await c.callTool({ name: "pane_spawn", arguments: { provider: "claude" } });
     expect(r.isError).toBe(true);
     expect(JSON.parse((r.content as Array<{ text: string }>)[0]?.text ?? "")).toMatchObject({ code: "rule_violation", subcode: "forbidden_role" });
-    const desconhecida = await c.callTool({ name: "memory_write", arguments: {} });
+    const desconhecida = await c.callTool({ name: "tool_que_nao_existe", arguments: {} });
     expect(JSON.parse((desconhecida.content as Array<{ text: string }>)[0]?.text ?? "")).toMatchObject({ code: "not_found" });
     await c.close();
   });
 
+  it("harness_set só aparece em tools/list do piloto agêntico com o opt-in `piloto_edita_politica` no token", async () => {
+    const { servidor: s } = await subir({ modo: "agentico" });
+    const base = { workspace_id: "ws_1", mission_id: "mis_1", pane_id: "pane_p", role: "piloto", mode: "agentico" } as const;
+    const sem = await cliente(s.url, s.emitirToken(base));
+    expect((await sem.listTools()).tools.map((t) => t.name)).not.toContain("harness_set");
+    await sem.close();
+    const com = await cliente(s.url, s.emitirToken({ ...base, piloto_edita_politica: true }));
+    const nomes = (await com.listTools()).tools.map((t) => t.name);
+    expect(nomes).toContain("harness_set");
+    expect(nomes).toHaveLength(28); // + handoff_read (D-520); + task_list/task_get/cost_report (Fase 10); + as 5 tools `memory_*` (Fase 8) + `mcp_store_list` (Fase 7B)
+    await com.close();
+    // worker nunca vê, mesmo com o opt-in
+    const worker = await cliente(s.url, s.emitirToken({ ...base, pane_id: "pane_w", role: "executor", piloto_edita_politica: true }));
+    expect((await worker.listTools()).tools.map((t) => t.name)).toEqual(["handoff_submit"]);
+    await worker.close();
+  });
+
   it.each([
-    ["livre", "nenhum", 8],
-    ["squad", "piloto", 9],
-    ["agentico", "piloto", 11],
+    ["livre", "nenhum", 9], // + handoff_read (D-520)
+    ["squad", "piloto", 17], // + handoff_read (D-520) + catalog_list (Fase 7) + harness_list e headline_limits (Fase 9) + mcp_store_list (Fase 7B) + task_list/task_get/cost_report (Fase 10)
+    ["agentico", "piloto", 27], // + handoff_read (D-520) + 3 do board/custo (Fase 10) + 5 da memória (Fase 8) + 6 da Fase 9 (inclui account_switch) + mcp_store_list (Fase 7B); `harness_set` só com o opt-in do workspace (teste abaixo)
   ] as const)("matriz por modo via protocolo: %s/%s expõe %i tools", async (modo, role, quantas) => {
     const { servidor: s } = await subir({ modo });
     const c = await cliente(s.url, s.emitirToken({ workspace_id: "ws_1", mission_id: modo === "livre" ? null : "mis_1", pane_id: "pane_p", role, mode: modo }));

@@ -1,0 +1,154 @@
+/* Camada de escala "conforto": uma só fonte para fonte, campo, botão e espaço das telas.
+   Terminais, casca (menu, topo, rodapé) e o texto do terminal NÃO usam esta camada: os tokens deles
+   continuam em tokens.css. Só tokens, sem cor literal.
+   :root = valores do modo terminal/densos (os atuais); leitura e painel = conforto; cheia = denso legível (>= 32 px de alvo). */
+:root {
+  --fs-micro: 10.5px;
+  --fs-pequeno: 11.5px;
+  --fs-rotulo: 12px;
+  --fs-base: 13px;
+  --fs-campo: 14px;
+  --fs-titulo: 15px;
+  --fs-titulo-m: 18px;
+  --fs-titulo-g: 22px;
+  --campo-altura: 26px;
+  --botao-altura: 26px;
+  --botao-principal-altura: 26px;
+  --botao-fonte: 12px;
+  --botao-pad-x: 10px;
+  --icone-botao: 15px;
+  --alvo-minimo: 26px;
+  --linha-altura: 28px;
+  --barra-altura: 28px;
+  --entrelinha: 1.45;
+  --medida-texto: none;
+  --rotulo-respiro: 3px;
+  --espaco-1: 3px;
+  --espaco-2: 6px;
+  --espaco-3: 10px;
+  --espaco-4: 14px;
+  --espaco-5: 20px;
+  --espaco-6: 28px;
+  --gap-campos: 8px;
+  --gap-secoes: 12px;
+  --gap-cards: 12px;
+  --card-pad: 12px;
+}
+
+/* telas cheias e densas (versionamento, mapa, conhecimento, squads, pipelines): nada abaixo de 11.5 px e alvos >= 32 px,
+   sem inflar a densidade da área de trabalho. A tela Terminais fica de fora. */
+[data-modo="cheia"]:not(.terminais-tela) {
+  --fs-micro: 11.5px;
+  --fs-pequeno: 11.5px;
+  --fs-rotulo: 12px;
+  --fs-base: 13px;
+  --fs-campo: 13px;
+  --fs-titulo: 14px;
+  --campo-altura: 32px;
+  --botao-altura: 32px;
+  --botao-principal-altura: 32px;
+  --botao-fonte: 12.5px;
+  --botao-icone: 32px;
+  --alvo-minimo: 32px;
+  --barra-altura: 40px;
+}
+
+/* Terminais: os componentes compartilhados (.botao, .campo) mantêm exatamente a medida de antes desta camada. */
+.terminais-tela {
+  --botao-altura: 36px; --botao-fonte: 13px; --botao-pad-x: 14px; --campo-altura: 38px; --fs-campo: 14px;
+  --fs-rotulo: 13px; --fs-base: 13px; --fs-pequeno: 12px; --rotulo-respiro: 4px; --gap-campos: 14px;
+  --espaco-2: 8px; --espaco-3: 12px; --espaco-4: 16px;
+}
+
+/* conforto: telas de leitura e painel (e diálogos, que nascem fora delas) */
+[data-modo="leitura"], [data-modo="painel"], .dialogo-fundo {
+  --fs-micro: 11.5px;
+  --fs-pequeno: 12.5px;
+  --fs-rotulo: 13px;
+  --fs-base: 14px;
+  --fs-campo: 14px;
+  --fs-titulo: 15.5px;
+  --fs-titulo-m: 18px;
+  --fs-titulo-g: 22px;
+  --campo-altura: 36px;
+  --botao-altura: 34px;
+  --botao-principal-altura: 36px;
+  --botao-fonte: 13.5px;
+  --botao-pad-x: 14px;
+  --icone-botao: 16px;
+  --botao-icone: 32px;
+  --alvo-minimo: 32px;
+  --linha-altura: 40px;
+  --barra-altura: 48px;
+  --entrelinha: 1.55;
+  --medida-texto: 72ch;
+  --rotulo-respiro: 6px;
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 16px;
+  --espaco-5: 24px;
+  --espaco-6: 32px;
+  --gap-campos: 14px;
+  --gap-secoes: 24px;
+  --gap-cards: 16px;
+  --card-pad: 18px;
+}
+
+[data-modo="leitura"], [data-modo="painel"] { font-size: var(--fs-base); line-height: var(--entrelinha); }
+.tela [data-modo="leitura"] h1, .tela [data-modo="painel"] h1 { font-size: var(--fs-titulo-g); line-height: 1.25; }
+.tela [data-modo="leitura"] h2, .tela [data-modo="painel"] h2 { font-size: var(--fs-titulo); line-height: 1.3; }
+.tela [data-modo="leitura"] h3, .tela [data-modo="painel"] h3 { font-size: var(--fs-base); line-height: 1.35; }
+.tela .pagina-cabecalho h1 { font-size: var(--fs-titulo-g); }
+.tela .pagina-cabecalho p { font-size: var(--fs-base); color: var(--texto-suave); max-width: var(--medida-texto); }
+
+/* parágrafos em medida de leitura (<= 72ch) */
+:where([data-modo="leitura"], [data-modo="painel"]) :where(p, dd, li > span) { max-width: var(--medida-texto); }
+
+/* base de controles: especificidade zero, qualquer regra da tela vence; sem regra própria, o controle já nasce confortável */
+:where([data-modo]:not(.terminais-tela), .dialogo) :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), select) {
+  min-height: var(--campo-altura); padding-inline: var(--espaco-3); border-radius: var(--raio-pequeno); font-size: var(--fs-campo);
+}
+:where([data-modo]:not(.terminais-tela), .dialogo) textarea {
+  min-height: calc(var(--campo-altura) * 2.67); padding: var(--espaco-2) var(--espaco-3); border-radius: var(--raio-pequeno); font-size: var(--fs-campo); line-height: var(--entrelinha);
+}
+:where([data-modo]:not(.terminais-tela), .dialogo) :where(button, .botao, summary) {
+  min-height: var(--botao-altura); min-width: var(--alvo-minimo); font-size: var(--botao-fonte);
+}
+:where([data-modo]:not(.terminais-tela), .dialogo) button { padding-inline: var(--espaco-3); }
+:where([data-modo]:not(.terminais-tela), .dialogo) .botao { padding-inline: var(--botao-pad-x); }
+:where([data-modo]:not(.terminais-tela), .dialogo) :where(.botao-primario) { min-height: var(--botao-principal-altura); }
+:where([data-modo]:not(.terminais-tela), .dialogo) :where(button, .botao) .icone { width: var(--icone-botao); height: var(--icone-botao); }
+:where([data-modo]:not(.terminais-tela), .dialogo) :where(input[type="checkbox"], input[type="radio"]) { width: 16px; height: 16px; }
+:where([data-modo]:not(.terminais-tela), .dialogo) label { line-height: var(--entrelinha); }
+
+/* barras de controles das telas de leitura: quebram em mais de uma linha em vez de cortar no canto direito */
+[data-modo="leitura"] :is(.harness-barra, .consumo-barra, .ag-barra, .rl-barra, .mem-barra, .bn-barra, .chat-barra, .cat-barra, .lm-barra, .alertas-barra, .jarvis-barra, .or-barra, .uso-controles) {
+  flex-wrap: wrap; overflow: visible; white-space: normal; row-gap: var(--espaco-2); padding-block: var(--espaco-2);
+}
+[data-modo="leitura"]:is(.harness, .consumo, .agil, .relatorios, .memoria, .bench, .chat, .cat-tela, .lm-tela, .alertas-tela, .jarvis-tela) { padding: var(--espaco-3) var(--pagina-pad-x) var(--espaco-4); gap: var(--espaco-3); }
+
+/* .botao-mini nasce na casca (limites.css, 22 px); nas telas e diálogos ele segue a escala do modo */
+[data-modo]:not(.terminais-tela) .botao-mini, .dialogo .botao-mini {
+  min-height: var(--botao-altura); min-width: var(--alvo-minimo); padding: 0 var(--espaco-3); border-radius: var(--raio-pequeno); font: var(--botao-fonte) var(--fonte);
+}
+
+/* cartões em linha que esticam: a última linha também preenche a largura */
+.ini-grade, .prov-lista { display: flex; flex-wrap: wrap; gap: var(--gap-cards); }
+.ini-grade > *, .prov-lista > * { flex: 1 1 min(100%, 320px); min-width: 0; }
+
+/* grupos de botões respiram */
+:where([data-modo="leitura"], [data-modo="painel"]) :where(.barra-acoes, .cfg-linha) { gap: var(--espaco-2) var(--espaco-3); }
+
+/* <small> herda 83% do pai e caía abaixo do piso de 11.5 px (VIS): o texto auxiliar nunca fica menor que --fs-micro */
+[data-modo]:not(.terminais-tela) small { font-size: max(0.85em, var(--fs-micro)); }
+
+/* foco: anel de 2 px no azul de destaque, offset 2 px; nunca removido */
+:where([data-modo], .dialogo) :focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+
+@media (max-width: 760px) {
+  [data-modo="leitura"], [data-modo="painel"] { --gap-cards: var(--espaco-3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-modo], .dialogo { scroll-behavior: auto; }
+}

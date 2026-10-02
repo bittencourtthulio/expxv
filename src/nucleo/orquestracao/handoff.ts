@@ -1,8 +1,8 @@
 /**
  * Serviço de handoff (T-03.03). ORDEM OBRIGATÓRIA: relatório gravado e legível → banco → wake
  * enfileirado. Falha em qualquer etapa interrompe as seguintes (nunca há wake sem handoff persistido,
- * nem handoff persistido sem relatório). O Pane do worker é fechado pelo sistema ao concluir, depois
- * que a resposta da tool já voltou ao worker.
+ * nem handoff persistido sem relatório). O painel do worker é fechado pelo sistema ao concluir (D-520: só com handoff ok, parcial ou bloqueado),
+ * depois que a resposta da tool já voltou ao worker.
  */
 import { readFile, realpath, stat } from "node:fs/promises";
 import { relative } from "node:path";
@@ -10,6 +10,7 @@ import type { Papel, StatusHandoff } from "../dominio";
 import { RESUMO_HANDOFF_MAX } from "../dominio";
 import { ErroMcp, argumentoInvalido, violacaoDeRegra } from "../mcp/erros";
 import type { HandoffRegistrado, PedidoHandoff, PortaHandoff } from "../mcp/portas";
+import { MOTIVO_HANDOFF_FEITO } from "./ciclo-worker";
 import { PAPEIS_WORKER } from "./regras";
 import { caminhoRelatorio, gravarNaPastaDoProduto, resolverDentroReal } from "./pasta";
 import type { FilaWake } from "./wake";
@@ -79,8 +80,10 @@ export function criarServicoHandoff(deps: DepsServicoHandoff): ServicoHandoff {
 
   function fecharDepois(pane_id: string, papel: Papel, status: StatusHandoff): void {
     if (deps.fecharPane === undefined || !PAPEIS_WORKER.includes(papel)) return;
+    // D-520: handoff `falhou` NÃO fecha o painel: o dono e o orquestrador precisam ver o que aconteceu (o orquestrador lê a cauda e decide)
+    if (status === "falhou") return;
     agendar(() => {
-      void Promise.resolve(deps.fecharPane?.(pane_id, status === "falhou" ? "handoff_failed" : "handoff_done")).catch(() => undefined);
+      void Promise.resolve(deps.fecharPane?.(pane_id, MOTIVO_HANDOFF_FEITO)).catch(() => undefined);
     }, atraso);
   }
 

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Dublê de `spctl --assess`.
+[ -n "$FALSO_LOG" ] && echo "spctl $*" >> "$FALSO_LOG"
+for a in "$@"; do alvo="$a"; done
+if [ -d "$alvo" ] && [ -f "$alvo/.nao-assinado" ]; then echo "$alvo: rejected" >&2; exit 3; fi
+exit 0

@@ -1,80 +1,62 @@
 import { useEffect, useId, useState } from "react";
-import { EstadoVazio } from "../../componentes/EstadoVazio";
-import { ListaAbas, idAba, idPainel } from "../../componentes/ListaAbas";
+import { SubNavegacao, type ItemSubNav } from "../../componentes/SubNavegacao";
 import { Pagina } from "../../componentes/Pagina";
 import { storeMetodo, useMetodo, type StoreMetodo } from "../../estado/metodo";
-import { AcoesMetodo } from "./AcoesMetodo";
+import { Pedido } from "./Pedido";
 import { Instalacao } from "./Instalacao";
-import { Lista } from "./Lista";
+import { GuardaMetodo } from "./Guarda";
 import { Saude } from "./Saude";
-import { Trabalho } from "./Trabalho";
+import { useAvancarGeracao } from "./ContextoProjeto";
+import { storeSuite, useSuite } from "../../estado/suite";
 import { Violacoes } from "./Violacoes";
 import "./metodo.css";
 
-type Aba = "trabalhos" | "violacoes" | "instalacao" | "saude";
-const ABAS: readonly { id: Aba; rotulo: string }[] = [
-  { id: "trabalhos", rotulo: "Trabalhos" }, { id: "violacoes", rotulo: "Violações" }, { id: "instalacao", rotulo: "Instalação" }, { id: "saude", rotulo: "Saúde" },
+type Aba = "pedido" | "violacoes" | "instalacao" | "saude";
+const ABAS: readonly ItemSubNav<Aba>[] = [
+  { id: "pedido", rotulo: "Pedido", icone: "chat" }, { id: "violacoes", rotulo: "Violações", icone: "alerta" }, { id: "instalacao", rotulo: "Instalação", icone: "baixar" }, { id: "saude", rotulo: "Saúde", icone: "harness" },
 ];
 
 export default function Tela({ store = storeMetodo }: { store?: StoreMetodo }) {
   const { workspaceId, indice, carregado, erro } = useMetodo(store);
-  const [aba, setAba] = useState<Aba>("trabalhos");
+  const [aba, setAba] = useState<Aba>("pedido");
+  // o modal de instalação pede "ajustar módulos": a tela abre na aba Instalação, onde mora a seção "Módulos da suíte", e leva o foco até ela (consome o pedido)
+  const pedidoAba = useSuite().metodoAba;
+  useEffect(() => {
+    if (pedidoAba !== "modulos") return;
+    setAba("instalacao");
+    storeSuite.limparAbaMetodo();
+    const t = setTimeout(() => document.querySelector<HTMLElement>('[aria-label="Módulos da suíte"]')?.scrollIntoView?.({ block: "start" }), 50);
+    return () => clearTimeout(t);
+  }, [pedidoAba]);
   const base = useId();
-  const [escolhido, setEscolhido] = useState<string | null>(null);
   useEffect(() => store.iniciar(), [store]);
+  // a sequência "Gerar o que falta" segue andando em qualquer aba enquanto a tela está aberta (o arquivo apareceu no índice → dispara o próximo)
+  useAvancarGeracao(workspaceId, indice);
 
-  const subtitulo = "Trabalhos do método Expx no projeto.";
-  if (!workspaceId) {
-    return (
-      <Pagina titulo="Andamento" subtitulo={subtitulo}>
-        <EstadoVazio icone="workspaces" titulo="Nenhum projeto aberto" texto="Abra uma pasta em Workspaces para ver os trabalhos do método." />
-      </Pagina>
-    );
-  }
-  if (!carregado) {
-    return <Pagina titulo="Andamento" subtitulo={subtitulo}><p className="met-suave" role="status">Lendo o projeto…</p></Pagina>;
-  }
-  if (erro) {
-    return <Pagina titulo="Andamento" subtitulo={subtitulo}><EstadoVazio icone="alerta" titulo="Não foi possível ler o método" texto={erro} /></Pagina>;
-  }
+  const subtitulo = "Peça uma feature, um bug ou um projeto ao agente e acompanhe o envio.";
+  const guarda = GuardaMetodo({ workspaceId, carregado, erro, aoQue: "o método" });
+  if (guarda !== null || !workspaceId) return <Pagina modo="painel" largura="total" titulo="Método" subtitulo={subtitulo}>{guarda}</Pagina>;
   if (!indice) {
     return (
-      <Pagina titulo="Andamento" subtitulo={subtitulo}>
-        <EstadoVazio icone="metodo" titulo="Esta pasta não tem docs do método" texto="Sem a pasta docs/ não há trabalhos para mostrar. Isso é normal em um projeto novo: crie o primeiro trabalho abaixo." />
-        <AcoesMetodo workspaceId={workspaceId} trabalho={null} />
+      <Pagina modo="painel" largura="total" titulo="Método" subtitulo={subtitulo}>
+        <div className="met-pedido-solo">
+          <p className="met-suave">Esta pasta ainda não tem docs do método. Isso é normal em um projeto novo: o primeiro pedido cria a pasta docs/.</p>
+          <Pedido key={workspaceId} workspaceId={workspaceId} indice={null} />
+        </div>
       </Pagina>
     );
   }
-  const trabalho = indice.trabalhos.find((t) => t.id === escolhido) ?? null;
   return (
-    <Pagina titulo="Andamento" subtitulo={subtitulo}>
-      <ListaAbas
-        base={base} rotulo="Seções do método" className="met-abas" ativa={aba} aoMudar={setAba}
-        abas={ABAS.map((a) => ({ id: a.id, rotulo: `${a.rotulo}${a.id === "violacoes" && indice.violacoes.length > 0 ? ` (${indice.violacoes.length})` : ""}` }))}
-      />
-      <div role="tabpanel" id={idPainel(base)} aria-labelledby={idAba(base, aba)}>
-      {aba === "trabalhos" ? (
-        indice.trabalhos.length === 0 ? (
-          <>
-            <EstadoVazio icone="metodo" titulo="Sem trabalhos ainda" texto="A pasta docs/ existe, mas nenhum trabalho foi criado. Descreva o primeiro pedido abaixo." />
-            <AcoesMetodo workspaceId={workspaceId} trabalho={null} />
-          </>
-        ) : (
-          <div className="met-grade">
-            <div className="met-coluna-lista">
-              <AcoesMetodo workspaceId={workspaceId} trabalho={null} />
-              <Lista trabalhos={indice.trabalhos} selecionado={escolhido} aoSelecionar={setEscolhido} />
-            </div>
-            <div className="met-coluna-detalhe">
-              {trabalho ? <Trabalho key={trabalho.id} workspaceId={workspaceId} trabalho={trabalho} /> : <p className="met-suave">Escolha um trabalho na lista para ver o plano, o quadro, o grafo e o rastro.</p>}
-            </div>
-          </div>
-        )
-      ) : null}
+    <Pagina modo="painel" largura="total" titulo="Método" subtitulo={subtitulo}>
+      <SubNavegacao
+        base={base} rotulo="Seções do método" ativo={aba} onMudar={setAba} classePainel={aba === "pedido" ? "met-corpo met-corpo-chat" : "met-corpo"}
+        itens={ABAS.map((a) => (a.id === "violacoes" && indice.violacoes.length > 0 ? { ...a, selo: indice.violacoes.length } : a))}
+      >
+      {aba === "pedido" ? <Pedido key={workspaceId} workspaceId={workspaceId} indice={indice} /> : null}
       {aba === "violacoes" ? <div className="met-caixa-lista"><Violacoes violacoes={indice.violacoes} /></div> : null}
-      {aba === "instalacao" ? <Instalacao indice={indice} /> : null}
+      {aba === "instalacao" ? <Instalacao indice={indice} workspaceId={workspaceId} /> : null}
       {aba === "saude" ? <Saude indice={indice} /> : null}
-      </div>
+      </SubNavegacao>
     </Pagina>
   );
 }

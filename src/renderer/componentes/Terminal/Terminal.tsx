@@ -8,6 +8,7 @@ import type { ItemAnexo, ResultadoAnexos } from "../../../compartilhado/terminai
 import type { TemaEfetivo } from "../../../compartilhado/ipc";
 import { storeConfig, useConfig, type StoreConfig } from "../../estado/config";
 import { armazemDeSaida, type Armazem } from "./armazem";
+import { guardarRolagem, rolagemSalva } from "./rolagem-salva";
 import { BuscaTerminal, ehAtalhoDeBusca } from "./busca";
 import { GerenciadorColagem, colagensDaTela, normalizarColagem, partirColagem, precisaDeConfirmacao } from "./colagem";
 import { registrarLeitorDeBuffer } from "./gancho-e2e";
@@ -249,6 +250,10 @@ export function Terminal(props: PropsTerminal): ReactElement {
       });
     });
     reidratando = false;
+    // D-570: terminal que voltou depois de o workspace ficar oculto (ou de a aba trocar) retoma a rolagem em que estava (linhas acima do fim)
+    const rolagem = rolagemSalva.get(sessaoId);
+    rolagemSalva.delete(sessaoId);
+    if (houveReplay && rolagem !== undefined && rolagem > 0) xterm.write("", () => { if (vivo) try { xterm.scrollLines(-rolagem); } catch { /* descartado */ } });
 
     // ---- tamanho ----
     let atraso: ReturnType<typeof setTimeout> | null = null;
@@ -304,6 +309,7 @@ export function Terminal(props: PropsTerminal): ReactElement {
       window.removeEventListener("resize", aoRedimensionarJanela);
       observador?.disconnect();
       cancelarSaida();
+      try { const b = xterm.buffer.active; guardarRolagem(sessaoId, b.baseY - b.viewportY); } catch { /* descartado */ }
       // o xterm vai descartar os callbacks de write pendentes: confirma o que ficou, senão o PTY emperra
       if (pendentes > 0) void api.confirmarConsumo(sessaoId, pendentes);
       entrada.dispose();

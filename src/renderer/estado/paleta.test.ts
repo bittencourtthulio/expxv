@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { TELAS } from "../casca/telas";
 import { montarComandos, textoDeBusca, type AcoesPaleta, type ContextoPaleta } from "./paleta";
 import { buscarFuzzy } from "../busca-fuzzy";
 
@@ -12,9 +13,9 @@ const base = (p: Partial<ContextoPaleta> = {}): ContextoPaleta => ({
 const ids = (c: ContextoPaleta) => montarComandos(c).map((x) => x.id);
 
 describe("comandos da paleta por contexto", () => {
-  it("sem workspace: navega pelas 7 telas e abre projeto, mas não oferece Nova Missão nem Novo terminal", () => {
+  it("sem workspace: navega pelas telas e abre projeto, mas não oferece Nova Missão nem Novo terminal", () => {
     const r = ids(base());
-    expect(r.filter((i) => i.startsWith("ir:"))).toHaveLength(7);
+    expect(r.filter((i) => i.startsWith("ir:"))).toHaveLength(TELAS.length);
     expect(r).toContain("abrir-projeto");
     expect(r).toContain("tema");
     expect(r).not.toContain("nova-missao");
@@ -41,6 +42,33 @@ describe("comandos da paleta por contexto", () => {
     expect(lista.find((x) => x.id === "tema")?.titulo).toContain("escuro");
     expect(buscarFuzzy(lista, "f-042", textoDeBusca)[0]?.id).toBe("trabalho:F-042");
     expect(buscarFuzzy(lista, "pix", textoDeBusca)[0]?.id).toBe("trabalho:F-042");
+  });
+  it("squads (Fase 14): 'Squads' na navegação; nova/importar sempre; 'Nova Missão com squad…' e 'Abrir agente…' só com workspace", () => {
+    const sem = ids(base());
+    expect(sem).toContain("ir:squads");
+    expect(sem).toContain("squads:nova");
+    expect(sem).toContain("squads:importar");
+    expect(sem).not.toContain("squads:nova-missao");
+    expect(sem).not.toContain("squads:abrir-agente");
+    const com = montarComandos(base({ workspaceAtual: { id: "w1", nome: "Loja" } }));
+    expect(com.find((c) => c.id === "squads:nova-missao")?.titulo).toBe("Nova Missão com squad…");
+    expect(com.find((c) => c.id === "squads:abrir-agente")?.titulo).toBe("Abrir agente…");
+    expect(buscarFuzzy(com, "agente", textoDeBusca).map((c) => c.id)).toContain("squads:abrir-agente");
+  });
+  it("os comandos de squads pedem a tela e a ação pelos ganchos próprios (nunca clique por texto)", async () => {
+    const nav = await import("./navegacao");
+    const { aoPedirSquads } = await import("./squads-acoes");
+    const telas: string[] = [];
+    const cancelar = nav.aoPedirTela((t) => telas.push(t));
+    const pedidos: string[] = [];
+    const solta = aoPedirSquads((p) => pedidos.push(p), ["nova-missao-squad", "abrir-agente"]);
+    const lista = montarComandos(base({ workspaceAtual: { id: "w1", nome: "A" } }));
+    lista.find((c) => c.id === "squads:nova-missao")?.executar();
+    lista.find((c) => c.id === "squads:abrir-agente")?.executar();
+    cancelar();
+    solta();
+    expect(telas).toEqual(["missoes", "squads"]);
+    expect(pedidos).toEqual(["nova-missao-squad", "abrir-agente"]);
   });
   it("executar delega às ações injetadas", () => {
     const c = base({ workspaceAtual: { id: "w1", nome: "A" } });

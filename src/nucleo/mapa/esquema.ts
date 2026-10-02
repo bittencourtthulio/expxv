@@ -19,7 +19,7 @@ export const TABELAS_MAPA = [
   "execucao",
 ] as const;
 
-export const INDICES_MAPA = ["no_arquivo", "no_tipo", "aresta_de", "aresta_para", "aresta_arq"] as const;
+export const INDICES_MAPA = ["no_arquivo", "no_tipo", "no_rotulo", "aresta_de", "aresta_para", "aresta_arq"] as const;
 
 export const DDL_V1 = `
 CREATE TABLE meta(chave TEXT PRIMARY KEY, valor TEXT NOT NULL);
@@ -39,6 +39,8 @@ CREATE TABLE aresta(id INTEGER PRIMARY KEY, tipo TEXT NOT NULL, de TEXT NOT NULL
   fonte TEXT NOT NULL DEFAULT 'extracao', arquivo_id INTEGER REFERENCES arquivo(id) ON DELETE CASCADE, linha INTEGER, evidencias TEXT);
 CREATE INDEX no_arquivo ON no(arquivo_id);
 CREATE INDEX no_tipo ON no(tipo, subtipo);
+-- busca por prefixo do nome (LIKE 'abc%' usa o índice porque o LIKE do SQLite ignora maiúsculas e minúsculas em ASCII)
+CREATE INDEX no_rotulo ON no(rotulo COLLATE NOCASE);
 CREATE INDEX aresta_de ON aresta(de, tipo);
 CREATE INDEX aresta_para ON aresta(para, tipo);
 CREATE INDEX aresta_arq ON aresta(arquivo_id);

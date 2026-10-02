@@ -18,8 +18,13 @@ describe("VirtualLista: altura vem do CSS", () => {
   it("toda lista do Método tem altura própria por seletor mais específico que o padrão", () => {
     const pasta = join(__dirname, "../telas/metodo");
     const css = readFileSync(join(pasta, "metodo.css"), "utf8");
-    for (const seletor of [".met-lista .virtual-lista", ".met-fase-tasks .virtual-lista", ".met-caixa-lista .virtual-lista", ".met-coluna .virtual-lista", ".met-rastro .virtual-lista"]) {
+    for (const seletor of [".met-fase-tasks .virtual-lista", ".met-caixa-lista .virtual-lista", ".met-coluna .virtual-lista", ".met-rastro .virtual-lista"]) {
       expect(css, seletor).toMatch(new RegExp(`${seletor.replace(/[.]/g, "\\.")}\\s*\\{[^}]*height:\\s*\\d+(px|vh)`));
+    }
+    // tela Trabalhos: colunas e linha do tempo também fixam a altura por seletor mais específico
+    const trab = readFileSync(join(__dirname, "../telas/trabalhos/trabalhos.css"), "utf8");
+    for (const seletor of [".trab-coluna-corpo .virtual-lista", ".trab-linha-corpo .virtual-lista"]) {
+      expect(trab, seletor).toMatch(new RegExp(`${seletor.replace(/[.]/g, "\\.")}\\s*\\{[^}]*height:\\s*100%`));
     }
     expect(readFileSync(join(__dirname, "VirtualLista.css"), "utf8")).toMatch(/\.virtual-lista\s*\{[^}]*height:\s*100%/);
   });

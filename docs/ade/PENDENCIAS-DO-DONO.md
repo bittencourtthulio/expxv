@@ -167,3 +167,87 @@ parar. Responda quando voltar; ajusto em um passo.
 | P-AUD3 | **Wake persistido é "pelo menos uma vez" (AUD-05).** O aviso ao piloto é gravado com o handoff e só some depois de entregue; uma queda exatamente entre o envio ao terminal e a remoção do registro reentrega o aviso (texto idempotente: "Worker X entregou o card T"). Aceita? | aceito | `main/orquestracao.ts#restaurarWakes` |
 | P-AUD4 | **Aviso de token expirado na UI (AUD-04).** O app já emite `orquestracao.panes_sem_mcp` (motivos `porta_ocupada`, `token_expirado`) e um aviso de orquestração, mas não há canal no preload/contrato para uma faixa na tela de Missões (`src/compartilhado` e `src/preload` não foram tocados). Liberar o canal? | só aviso de orquestração por enquanto | `compartilhado/ipc.ts`, `preload` |
 
+
+## Fases 21, 22 e 23 (planos escritos em 2026-10-01; P-330..P-354 — os números P-30.. e P-300.. já estavam ocupados). Regra do dono: opção mais completa construída, segurança como padrão inicial
+
+### Fase 21 — Distribuição e atualização (P-330..P-339)
+
+| # | Pergunta / risco | Padrão adotado | Onde mexer |
+|---|---|---|---|
+| P-330 | **Residuais da distribuição** (texto em `AMEACAS-FASE-21.md`): R1 sem assinatura real o SO avisa e a integridade depende só da nossa camada; R2 repositório de releases comprometido publica versão maliciosa assinada com a chave que o CI guarda; R3 primeira instalação baixada de fonte adulterada não é protegida pelo atualizador. Aceita? | aceitos com aviso fixo na tela do atualizador; backend manual sem assinatura; `SHA256SUMS`; release sempre rascunho | `fase-21` T-21.01 |
+| P-331 | **Repositório de releases** (`owner/repo` reais) e **ligar o auto-update no build** (`atualizacao.habilitada`). Quer ligar? **[depende do dono]** | `false`; `repositorioReleases` placeholder; pacote padrão sem `electron-updater` | `build/distribuicao.json`, `produto.ts` |
+| P-332 | **Apple Developer** (assinatura + notarização) e variáveis do CI (`CSC_*`, `APPLE_*`). **[depende do dono]** | tudo pronto e testado com dublês; build local sem assinar | secrets do CI, `electron-builder.yml` |
+| P-333 | **Certificado de assinatura do Windows** (OV/EV ou Azure Trusted Signing) e validação do SmartScreen. **[depende do dono]** | NSIS sem assinar; verificação estática e CI Windows versionado | secrets do CI |
+| P-334 | **Par Ed25519 do manifesto de atualização** (privada só no cofre do CI do dono; pública em `build/distribuicao.json`; duas chaves aceitas para rotação). **[depende do dono]** | só chaves de teste; `release` recusa chave de teste | `build/distribuicao.json` |
+| P-335 | **Renomear o produto antes do primeiro release?** Depois dele custa continuidade de `appId`, identidade de assinatura, feed e instaladores antigos. | `ExpxV` mantido; `npm run renomear` e checklist prontos; `idDados` estável | `produto.ts`, `CHECKLIST-RENOMEACAO.md` |
+| P-336 | **Fixar as ações do CI por SHA** (exige rede/GitHub, fora desta execução). **[depende do dono]** | `@vN` com marcador `# TODO-SHA`; teste estrito no perfil `release` | `.github/workflows/*.yml` |
+| P-337 | **`better-sqlite3` opcional** (P-08): adotar se o custo medido não violar P-01/P-08/P-159? | P2; `node:sqlite` segue o padrão | `fase-21` T-21.12 |
+| P-338 | **Ativar o `electron-updater`** (só se P-331 for sim): instalar a versão exata em `optionalDependencies`, registrar o custo medido em `01-DECISOES.md` e rodar `dist:dir --perfil=com-atualizacao`. Hoje o perfil falha fechado de propósito (D-383). **[depende do dono]** | não instalado; backend manual como padrão (R1) | `package.json`, `scripts/lib/config-builder.mjs` |
+| P-339 | **Medir o pacote endurecido** (fuses do perfil `release`, P-150 e `test:pacote`) numa janela em que o `npm run dev` possa parar: `dist:dir` reconstrói `dist/`. Também fiar `migrarDadosLegados` no boot (`main.ts`) e o `import()` do atualizador (onda W3). | fuses `release` só configurados e conferidos por script (D-385) | `scripts/dist-dir.mjs`, `src/main/main.ts` |
+
+### Fase 22 — Acesso remoto estendido (P-340..P-347)
+
+| # | Pergunta / risco | Padrão adotado | Onde mexer |
+|---|---|---|---|
+| P-340 | **Residuais do relay/PWA** (texto em `AMEACAS-FASE-22.md`): **R-A** primeira instalação do PWA a partir de origem adulterada (só app nativo elimina); **R-B** o relay vê metadados (IP, horário, tamanho aproximado, canal do dia); **R-C** relay malicioso pode negar serviço, nunca ler nem forjar; **R-D** criptografia própria sem auditoria externa; **R-E** celular roubado e desbloqueado age até a revogação; **R-F** Service Worker trocado pela origem depois do 1º install exige comparação humana do hash. Aceita? | aceitos com aviso fixo, reconhecimento "experimental" obrigatório e consentimento versionado; nasce desligado e a cada reinício | `fase-22` T-22.01 |
+| P-341 | **Revisão externa da criptografia** (pré-requisito de habilitar por padrão): contratar um revisor com o pacote `REVISAO-EXTERNA-CRIPTO.md`. **[depende do dono]** | pacote pronto e não enviado; `habilitado:false` invariante | `fase-22` T-22.27 |
+| P-342 | **App nativo** (iOS/Android; Apple Developer, Play Console) para eliminar R-A/R-F, e validação do PWA em iPhone e Android reais. **[depende do dono]** | só PWA; checklist manual | `fase-22` |
+| P-343 | **Hospedagem do relay** (VPS pequena, domínio, TLS) e custo recorrente (ordem de grandeza no guia). Não é feito por esta fase. **[depende do dono]** | arquivos versionados e nunca implantados; custo zero com relay desligado | `deploy/relay/` |
+| P-344 | **Par Ed25519 do manifesto do PWA** (privada fora do repositório; reaproveita o da Fase 21 se existir). **[depende do dono]** | só chaves de teste | `scripts/assinar-pwa.mjs` |
+| P-345 | **PIN local do PWA**: opcional, recomendado ou obrigatório (política) | recomendado no assistente; obrigatório por política da organização | `src/pwa/trava.ts` |
+| P-346 | **Relay em Cloudflare Workers/Durable Objects** (P2, gratuito/limitado) | não; Docker/VPS | `fase-22` T-22.32 |
+| P-347 | **Notificação push** (Web Push; metadado sai para Apple/Google/Mozilla) | desligada; só com estudo próprio e payload vazio | `fase-22` T-22.33 |
+
+### Fase 23 — Overdrive experimental (P-350..P-354)
+
+| # | Pergunta / risco | Padrão adotado | Onde mexer |
+|---|---|---|---|
+| P-350 | **Resultado da medição** (go ou no-go) e o que fazer: se no-go, o código do *spike* é removido e o baseline fica como regressão de 32+ painéis; se go, o modo entra **desligado**. Quer revisar os números antes de qualquer produto? | decisão por critério escrito antes de medir (D-360..D-362) | `docs/ade/perf/overdrive-resultado.json` |
+| P-351 | Modo **`sugerido`** (oferecer ligar acima do limiar medido) deve existir? | existe só se go; nunca liga sozinho | `Experimental.tsx` |
+| P-352 | **Validar em sua máquina/monitores e no Windows** (sem máquina Windows aqui, D-26) | harness rodável (`perf.mjs --overdrive`); checklist manual | `fase-23` |
+| P-353 | **Acessibilidade real** (VoiceOver) e **IME real** (japonês/chinês) antes de oferecer o modo | sem a11y verde o modo não é oferecido | `fase-23` T-23.11 |
+| P-354 | **Revisar D-11** (um xterm por painel, WebGL só no foco e nos 6 primeiros) **se** go | D-11 mantido; só revisado com D-NN após go | `01-DECISOES.md` |
+| P-360 | **Digest real da imagem do relay**: `deploy/relay/Dockerfile` traz marcadores (64 zeros) nos `FROM` (`node:22-slim` e `gcr.io/distroless/nodejs22`) e `compose.yaml` na imagem do Caddy (`caddy:2-alpine`); troque pelo digest real (consulte com `docker buildx imagetools inspect`) antes do primeiro build na sua VPS; P-168 só é medido com Docker e a base em cache local | marcador falha o build de propósito | `deploy/relay/LEIA-ME.md` |
+
+### Fase 24 — MCP externo / Portal de entrada (P-410..P-419; plano escrito em 2026-10-01; só planejado, nada implementado). Regra do dono: opção mais completa construída, segurança como padrão inicial, nunca teto
+
+| # | Pergunta / risco | Padrão adotado | Onde mexer |
+|---|---|---|---|
+| P-410 | **Residuais do Portal** (texto final em `AMEACAS-FASE-24.md`): R-A injeção de prompt nunca é eliminável por software (só reduzida: envelope, agente reduzido, humano no meio); R-B credencial de API do help desk (polling/saída) é poderosa e vive no cofre; R-C quem tem a credencial de integração pode encher a fila até a cota; R-D metadados do ticket ficam no disco local por `retencao_dias`; R-E sistema de origem pode ser comprometido e mandar tickets "legítimos" maliciosos; R-F exposição por túnel é responsabilidade do dono; R-G adaptadores validados só por documentação (sem conta real). **[depende do dono]** | aceitos como declarados; Portal desligado e `somente_fila` | `fase-24` T-24.01 |
+| P-411 | **Lembrar o Portal ligado entre reinícios?** | **não**: desligado a cada reinício (D-403); opção `persistir_ligado` com consentimento versionado | `portal_config` |
+| P-412 | **Quais sistemas de ticket/help desk você usa de verdade** (Zendesk, Freshdesk, Jira Service Management, GLPI, Zoho Desk, Intercom, Movidesk, Octadesk, Linear, outro) e contas de teste para validar o adaptador | genérico REST/webhook + lote 1 (Zendesk, Freshdesk, JSM, GLPI) por polling; lote 2 só após a escolha | `fase-24` T-24.21/T-24.46 |
+| P-413 | **Teto de autonomia por origem**: algum sistema pode passar de `somente_fila`? Quais classes de baixo risco permitem `automatico_restrito`? | todas as integrações em `somente_fila`; `automatico_restrito` desligado; D-21 sempre | `portal_integracao.autonomia` |
+| P-414 | **Responder ao sistema de origem sozinho** (`auto_status`/`auto_total`) ou sempre com liberação humana? Resposta ao cliente final pode sair? | `manual` (liberação humana); só comentário interno, nunca mensagem ao cliente final | `portal_integracao.responder` |
+| P-415 | **Antivírus de anexos**: usar `clamscan` se existir? Anexos de imagem/PDF podem ser liberados a agentes? | só tipos da allowlist; quarentena até a pessoa liberar; antivírus só se já instalado (nada é instalado) | `anexos.ts` |
+| P-416 | **Revisão externa de segurança do Portal** antes de expor fora da máquina (LAN/túnel/ingress). **[depende do dono]** | exposição fora da máquina fica desligada e atrás de consentimento até a revisão | `fase-24` T-24.42 |
+| P-417 | **Hospedagem do ingress próprio** (VPS, domínio, TLS), **mTLS/OAuth** como credencial primária e custo recorrente. **[depende do dono]** | arquivos versionados e nunca implantados (P2) | `fase-24` T-24.45/T-24.47 |
+| P-418 | **LGPD**: base legal, papel de controlador/operador, retenção, DPA com clientes, "esquecer ticket". **[depende do dono / jurídico]** | retenção 90 dias, mascaramento na cópia do agente, contato nunca sai do ADE | D-411 |
+| P-419 | **Tetos padrão de custo e SLA por severidade/origem** (USD/dia, tickets/dia, fila máxima, prazos) | 200 tickets/dia, fila 500, 10 s de teto de saída; teto de custo vazio (execução só com aprovação); SLA sugerido por severidade na UI | `portal_integracao`, `sla.ts` |
+| P-430 | **Painel livre que orquestra** ("Orquestrar neste painel"): ligar por padrão em algum workspace? Limites 8 por painel / 16 por workspace / 12 por minuto? Worktree por worker para `executor` em repositório git? Aprovação automática das tools de abrir/ler no Claude? | tudo DESLIGADO por padrão (preferência por workspace); limites 8/16/12; worktree só para executor em git; `allow` só de abrir/ler (nunca `pane_send`/`pane_close`) | D-420 a D-428 |
+
+## Voz local embutida (D-540 a D-549)
+
+1. **Medir o Parakeet TDT v3 de verdade** (670 MB não foi baixado no desenvolvimento): baixar pelo assistente em Configurações › Voz e captura e conferir carga, RAM (estimada em ~1,5 GB) e velocidade; rodar `npm run perf` com `VOZ_LOCAL_MODELO_DIR` para P-540..P-542 se quiser números no `ultimo.json`.
+2. **Amostras do autoteste** (`resources/voz/amostra-pt.wav` e `amostra-en.wav`) são vozes do sistema macOS (Luciana e Samantha) sintetizadas localmente. Se a licença do áudio sintetizado do macOS for um problema para distribuir o app, regrave com voz própria (mesmas frases, WAV 16 kHz mono).
+3. **Empacotamento:** rodar `npm run dist:mac` / `dist:win` (já preparam os pacotes nativos do alvo) e `npm run test:pacote` para provar o addon dentro do `.app`; o `.app` universal leva as duas arquiteturas do addon (~72 MB). O Windows foi validado só por teste de configuração (D-26).
+4. **Atribuição CC-BY-4.0** do Parakeet: o texto está no consentimento e em `THIRD-PARTY-LICENSES.md`; confirmar que atende ao que o dono quer exibir na tela "Sobre".
+5. **Sem resultados parciais ao vivo** (modelos offline): a fala é transcrita ao soltar a tecla. Streaming por pausas (VAD) fica como evolução.
+
+## Aprovações dos workers (D-640 a D-646)
+
+1. **"Permitir esta ação nesta orquestração"** (ampliar a allowlist da sessão): não implementado. Hoje o painel mostra "Worker aguardando sua aprovação" + "Ir para o painel" e o dono aprova no terminal da CLI. Para ampliar a lista é preciso identificar o motivo da espera e regravar o settings de um Pane vivo (o Claude só relê o settings na próxima abertura).
+2. **Contrato real de OpenCode e Grok**: as regras `permission` (OpenCode, `OPENCODE_CONFIG_CONTENT`) e `--allow/--deny` (Grok) seguem a ajuda e a documentação, mas não foram executadas contra as CLIs reais (sem CLI real nos testes, D-23). Por isso o selo é `parcial`. Rodar um worker de cada CLI no automático seguro e conferir que as negativas barram `git push` e a leitura de arquivo de ambiente.
+3. **Symlink para fora do worktree**: depende de a CLI resolver o caminho real antes de aplicar `Edit(//<cwd>/**)` e as negativas (o Codex aplica no sandbox do sistema). O app não varre o repositório atrás de links. Conferir no Claude real e, se preciso, checar links ao criar o worktree.
+4. **`git show`/`git log -p` leem conteúdo já commitado**: um arquivo de ambiente commitado por engano continua legível pelo histórico. Risco aceito: o segredo já está no repositório.
+5. **Hooks do git desligados nos workers** (`core.hooksPath` neutro): um `pre-commit` do projeto não roda no commit do worker; o dono (ou o `mergex`) roda a suíte ao revisar. Se preferir hooks ligados, é uma opção por projeto a acrescentar.
+6. **Workspaces existentes passam a herdar `automatico_seguro`** (D-641). Quem quiser o comportamento anterior escolhe "Perguntar sempre" em Configurações › Terminais › Aprovações dos workers.
+
+## Decisor local laya (D-695 a D-708; estudo `seguranca/AMEACAS-FASE-25.md`)
+
+1. **Residuais aceitos** (texto em `AMEACAS-FASE-25.md` §8): R1 fraqueza zero-shot declarada (sugestões ruins são esperadas sem fine-tune; o consentimento avisa); R2 host curinga do download (integridade = sha256 do catálogo no pacote); R3 verificação rápida por tamanho+mtime na carga (completa no "Testar"); R4 Windows só unidade/config; R6 injeção em sugestão reduzida, não zerada (a ação continua da regra).
+2. **Exportar e publicar os `.onnx` do laya** (ressalva do portão T-25.02): o repositório oficial publica só `safetensors`; a exportação é `python scripts/export_onnx.py --quantize` (uma vez, na sua máquina; gera `encoder.onnx`+`head.onnx`+`tokenizer.json`+`rl_agent_config.json`). Enquanto não houver host público com sha256, o download no app recusa (`sem_checksum`) e o modo de verificação é a pasta local exportada (`LAYA_MODELO_DIR`); publicado o host, o download libera para todos.
+3. **Mac Intel (darwin/x64) fica sem laya**: `onnxruntime-node@1.30.0` não publica addon para darwin/x64; nesses Macs o app mostra "runtime indisponível" e o custo continua zero (padrão da voz, A15).
+4. **Medir o modelo real** (agente nunca baixa pesos): baixar pelo assistente em Configurações › Decisor local (ou apontar `LAYA_MODELO_DIR` para a pasta exportada) e conferir carga (P-702), latência p95 (P-703) e RAM (P-704) — os tetos atuais são provisórios; rodar `npm run perf` com `LAYA_MODELO_DIR` para gravar os números reais no `docs/ade/perf/ultimo.json`.
+5. **Fine-tune local** (treinar com o histórico da própria máquina) é fase futura por decisão do dono (D-705); a telemetria de aceitação da ordenação de roteamento é o insumo.
+6. **Elevar a taxa padrão de decisões** (60/min) ou o teto de entrada (8 KB), se o uso pedir, é escolha sua em Configurações; os padrões valem até lá.
+7. **Ligar `laya_decide` por Pane** (tool MCP para as CLIs) é opt-in por painel; nenhum modo de fábrica liga.

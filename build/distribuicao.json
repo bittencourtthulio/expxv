@@ -1,0 +1,21 @@
+{
+  "versao_esquema": 1,
+  "atualizacao": {
+    "habilitada": false,
+    "canal_padrao": "stable",
+    "canais": ["stable", "beta"],
+    "feed": {
+      "host": "atualizacoes.invalid",
+      "caminho_base": "/"
+    },
+    "chaves_aceitas": [],
+    "rollout": { "staging_padrao": 100 },
+    "valido_ate_dias": 30
+  },
+  "assinatura": {
+    "exigir": false
+  },
+  "banco": {
+    "adaptador": "node:sqlite"
+  }
+}

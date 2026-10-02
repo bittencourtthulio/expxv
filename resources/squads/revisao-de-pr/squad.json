@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "slug": "revisao-de-pr",
+  "nome": "Revisão de PR e Qualidade",
+  "descricao": "Revisa um conjunto de mudanças por ângulos diferentes e consolida um único parecer, sem alterar código.",
+  "escopo": "qualidade",
+  "rigidez_padrao": null,
+  "max_instancias_paralelas": 4,
+  "orcamento": {
+    "tempo_min": null,
+    "tokens": null,
+    "modo": "soft"
+  },
+  "portoes": null,
+  "fabrica": {
+    "id": "revisao-de-pr",
+    "versao": 1
+  },
+  "membros": [
+    {
+      "slug": "orquestrador",
+      "papel": "orchestrator",
+      "rotulo": "Orquestrador",
+      "descricao": "Planeja, delega aos agentes da squad e fecha a Missão com o revisor.",
+      "prompt": "membros/orquestrador.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "medio",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-pilot",
+        "ev-guide",
+        "ev-mcp"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "leitor-de-diff",
+      "papel": "scout",
+      "rotulo": "Leitor de diff",
+      "descricao": "Lê a mudança inteira e resume intenção, arquivos e áreas de risco.",
+      "prompt": "membros/leitor-de-diff.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "haiku",
+        "esforco": "baixo",
+        "faixa": "rapido"
+      },
+      "skills_permitidas": [
+        "ev-scout",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "git"
+      ],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor-logica",
+      "papel": "reviewer",
+      "rotulo": "Revisor de lógica",
+      "descricao": "Revisa corretude, casos de borda e regressões de comportamento.",
+      "prompt": "membros/revisor-logica.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor-seguranca",
+      "papel": "reviewer",
+      "rotulo": "Revisor de segurança",
+      "descricao": "Revisa entradas não confiáveis, autorização, segredos e dependências.",
+      "prompt": "membros/revisor-seguranca.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "opus",
+        "esforco": "alto",
+        "faixa": "alto"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    },
+    {
+      "slug": "revisor-testes-estilo",
+      "papel": "reviewer",
+      "rotulo": "Revisor de testes e estilo",
+      "descricao": "Revisa a qualidade dos testes e a aderência às convenções.",
+      "prompt": "membros/revisor-testes-estilo.md",
+      "perfil": {
+        "cli": "claude",
+        "modelo": "sonnet",
+        "esforco": "medio",
+        "faixa": "medio"
+      },
+      "skills_permitidas": [
+        "ev-reviewer",
+        "ev-evidence-before-done"
+      ],
+      "mcps_permitidos": [
+        "eslint"
+      ],
+      "hooks": [],
+      "max_instancias": 1,
+      "orcamento": {
+        "tempo_min": null,
+        "tokens": null,
+        "modo": "soft"
+      },
+      "rigidez": null,
+      "permissao": null
+    }
+  ]
+}

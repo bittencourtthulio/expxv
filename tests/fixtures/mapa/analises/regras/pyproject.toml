@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "x"
+
+[tool.importlinter]
+root_package = "app"
+
+[[tool.importlinter.contracts]]
+name = "Camadas via toml"
+type = "layers"
+layers = [
+    "api",
+    "servicos",
+]

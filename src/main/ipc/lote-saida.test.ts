@@ -26,6 +26,30 @@ function montar() {
 }
 
 describe("lote de saída do PTY", () => {
+  it("regressão: um evento multibyte grande (fatiado em caracteres) não gera mais pedaços que eventos nem lança (terminais:recuperar)", () => {
+    const { enviados, lote, r } = montar();
+    // 40 000 caracteres de 3 bytes = 120 000 bytes: por bytes viram 2 pedaços, mas só há 1 evento (antes: TypeError 'sequencia' de undefined)
+    const grande = "─".repeat(40_000);
+    expect(() => { lote.push(saida(1, grande)); r.passarQuadro(); }).not.toThrow();
+    expect(enviados.map((e) => (e.tipo === "saida" ? e.dados : "")).join("")).toBe(grande);
+    const seqs = enviados.map((e) => e.sequencia);
+    expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
+    expect(new Set(seqs).size).toBe(seqs.length);
+  });
+
+  it("vários eventos multibyte juntos no quadro saem completos, com sequências distintas e crescentes", () => {
+    const { enviados, lote, r } = montar();
+    lote.push(saida(1, "a"));
+    lote.push(saida(2, "é".repeat(40_000)));
+    lote.push(saida(3, "─".repeat(40_000)));
+    expect(() => r.passarQuadro()).not.toThrow();
+    const texto = enviados.map((e) => (e.tipo === "saida" ? e.dados : "")).join("");
+    expect(texto).toBe("a" + "é".repeat(40_000) + "─".repeat(40_000));
+    const seqs = enviados.map((e) => e.sequencia);
+    expect(new Set(seqs).size).toBe(seqs.length);
+    expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
+  });
+
   it("eco imediato: a primeira saída de uma sessão parada sai na hora, sem esperar o quadro", () => {
     const { enviados, lote } = montar();
     lote.push(saida(1, "a"));

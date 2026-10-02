@@ -1,0 +1,11 @@
+{
+  "forbidden": [
+    {
+      "name": "ui-nao-toca-banco",
+      "severity": "error",
+      "from": { "path": "^src/ui" },
+      "to": { "path": "^src/db" }
+    },
+    { "name": "no-circular", "severity": "warn", "from": {}, "to": { "circular": true } }
+  ]
+}

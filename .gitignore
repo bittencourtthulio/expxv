@@ -1,6 +1,8 @@
 node_modules/
 dist/
 dist-app/
+dist-pwa/
+dist-relay/
 coverage/
 *.log
 .DS_Store
@@ -22,3 +24,5 @@ id_rsa*
 mcp-segredo
 mcp-revogados.json
 mcp-porta
+# manifesto sha256 do seed da Loja de MCPs (gerado no build:main, D-141)
+resources/mcp/catalogo-mcps.json.sha256

@@ -50,6 +50,8 @@ export interface DependenciasTerminais {
    * a Orquestração revoga o token MCP. Falha aqui nunca impede o descarte.
    */
   aoDescartar?: (sessao_id: string) => void;
+  /** O usuário digitou na sessão (só o aviso; nunca o conteúdo): alimenta o pulso de atividade do bichinho. */
+  aoEscrever?: (sessao_id: string) => void;
   /** Só para teste. */
   prepararAnexos?: typeof prepararAnexos;
 }
@@ -124,7 +126,10 @@ export function registrarIpcTerminais(d: DependenciasTerminais): void {
   });
   registro.invoke("terminais:confirmar_consumo", V["terminais:confirmar_consumo"], async ({ sessao_id, bytes }) => (await d.sessoes()).confirmarConsumo(sessao_id, bytes));
 
-  registro.envio("terminais:escrever", V["terminais:escrever"], ({ sessao_id, dados }) => enviando(sessao_id, (s) => void s.escrever(sessao_id, dados)));
+  registro.envio("terminais:escrever", V["terminais:escrever"], ({ sessao_id, dados }) => {
+    try { d.aoEscrever?.(sessao_id); } catch { /* acessório */ }
+    enviando(sessao_id, (s) => void s.escrever(sessao_id, dados));
+  });
   registro.envio("terminais:redimensionar", V["terminais:redimensionar"], ({ sessao_id, colunas, linhas }) => enviando(sessao_id, (s) => void s.redimensionar(sessao_id, colunas, linhas)));
   registro.envio("terminais:interromper", V["terminais:interromper"], ({ sessao_id }) => enviando(sessao_id, (s) => void s.interromper(sessao_id)));
 

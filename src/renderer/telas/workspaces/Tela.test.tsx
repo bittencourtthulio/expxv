@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Workspace } from "../../../compartilhado/dominio";
+import { storeAdicionarWorkspace } from "../../estado/adicionar-workspace";
 import { criarStoreWorkspaces } from "../../estado/workspaces";
 import { TelaWorkspaces } from "./index";
 
@@ -20,12 +21,14 @@ async function montar(recentes: Workspace[], atual: Workspace | null = recentes[
 }
 
 describe("Tela de workspaces", () => {
-  it("estado vazio guia o primeiro uso e abre o diálogo nativo", async () => {
+  it("estado vazio guia o primeiro uso e abre o modal Adicionar workspace", async () => {
     const api = await montar([]);
     expect(screen.getByText("Nenhum workspace aberto")).toBeTruthy();
-    expect(screen.getByText(/escolha a pasta do projeto/)).toBeTruthy();
-    fireEvent.click(screen.getAllByRole("button", { name: /Abrir pasta/ })[1]!);
-    expect(api.abrir).toHaveBeenCalledWith(null);
+    expect(screen.getByText(/clone um repositório ou crie um projeto novo/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: /Adicionar workspace/ })[1]!);
+    expect(storeAdicionarWorkspace.obter()).toMatchObject({ aberto: true, secao: "pasta" });
+    expect(api.abrir).not.toHaveBeenCalled();
+    storeAdicionarWorkspace.fechar();
   });
   it("remover pede confirmação pela UI, diz que não apaga do disco e só então remove", async () => {
     const api = await montar([ws("alfa")]);

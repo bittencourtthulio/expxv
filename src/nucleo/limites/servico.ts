@@ -65,6 +65,8 @@ export interface LimitsService {
   registrarLimiteDoPty(d: { conta_id: string; pane_id: string | null; reinicia_em: string | null }): void;
   iniciar(): void;
   parar(): void;
+  /** Resolve quando nenhuma leitura está em voo (testes e encerramento ordenado). */
+  aguardarLeituras(): Promise<void>;
   /** diagnóstico/perf */
   estatisticas(): { leituras: number; leiturasPorConta: Readonly<Record<string, number>> };
 }
@@ -370,7 +372,7 @@ export function criarLimitsService(deps: DependenciasLimitsService): LimitsServi
   }
 
   function resposta(contas: readonly ContaLimite[]): RespostaLimites {
-    const usos = contas.map(usoDeConta);
+    const usos = contas.map((c) => ({ ...usoDeConta(c), account_label: c.rotulo }));
     const rotulos = Object.fromEntries(contas.map((c) => [c.id, c.rotulo]));
     const { troca, esgotamento } = limiares();
     return { contas: usos, geral: agregarCotas(usos, { rotulos, limiar_alerta_pct: troca, limiar_esgotada_pct: esgotamento }) };
@@ -451,6 +453,13 @@ export function criarLimitsService(deps: DependenciasLimitsService): LimitsServi
       for (const e of estados.values()) {
         if (e.timerFinal !== undefined) ag.clearTimeout(e.timerFinal);
         e.timerFinal = undefined;
+      }
+    },
+    async aguardarLeituras() {
+      for (let i = 0; i < 5; i++) {
+        const voo = [...estados.values()].map((e) => e.emVoo).filter((p): p is Promise<void> => p !== null);
+        if (voo.length === 0) return;
+        await Promise.allSettled(voo);
       }
     },
     estatisticas: () => ({ leituras, leiturasPorConta: { ...leiturasPorConta } }),

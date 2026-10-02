@@ -1,0 +1,38 @@
+{
+  "linguagem": "c",
+  "arquivos": {
+    "include/banco.h": {
+      "simbolos": [
+        { "qualificado": "banco_abrir", "tipo": "funcao", "exportado": true, "doc": "Abre o banco." },
+        { "qualificado": "Conexao", "tipo": "struct" },
+        { "qualificado": "Codigo", "tipo": "tipo" }
+      ],
+      "imports": [{ "especificador": "<stdio.h>", "nomes": [] }],
+      "ausentes": { "simbolos": [{ "nome": "BANCO_H" }] }
+    },
+    "src/banco.c": {
+      "simbolos": [
+        { "qualificado": "VERSAO", "tipo": "constante" },
+        { "qualificado": "banco_abrir", "tipo": "funcao", "exportado": true, "complexidade": 3 },
+        { "qualificado": "limpar", "tipo": "funcao", "exportado": false, "visibilidade": "privada" },
+        { "qualificado": "main", "tipo": "funcao", "exportado": true }
+      ],
+      "imports": [
+        { "especificador": "banco.h" },
+        { "especificador": "util/log.h" },
+        { "especificador": "<stdlib.h>" }
+      ],
+      "chamadas": [
+        { "de": "banco_abrir", "alvo": "log_erro", "receptor": null, "tipo": "chamada" },
+        { "de": "banco_abrir", "alvo": "snprintf", "tipo": "chamada" },
+        { "de": "main", "alvo": "banco_abrir", "tipo": "chamada" }
+      ],
+      "entradas": [{ "tipo": "main", "chave": "main", "handler": "main" }],
+      "dados": [
+        { "tabela": "contas", "operacao": "escreve", "de": "banco_abrir", "confianca": "heuristica", "fonte": "sql" },
+        { "tabela": "clientes", "operacao": "le", "fonte": "proc", "confianca": "exata" }
+      ],
+      "dinamicos": [{ "tipo": "chamada_computada" }]
+    }
+  }
+}

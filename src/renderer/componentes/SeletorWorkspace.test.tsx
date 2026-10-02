@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Workspace } from "../../compartilhado/dominio";
+import { storeAdicionarWorkspace } from "../estado/adicionar-workspace";
 import { criarStoreWorkspaces } from "../estado/workspaces";
 import { SeletorWorkspace } from "./SeletorWorkspace";
 
@@ -16,11 +17,13 @@ async function montar(atual: Workspace | null, recentes: Workspace[]) {
 }
 
 describe("SeletorWorkspace", () => {
-  it("sem workspace mostra 'Nenhum workspace' e 'Abrir pasta…' chama o diálogo nativo (caminho null)", async () => {
+  it("sem workspace mostra 'Nenhum workspace' e 'Adicionar workspace…' abre o modal (D-600), não o diálogo nativo direto", async () => {
     const api = await montar(null, []);
     fireEvent.click(screen.getByRole("button", { name: /Nenhum workspace/ }));
-    fireEvent.click(screen.getByRole("menuitem", { name: /Abrir pasta/ }));
-    expect(api.abrir).toHaveBeenCalledWith(null);
+    fireEvent.click(screen.getByRole("menuitem", { name: /Adicionar workspace/ }));
+    expect(storeAdicionarWorkspace.obter()).toMatchObject({ aberto: true, secao: "pasta" });
+    expect(api.abrir).not.toHaveBeenCalled();
+    storeAdicionarWorkspace.fechar();
   });
   it("lista recentes, marca o atual e troca pelo clique", async () => {
     const a = ws("a", "alfa"), b = ws("b", "beta");

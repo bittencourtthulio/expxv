@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key>
+  <string>ExpxV</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.expx.expxv</string>
+  <key>CFBundleShortVersionString</key>
+  <string>__VERSAO__</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>11.0</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Para o ditado &amp; mais nada.</string>
+  <key>NSAppTransportSecurity</key>
+  <dict><key>NSAllowsArbitraryLoads</key><false/></dict>
+</dict>
+</plist>

@@ -1,0 +1,96 @@
+{
+  "manifest_version": 1,
+  "skills": [
+    {
+      "name": "ev-builder",
+      "version": 1,
+      "path": "ev-builder/SKILL.md",
+      "description": "Como implementar um card: ler o escopo, escrever o teste que falha, implementar o mínimo, rodar a suíte e entregar um handoff com evidência. Use quando você é executor.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "092426db49bc62aaabe6a1f9044522f8669ba062559e2b0a9ea2ebd733279e65"
+    },
+    {
+      "name": "ev-evidence-before-done",
+      "version": 1,
+      "path": "ev-evidence-before-done/SKILL.md",
+      "description": "Provar antes de declarar pronto: rodar os comandos de verificação, ler a saída e só então afirmar o resultado, citando a evidência. Use sempre ao encerrar um card.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "9d09e445d6f84f615be48c2198e91360efe31d1ceda4e32682c088d86d01746d"
+    },
+    {
+      "name": "ev-guide",
+      "version": 1,
+      "path": "ev-guide/SKILL.md",
+      "description": "Como o ambiente de desenvolvimento com agentes funciona e como pedir ajuda: Missões, Panes, papéis (piloto, explorador, executor, revisor) e quando usar cada ferramenta MCP.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "75133946666c14224268cac2d873df4837161a964029386dd601930d9a5753ea"
+    },
+    {
+      "name": "ev-mcp",
+      "version": 1,
+      "path": "ev-mcp/SKILL.md",
+      "description": "As ferramentas MCP do app e quando usar cada uma: panes, tarefas, handoff, catálogo, memória, conhecimento. Use para escolher a ferramenta certa em vez de improvisar.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "c02c62f4714853b211a5eb94d60271b2f18892af653dff62474df2f869b49128"
+    },
+    {
+      "name": "ev-pilot",
+      "version": 1,
+      "path": "ev-pilot/SKILL.md",
+      "description": "Protocolo do piloto: entender o pedido, quebrar em cards, delegar a workers com contexto mínimo, acordar ao fim de cada card e consolidar. Use quando você é o piloto da Missão.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "907133f923eeb13853f5148cf1660491b1366d89bf3f6c8ed08742f42407f398"
+    },
+    {
+      "name": "ev-reviewer",
+      "version": 1,
+      "path": "ev-reviewer/SKILL.md",
+      "description": "Como revisar uma entrega de forma independente: conferir contra o card e a evidência, apontar problemas com caminho e linha e devolver aprovado ou reprovado. Use quando você é revisor.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "c5fb93eab5a15f9bc97295e6ade14f06e06c9b9175bf064131084ff44f06ee54"
+    },
+    {
+      "name": "ev-scout",
+      "version": 1,
+      "path": "ev-scout/SKILL.md",
+      "description": "Como explorar sem alterar nada: mapear arquivos, fluxos e riscos e devolver achados com caminho e linha. Use quando você é explorador.",
+      "clis": [
+        "claude",
+        "codex",
+        "opencode",
+        "portatil"
+      ],
+      "sha256": "8746552aec684eece6ecdf0a9948f7bdde23dead1a8e3571dc3972144a48f684"
+    }
+  ]
+}

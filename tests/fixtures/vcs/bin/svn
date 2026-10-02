@@ -1,5 +1,18 @@
 #!/bin/sh
-# svn FALSO para testes: responde só a `info --xml`, sem tocar em nada.
+# svn FALSO para testes. Sem SVN_FALSO_DIR: responde só a `info --xml` (comportamento original, 6A).
+# Com SVN_FALSO_DIR=<pasta de saídas gravadas do svn 1.14>: devolve as fixtures por subcomando, grava o argv
+# (um argumento por linha, `---` entre chamadas) em $SVN_FALSO_LOG e a mensagem de `-F` em $SVN_FALSO_LOG.msg.
+# SVN_FALSO_ERRO=<arquivo>: imprime o arquivo em stderr e sai com 1 (simula falha de autenticação/rede).
+if [ -n "$SVN_FALSO_LOG" ]; then
+  { for a in "$@"; do printf '%s\n' "$a"; done; echo '---'; } >> "$SVN_FALSO_LOG"
+  prev=""
+  for a in "$@"; do
+    if [ "$prev" = "-F" ] && [ -f "$a" ]; then cat "$a" > "$SVN_FALSO_LOG.msg"; fi
+    prev="$a"
+  done
+fi
+if [ -n "$SVN_FALSO_ERRO" ]; then cat "$SVN_FALSO_ERRO" >&2; exit 1; fi
+if [ -z "$SVN_FALSO_DIR" ]; then
 case "$1" in
   info)
     cat <<XML
@@ -17,3 +30,30 @@ XML
     ;;
   *) echo "svn falso: comando nao suportado: $1" >&2; exit 1 ;;
 esac
+exit 0
+fi
+D="$SVN_FALSO_DIR"
+sub="$1"; shift
+tem() { for a in "$@"; do [ "$a" = "$WANT" ] && return 0; done; return 1; }
+case "$sub" in
+  info) cat "$D/info.xml" ;;
+  status) WANT=-u; if tem "$@"; then cat "$D/status-u-conflito.xml"; else cat "$D/status.xml"; fi ;;
+  log) cat "$D/log.xml" ;;
+  blame) cat "$D/blame.xml" ;;
+  diff) cat "$D/diff.txt" ;;
+  update|switch|merge) cat "$D/update-conflito.txt" ;;
+  propget)
+    WANT=svn:externals
+    if tem "$@"; then cat "$D/propget-externals.xml"; else cat "$D/propget-ignore.xml"; fi ;;
+  ls)
+    for a in "$@"; do alvo="$a"; done
+    case "$alvo" in
+      '^/') cat "$D/ls-raiz.txt" ;;
+      '^/branches') cat "$D/ls-branches.txt" ;;
+      '^/trunk'|'^/branches/feature') echo "a.txt" ;;
+      *) echo "svn: E200009: Could not list all targets because some targets don't exist" >&2; exit 1 ;;
+    esac ;;
+  commit|copy) echo "Committed revision 7." ;;
+  *) : ;;
+esac
+exit 0

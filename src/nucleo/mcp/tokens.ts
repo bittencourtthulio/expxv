@@ -13,7 +13,22 @@ import { MODOS_MISSAO, PAPEIS, type ModoMissao, type Papel } from "../dominio";
 import { ferramentasPermitidas } from "./catalogo";
 import { relogioReal, type PortaRelogio } from "./portas";
 
+/**
+ * Fase 7C (R-1 da AUDITORIA-LOJA-MCP): audiência do token. Cada rota exige a sua; o token geral do Pane (que a CLI e o Bash do agente enxergam no
+ * ambiente) serve só a `mcp` e `hooks`. `gateway` = `POST /gateway`; `loja-launcher` = `POST /loja/segredos` (só o lançador `mcp-run`).
+ * Token SEM `aud` (emitido antes desta versão) vale como `["mcp","hooks"]`: nunca lê segredo nem usa o gateway (falha fechada).
+ */
+export const AUDIENCIAS_TOKEN = ["mcp", "hooks", "gateway", "loja-launcher"] as const;
+export type AudienciaToken = (typeof AUDIENCIAS_TOKEN)[number];
+export const AUDIENCIAS_PADRAO: readonly AudienciaToken[] = ["mcp", "hooks"];
+
+export function temAudiencia(claims: Pick<ClaimsToken, "aud">, aud: AudienciaToken): boolean {
+  return (claims.aud ?? AUDIENCIAS_PADRAO).includes(aud);
+}
+
 export interface ClaimsToken {
+  /** Fase 7C: audiências aceitas; ausente = `AUDIENCIAS_PADRAO`. */
+  aud?: AudienciaToken[];
   workspace_id: string;
   mission_id: string | null;
   pane_id: string;
@@ -27,6 +42,8 @@ export interface ClaimsToken {
 }
 
 export interface PedidoToken {
+  /** Fase 7C: audiências do token (padrão `["mcp","hooks"]`). O lançador e o gateway recebem tokens PRÓPRIOS, sem acesso às tools do app. */
+  aud?: readonly AudienciaToken[];
   workspace_id: string;
   mission_id: string | null;
   pane_id: string;
@@ -34,6 +51,24 @@ export interface PedidoToken {
   mode: ModoMissao;
   /** Restringe ainda mais a lista do modo/papel (interseção); nunca amplia. */
   tools_allow?: readonly string[];
+  /** Opt-in do workspace: o piloto agêntico vê `harness_set` (Fase 9). Só o main, ao emitir, decide isto. */
+  piloto_edita_politica?: boolean;
+  /** A Missão do piloto tem squad vinculada: o piloto vê `agent_list` e `agent_invoke` (Fase 14). Só o main, ao emitir, decide isto. */
+  piloto_com_squad?: boolean;
+  /** Fase 8: modo efetivo da memória do Pane (só o main decide, ao emitir): define as tools `memory_*` do token. Ausente = legado (só o piloto agêntico). */
+  memoria?: "off" | "solo" | "missao" | "squad";
+  /** Fase 16: o Pane pode pedir ao Maestro (piloto/Pane livre; nunca worker nem Pane de etapa). Só o main, ao emitir, decide isto. */
+  maestro?: boolean;
+  /** Fase 18: o Pane enxerga a gestão ágil (leitura; o piloto em squad/agentico também propõe). Só o main, ao emitir, decide isto. */
+  agil?: boolean;
+  /** Fase 20: o Pane levanta alertas (`alert_raise`): `piloto` = só o piloto; `todos` = o workspace habilitou os workers também. Só o main, ao emitir, decide isto. */
+  alertas?: "piloto" | "todos";
+  /** Fase 15: o RAG está ativo no workspace: o Pane vê `rag_*` (todos os modos e papéis). Só o main, ao emitir, decide isto; reconferido a cada chamada. */
+  rag?: boolean;
+  /** Fase 17: o mapa do código está habilitado e exposto a agentes (opt-in `expor_agentes`): o Pane vê `map_*` (todos os modos e papéis; só leitura). Só o main decide; reconferido a cada chamada. */
+  mapa?: boolean;
+  /** D-421: painel livre que orquestra (piloto da Missão avulsa): a matriz inteira vira `TOOLS_AVULSO` (o mínimo). Só o main, ao emitir, decide isto. */
+  avulso?: boolean;
 }
 
 export interface EmissorDeTokens {
@@ -83,7 +118,8 @@ function claimsValidos(v: unknown): v is ClaimsToken {
     typeof c["mode"] === "string" && (MODOS_MISSAO as readonly string[]).includes(c["mode"]) &&
     Array.isArray(c["tools_allow"]) && c["tools_allow"].every((t) => typeof t === "string") &&
     typeof c["exp"] === "number" && Number.isFinite(c["exp"]) &&
-    typeof c["n"] === "number"
+    typeof c["n"] === "number" &&
+    (c["aud"] === undefined || (Array.isArray(c["aud"]) && c["aud"].length <= 4 && c["aud"].every((a) => typeof a === "string" && (AUDIENCIAS_TOKEN as readonly string[]).includes(a))))
   );
 }
 
@@ -103,9 +139,20 @@ export function criarEmissorDeTokens(opcoes: OpcoesEmissor = {}): EmissorDeToken
 
   return {
     emitir(pedido) {
-      const base = ferramentasPermitidas(pedido.mode, pedido.role);
+      const base = ferramentasPermitidas(pedido.mode, pedido.role, {
+        ...(pedido.piloto_edita_politica === true ? { pilotoEditaPolitica: true } : {}),
+        ...(pedido.piloto_com_squad === true ? { comSquad: true } : {}),
+        ...(pedido.memoria === undefined ? {} : { memoria: pedido.memoria }),
+        ...(pedido.maestro === true ? { maestro: true } : {}),
+        ...(pedido.agil === true ? { agil: true } : {}),
+        ...(pedido.alertas === undefined ? {} : { alertas: pedido.alertas }),
+        ...(pedido.rag === true ? { rag: true } : {}),
+        ...(pedido.mapa === true ? { mapa: true } : {}),
+        ...(pedido.avulso === true ? { avulso: true } : {}),
+      });
       const permitidas = pedido.tools_allow === undefined ? base : base.filter((t) => pedido.tools_allow?.includes(t));
       const claims: ClaimsToken = {
+        ...(pedido.aud === undefined ? {} : { aud: [...new Set(pedido.aud)] }),
         workspace_id: pedido.workspace_id,
         mission_id: pedido.mission_id,
         pane_id: pedido.pane_id,

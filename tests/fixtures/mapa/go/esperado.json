@@ -1,0 +1,78 @@
+{
+  "linguagem": "go",
+  "arquivos": {
+    "cmd/main.go": {
+      "metricas": { "erros_parse": 0, "e_teste": false },
+      "simbolos": [
+        { "qualificado": "servir", "tipo": "funcao", "exportado": false, "visibilidade": "pacote", "complexidade": 1 },
+        { "qualificado": "saude", "tipo": "funcao" },
+        { "qualificado": "main", "tipo": "funcao", "complexidade": 2 }
+      ],
+      "imports": [
+        { "especificador": "net/http", "tipo": "estatico", "nomes": [] },
+        { "especificador": "github.com/spf13/cobra", "tipo": "estatico" },
+        { "especificador": "exemplo.com/loja/internal/loja" }
+      ],
+      "chamadas": [
+        { "de": "servir", "alvo": "HandleFunc", "receptor": "http", "tipo": "chamada" },
+        { "de": "servir", "alvo": "Getenv", "receptor": "os", "tipo": "chamada" },
+        { "de": "main", "alvo": "Execute", "receptor": "raiz", "tipo": "chamada" },
+        { "de": "main", "alvo": "Novo", "receptor": "loja", "tipo": "chamada" },
+        { "de": null, "alvo": "Command", "receptor": "cobra", "tipo": "instancia" }
+      ],
+      "entradas": [
+        { "tipo": "main", "chave": "main", "handler": "main", "confianca": "exata" },
+        { "tipo": "rota", "chave": "ALL /saude", "framework": "net/http", "handler": "saude", "confianca": "exata" },
+        { "tipo": "cli", "chave": "cobra:servir", "framework": "cobra", "handler": "servir" }
+      ],
+      "padroes": [
+        { "tipo": "env", "nome": "PORTA" },
+        { "tipo": "throw" }
+      ],
+      "ausentes": { "chamadas": [{ "alvo": "panic" }], "entradas": [{ "tipo": "rota", "chave": "ALL /" }] }
+    },
+    "internal/loja/loja.go": {
+      "metricas": { "erros_parse": 0 },
+      "simbolos": [
+        { "qualificado": "Repositorio", "tipo": "struct", "exportado": true, "visibilidade": "publica", "doc": "Repositorio acessa pedidos." },
+        { "qualificado": "Lista", "tipo": "interface", "exportado": true },
+        { "qualificado": "Limite", "tipo": "constante", "exportado": true, "doc": "Limite máximo de itens." },
+        { "qualificado": "interno", "tipo": "constante", "exportado": false },
+        { "qualificado": "Novo", "tipo": "funcao", "exportado": true, "doc": "Novo cria um repositório." },
+        { "qualificado": "Repositorio.Pedidos", "tipo": "metodo", "exportado": true, "complexidade": 5, "doc": "Pedidos lista os pedidos de um cliente." },
+        { "qualificado": "Repositorio.interna", "tipo": "metodo", "exportado": false },
+        { "qualificado": "Rotas", "tipo": "funcao" }
+      ],
+      "imports": [
+        { "especificador": "database/sql", "nomes": [] },
+        { "especificador": "reflect", "nomes": ["*=rf"] },
+        { "especificador": "github.com/lib/pq", "nomes": ["*=_"] }
+      ],
+      "chamadas": [
+        { "de": "Novo", "alvo": "Repositorio", "tipo": "instancia", "receptor": null },
+        { "de": "Repositorio.Pedidos", "alvo": "Query", "receptor": "r", "tipo": "chamada" }
+      ],
+      "herancas": [
+        { "classe": "Repositorio", "base": "Base", "tipo": "herda" },
+        { "classe": "Repositorio", "base": "sql.DB", "tipo": "herda" },
+        { "classe": "Lista", "base": "Base", "tipo": "herda" }
+      ],
+      "entradas": [
+        { "tipo": "rota", "chave": "GET /pedidos/:id", "framework": "gin", "handler": "listar", "confianca": "exata" },
+        { "tipo": "rota", "chave": "POST /pedidos", "framework": "gin", "handler": null }
+      ],
+      "dados": [
+        { "tabela": "pedidos", "operacao": "le", "de": "Repositorio.Pedidos", "confianca": "exata", "fonte": "sql" },
+        { "tabela": "clientes", "operacao": "le" },
+        { "tabela": "pedidos", "operacao": "escreve" }
+      ],
+      "dinamicos": [{ "tipo": "reflexao" }],
+      "padroes": [{ "tipo": "catch_vazio" }],
+      "ausentes": {
+        "entradas": [{ "chave": "GET nao-e-rota" }],
+        "dados": [{ "tabela": "items" }, { "tabela": "the" }, { "tabela": "x" }],
+        "herancas": [{ "base": "nome" }]
+      }
+    }
+  }
+}

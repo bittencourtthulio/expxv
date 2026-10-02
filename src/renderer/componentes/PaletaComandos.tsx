@@ -6,6 +6,7 @@ import { criarAcoesDom, montarComandos, textoDeBusca, type Comando } from "../es
 import { useMetodo } from "../estado/metodo";
 import { storeTema, useTema } from "../estado/tema";
 import { storeWorkspaces, useWorkspaces } from "../estado/workspaces";
+import { chaveAlvo, storeVcs } from "../estado/vcs";
 
 const MAX_VISIVEIS = 50;
 
@@ -111,6 +112,7 @@ export function PaletaConectada({ aoFechar }: { aoFechar: () => void }) {
   const ws = useWorkspaces();
   const { efetivo } = useTema();
   const { indice } = useMetodo();
+  const resumo = ws.atual === null ? null : (storeVcs.obter().resumos[chaveAlvo({ workspace_id: ws.atual.id, mission_id: null })] ?? null);
   const comandos = useMemo(
     () => montarComandos({
       mac: EH_MAC,
@@ -118,13 +120,14 @@ export function PaletaConectada({ aoFechar }: { aoFechar: () => void }) {
       recentes: ws.recentes.map((w) => ({ id: w.id, nome: w.nome })),
       trabalhos: (indice?.trabalhos ?? []).map((t) => ({ id: t.id, titulo: t.titulo, tipo: t.tipo, estagio: t.estagio })),
       temaEfetivo: efetivo,
+      vcs: resumo === null ? null : { tipo: resumo.tipo, sujo: resumo.sujo, staged: resumo.staged, ahead: resumo.ahead, behind: resumo.behind, operacao: resumo.operacao !== null },
       acoes: criarAcoesDom({
         abrirProjeto: () => void storeWorkspaces.abrir(null),
         alternarTema: () => void storeTema.alternar(),
         irParaWorkspace: (id) => void storeWorkspaces.definirAtual(id),
       }),
     }),
-    [ws.atual, ws.recentes, efetivo, indice],
+    [ws.atual, ws.recentes, efetivo, indice, resumo],
   );
   return <PaletaComandos comandos={comandos} aoFechar={aoFechar} />;
 }

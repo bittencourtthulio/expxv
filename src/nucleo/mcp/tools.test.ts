@@ -180,8 +180,11 @@ describe("handoff_submit e catalog_list", () => {
       expect((await falha(chamar("handoff_submit", ruim, m, c))).code).toBe("invalid_argument");
     }
   });
-  it("catalog_list devolve [] por ora, mas valida kind", async () => {
-    expect(await chamar("catalog_list", { kind: "skill" })).toEqual([]);
+  it("catalog_list sem porta de catálogo devolve página vazia, mas valida kind e limites", async () => {
+    expect(await chamar("catalog_list", { kind: "skill" })).toEqual({ items: [], next_cursor: null, truncated: false });
     expect((await falha(chamar("catalog_list", {}))).code).toBe("invalid_argument");
+    expect((await falha(chamar("catalog_list", { kind: "tool" }))).code).toBe("invalid_argument");
+    expect((await falha(chamar("catalog_list", { kind: "skill", limit: 101 }))).code).toBe("invalid_argument");
+    expect((await falha(chamar("catalog_list", { kind: "skill", query: "x".repeat(101) }))).code).toBe("invalid_argument");
   });
 });
