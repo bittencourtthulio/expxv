@@ -4,8 +4,19 @@
 Terminais reais de CLIs de IA, um piloto que delega a workers, Missões com worktree git e o
 método Expx andando na tela — num app leve para macOS e Windows.
 
-> Estado: **MVP em fechamento** (fases 0 a 5 do plano em [`docs/ade/`](docs/ade/)). Nada foi
-> publicado: sem repositório de releases, sem assinatura, sem auto-update.
+> Estado: **MVP em fechamento** (fases 0 a 5 do plano em [`docs/ade/`](docs/ade/)).
+> Distribuição: release privada no GitHub, assinada e notarizada para macOS.
+
+---
+
+## Download
+
+Os instaladores notarizados para macOS ficam na [última release privada do GitHub](https://github.com/bittencourtthulio/expxv/releases/latest):
+
+- [Baixar DMG universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-universal.dmg)
+- [Baixar ZIP universal (Intel + Apple Silicon)](https://github.com/bittencourtthulio/expxv/releases/latest/download/ExpxV-universal.zip)
+
+O repositório é privado; é necessário ter acesso ao GitHub para baixar os arquivos.
 
 ---
 
@@ -14,7 +25,7 @@ método Expx andando na tela — num app leve para macOS e Windows.
 O ExpxV é um **ADE** (Agentic Development Environment). Em vez de abrir cinco janelas de terminal e
 decorar em qual delas cada agente está, você abre um projeto e trabalha num lugar só:
 
-- **Terminais de verdade** (PTY real, xterm) com Claude Code, Codex, Gemini, OpenCode ou o shell.
+- **Terminais de verdade** (PTY real, xterm) com Claude Code, Codex, Gemini, OpenCode, Grok (xAI) ou o shell.
   Os painéis moram num **daemon** separado: fechar o app **não mata** a sessão, e recarregar a
   interface nunca derruba um painel.
 - **Missões**: uma tarefa de ponta a ponta num worktree git próprio, com um **piloto** e vários
@@ -34,7 +45,7 @@ decorar em qual delas cada agente está, você abre um projeto e trabalha num lu
 |---|---|---|
 | **Node 22** | desenvolvimento, testes, build (`engines: >=22`; o app usa `node:sqlite`) | sim, para desenvolver |
 | **git** | worktrees e status das Missões | sim |
-| uma CLI de IA (`claude`, `codex`, `gemini`, `opencode`) | o que roda dentro dos painéis | pelo menos uma, para delegar |
+| uma CLI de IA (`claude`, `codex`, `gemini`, `opencode`, `grok`) | o que roda dentro dos painéis | pelo menos uma, para delegar |
 | **Python 3** | só o `memox` opcional do método (`.claude/skills/memox/assets/memox.py`) | não: sem ele a saúde do método fica sem a memória, sem erro |
 | **gh** (GitHub CLI) | fase 6 (PRs, checks, issues); o app nunca guarda nem lê token | não |
 
